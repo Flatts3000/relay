@@ -194,4 +194,5 @@ If any become necessary, the pilot pauses for reevaluation.
 - `/docs/problem_brief.md` - Core problem and constraints
 - `/docs/pilot_proposal.md` - Pilot scope and success criteria
 - `/docs/decision_mobile_app_vs_web_app.md` - Platform decision rationale
+- `/docs/decision_authentication.md` - Auth approach and PII considerations
 - `/docs/naming_and_domain_decision.md` - Naming and branding principles
