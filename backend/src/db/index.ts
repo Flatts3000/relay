@@ -1,5 +1,7 @@
 import pg from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import { config } from '../config.js';
+import * as schema from './schema/index.js';
 
 const { Pool } = pg;
 
@@ -18,17 +20,10 @@ pool.on('error', (err) => {
   console.error('Unexpected error on idle client', err);
 });
 
-export async function query<T extends pg.QueryResultRow>(
-  text: string,
-  params?: unknown[]
-): Promise<pg.QueryResult<T>> {
-  const start = Date.now();
-  const result = await pool.query<T>(text, params);
-  const duration = Date.now() - start;
-  console.log('Executed query', { text, duration, rows: result.rowCount });
-  return result;
-}
+export const db = drizzle(pool, { schema });
 
-export async function getClient(): Promise<pg.PoolClient> {
-  return pool.connect();
+export { schema };
+
+export async function closePool(): Promise<void> {
+  await pool.end();
 }

@@ -5,6 +5,7 @@ import { config } from './config.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { healthRouter } from './routes/health.js';
+import { authRouter } from './routes/auth.js';
 
 export const app = express();
 
@@ -25,6 +26,7 @@ app.use(requestLogger);
 
 // Routes
 app.use('/api/health', healthRouter);
+app.use('/api/auth', authRouter);
 
 // 404 handler
 app.use((_req, res) => {
