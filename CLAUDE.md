@@ -190,6 +190,7 @@ If any become necessary, the pilot pauses for reevaluation.
 ## Documentation
 
 - `/docs/product_requirements_document.md` - Full PRD with functional/non-functional requirements
+- `/docs/prd_to_mvp_plan.md` - Implementation plan with phases and checkpoints
 - `/docs/problem_brief.md` - Core problem and constraints
 - `/docs/pilot_proposal.md` - Pilot scope and success criteria
 - `/docs/decision_mobile_app_vs_web_app.md` - Platform decision rationale
