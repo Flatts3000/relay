@@ -83,6 +83,18 @@ This is an open source project. Data integrity and security are paramount.
 /docs        # Project documentation
 ```
 
+## GitHub Actions
+
+Currently **disabled** during early development.
+
+```bash
+# Re-enable when ready for CI
+gh api repos/Flatts3000/relay/actions/permissions -X PUT --input - <<< '{"enabled": true, "allowed_actions": "all"}'
+
+# Disable again if needed
+gh api repos/Flatts3000/relay/actions/permissions -X PUT --input - <<< '{"enabled": false}'
+```
+
 ## Build Commands
 
 ```bash
