@@ -83,6 +83,42 @@ This is an open source project. Data integrity and security are paramount.
 /docs        # Project documentation
 ```
 
+## Build Commands
+
+```bash
+# Install dependencies (all workspaces)
+npm install
+
+# Development
+npm run dev                 # Start all dev servers
+npm run dev:frontend        # Frontend only (port 3000)
+npm run dev:backend         # Backend only (port 4000)
+
+# Build
+npm run build               # Build all
+npm run build:frontend      # Build frontend
+npm run build:backend       # Build backend
+
+# Test
+npm test                    # Run all tests
+npm run test:frontend       # Frontend tests
+npm run test:backend        # Backend tests
+
+# Lint & Typecheck
+npm run lint                # Lint all
+npm run lint:fix            # Fix lint issues
+npm run typecheck           # Typecheck all
+
+# Docker (local)
+docker compose -f docker-compose.dev.yml up    # Start PostgreSQL
+docker compose up --build                       # Full stack
+
+# Terraform
+cd infra && terraform init
+cd infra && terraform plan
+cd infra && terraform apply
+```
+
 ## Features to Build (Pilot Scope)
 
 ### 1. Group Registry (Private, Invite-Only)

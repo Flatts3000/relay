@@ -1,0 +1,15 @@
+# Copy this file to terraform.tfvars and fill in your values
+# terraform.tfvars is gitignored and should never be committed
+
+aws_region  = "us-east-1"
+environment = "dev"
+app_name    = "relay"
+
+# Database
+db_instance_class = "db.t3.micro"
+db_name           = "relay"
+db_username       = "relay_admin"
+
+# Fargate
+container_cpu    = 256
+container_memory = 512
