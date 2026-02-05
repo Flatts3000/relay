@@ -1,0 +1,49 @@
+{
+  "appName": "Relay",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "cancel": "Cancel",
+  "save": "Save",
+  "edit": "Edit",
+  "delete": "Delete",
+  "back": "Back",
+  "submit": "Submit",
+  "search": "Search",
+  "filter": "Filter",
+  "all": "All",
+  "none": "None",
+  "yes": "Yes",
+  "no": "No",
+  "required": "Required",
+  "optional": "Optional",
+  "pageNotFound": "Page Not Found",
+  "pageNotFoundDescription": "The page you're looking for doesn't exist.",
+  "somethingWentWrong": "Something went wrong",
+  "tryAgain": "Try again",
+  "noResults": "No results found",
+  "navigation": {
+    "home": "Home",
+    "groups": "Groups",
+    "profile": "Profile",
+    "logout": "Log out"
+  },
+  "roles": {
+    "hubAdmin": "Hub Admin",
+    "groupCoordinator": "Group Coordinator"
+  },
+  "verificationStatus": {
+    "pending": "Pending",
+    "verified": "Verified",
+    "revoked": "Revoked"
+  },
+  "aidCategories": {
+    "rent": "Rent",
+    "food": "Food",
+    "utilities": "Utilities",
+    "other": "Other"
+  },
+  "footer": {
+    "tagline": "Coordination platform connecting mutual aid groups with fund hubs."
+  }
+}

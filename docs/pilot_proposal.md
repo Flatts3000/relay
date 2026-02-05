@@ -4,11 +4,17 @@
 
 ## Purpose
 
-The goal of this pilot is to test a safer, faster way for local mutual aid groups to connect with centralized fund hubs—without collecting or storing individual recipient data, and without changing how aid is distributed on the ground.
+The goal of this pilot is to test a safer, faster way for:
+1. Local mutual aid groups to connect with centralized fund hubs
+2. Individual residents in crisis to connect with local groups who can help
 
-This pilot is explicitly not about creating applications for assistance, tracking individuals, or standardizing how groups do their work.
+All of this without collecting or storing identifiable individual data, and without changing how aid is distributed on the ground.
 
-## What Problem This Pilot Addresses
+This pilot is explicitly not about tracking individuals or standardizing how groups do their work.
+
+## What Problems This Pilot Addresses
+
+### Group-to-Hub Coordination
 
 Today, most coordination between local mutual aid groups and centralized funds happens through:
 
@@ -17,6 +23,15 @@ Today, most coordination between local mutual aid groups and centralized funds h
 - Personal networks that unintentionally leave gaps
 
 This works, but unevenly. New or smaller groups struggle to get connected, hubs struggle to discover groups safely, and everyone spends more time coordinating than moving resources.
+
+### Individual-to-Group Discovery
+
+Individual residents facing housing insecurity and other urgent needs lack a safe way to find help:
+
+- Existing directories are fragmented, outdated, or require accounts
+- Providing an email or phone number creates a traceable record
+- People avoid searching due to fear of creating digital trails that could be subpoenaed by federal authorities
+- Current options require knowing someone who knows someone
 
 This pilot tests whether a minimal coordination layer can reduce friction while respecting safety, privacy, and autonomy.
 
@@ -30,6 +45,7 @@ This pilot tests whether a minimal coordination layer can reduce friction while 
 
 - 1 central fund hub (e.g., a statewide mutual aid fund)
 - 3–5 local mutual aid groups
+- Individual residents in those groups' service areas (anonymous, no registration)
 - 1 pilot facilitator / builder (me)
 
 Participation is opt-in and can be ended at any time by any party.
@@ -102,39 +118,84 @@ The pilot produces aggregate-only summaries, such as:
 
 No per-person or per-household reporting.
 
+### 6. Anonymous Help Requests (Individual-to-Group)
+
+Individuals in crisis can request help without providing identifying information.
+
+**How it works:**
+
+1. Individual visits the site and selects "I need help"
+2. System generates a passphrase (e.g., "blue-river-mountain-4729")
+3. Individual specifies: type of help needed, general area/region
+4. Individual writes down their passphrase—this is their only way to check for responses
+5. Groups serving that area see the request (category + region only, no identifying info)
+6. Groups send encrypted messages offering to help
+7. Individual returns to site, enters passphrase, reads messages
+8. Individual contacts the group directly using info provided in the message
+
+**Privacy guarantees:**
+
+- No email, phone number, or account required
+- Messages are end-to-end encrypted—Relay cannot read them
+- Private key derived from passphrase; Relay never sees it
+- Mailboxes delete after 7 days of inactivity (checking messages resets the timer)
+- On deletion: tombstone retained (category, region, timestamps) for group visibility; messages and keys hard deleted
+- No IP address logging on anonymous routes
+- Works from any device with the passphrase
+- If subpoenaed, Relay can only produce: encrypted blobs it cannot decrypt, and that a request for "rent help in Hennepin County" existed
+
+**What groups see:**
+
+- Category of help needed (rent, food, utilities, etc.)
+- General region (city/county level)
+- A "Reply" button to send an encrypted message
+
+**What groups do NOT see:**
+
+- Any identifying information about the individual
+- Other groups' responses
+
 ## What Is Explicitly Out of Scope
 
 To avoid risk and scope creep, the following are not part of this pilot:
 
-- Individual aid applications
+- Individual accounts or registration (passphrase-only access)
+- Collection of email, phone, or other contact info from individuals
 - Case management
-- Recipient data storage
+- Long-term data storage of individual requests
 - Document uploads
 - Donor-facing dashboards
-- Messaging or chat
+- Relay-mediated chat (groups provide their own contact methods)
 - Automation of eligibility decisions
 
 If any of these become necessary, the pilot pauses and is reevaluated.
 
 ## Data & Safety Guardrails
 
-- No collection of recipient PII
+- No collection of individual PII (no email, phone, name, address)
+- End-to-end encryption for individual-to-group messages
+- Passphrase-only access for individuals (nothing stored that identifies them)
+- Auto-deletion of anonymous mailboxes after 7 days of inactivity
+- No IP logging on anonymous routes
 - Strong UX guidance discouraging sensitive data entry
-- Short data retention for request details
+- Short data retention for group funding requests
 - Aggregate reporting only
-- No public directory
 - No data sharing outside pilot participants
+- **Subpoena-resistant design:** If legally compelled, Relay can only produce encrypted data it cannot decrypt
 - **Veto power:** Any participating group or hub may pause or end the pilot if it feels unsafe or misaligned.
 
 ## Success Criteria (How We'll Know This Helped)
 
 This pilot is successful if:
 
-- A group can get connected without relying on personal introductions
+- A group can get connected to hubs without relying on personal introductions
+- An individual can request help without providing identifying information
+- Groups can respond to individuals in need without knowing who they are
 - The hub can review and route funds with less back-and-forth
 - Funds move faster than before
 - Participants say this feels safer than existing ad hoc tools
 - No one asks for recipient data because the system doesn't need it
+- If asked to produce individual data, Relay has nothing useful to provide
 
 If these aren't met, the pilot is considered unsuccessful and stopped.
 

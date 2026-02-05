@@ -1,0 +1,49 @@
+{
+  "appName": "Relay",
+  "loading": "Cargando...",
+  "error": "Error",
+  "success": "Éxito",
+  "cancel": "Cancelar",
+  "save": "Guardar",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "back": "Volver",
+  "submit": "Enviar",
+  "search": "Buscar",
+  "filter": "Filtrar",
+  "all": "Todos",
+  "none": "Ninguno",
+  "yes": "Sí",
+  "no": "No",
+  "required": "Requerido",
+  "optional": "Opcional",
+  "pageNotFound": "Página no encontrada",
+  "pageNotFoundDescription": "La página que buscas no existe.",
+  "somethingWentWrong": "Algo salió mal",
+  "tryAgain": "Intentar de nuevo",
+  "noResults": "No se encontraron resultados",
+  "navigation": {
+    "home": "Inicio",
+    "groups": "Grupos",
+    "profile": "Perfil",
+    "logout": "Cerrar sesión"
+  },
+  "roles": {
+    "hubAdmin": "Administrador del Hub",
+    "groupCoordinator": "Coordinador de Grupo"
+  },
+  "verificationStatus": {
+    "pending": "Pendiente",
+    "verified": "Verificado",
+    "revoked": "Revocado"
+  },
+  "aidCategories": {
+    "rent": "Alquiler",
+    "food": "Alimentación",
+    "utilities": "Servicios públicos",
+    "other": "Otro"
+  },
+  "footer": {
+    "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos."
+  }
+}

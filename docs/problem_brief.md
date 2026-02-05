@@ -17,39 +17,68 @@ That approach does not scale and leaves significant gaps.
 
 ## The Core Problem
 
+**Two coordination failures exist in mutual aid today:**
+
+### 1. Group-to-Hub Connection Gap
+
 Local mutual aid groups lack a safe, reliable, low-friction way to discover, connect to, and receive funds from centralized hubs, while hubs lack a safe way to identify and trust local groups—without collecting sensitive personal data or creating risk for undocumented or vulnerable people.
 
-**This is not a fundraising problem.** It is a coordination, discovery, trust, and safety problem.
+### 2. Individual-to-Group Discovery Gap
+
+Individual residents facing housing insecurity and other urgent needs lack a centralized way to discover which mutual aid groups serve their area and what resources are available—without providing information that would put them in danger if obtained by federal authorities.
+
+**These are not fundraising problems.** They are coordination, discovery, trust, and safety problems.
 
 ## Key Constraints (Non-Negotiable)
 
 These constraints are essential and must shape any solution:
 
-### No individual applications
+### No individual data collection
 
 - No lists of people seeking aid
 - No personally identifying recipient data
 - No sensitive data retention
+- No search queries, IP addresses, or usage patterns that could identify individuals
 - Assume data could be subpoenaed, leaked, or scraped
 - Data minimization by default
+
+### Anonymous resource discovery
+
+- Individuals can request help without providing identifying information
+- Access via passphrase only—no email, phone, or account required
+- Messages from groups are end-to-end encrypted; Relay cannot read them
+- Mailboxes auto-delete after 7 days of inactivity
+- No tracking of IP addresses on sensitive routes
+- If subpoenaed, Relay has nothing useful to produce
 
 ### Lightweight verification only
 
 - Some verification is necessary (especially for rent-sized dollars)
 - Verification must not be onerous, invasive, or exclusionary
 
-### Group-level, not individual-level
+### Group-level operations, anonymous individual intake
 
-- Trust and accountability must live at the group level
+- Trust and accountability for fund routing live at the group level
 - Distribution decisions remain local
+- Individuals submit anonymous requests; groups reach out to help
+- Relay facilitates initial contact but cannot read message contents
+- No centralized list of individuals—only encrypted, ephemeral mailboxes
 
 ## Where the System Breaks Today
 
-### Discovery Failure
+### Discovery Failure (Groups ↔ Hubs)
 
 - New or small groups don't know how to get connected
 - Hubs don't know which groups exist
 - Word-of-mouth leaves invisible gaps
+
+### Discovery Failure (Individuals → Groups)
+
+- Individuals in crisis don't know what mutual aid groups serve their area
+- Existing directories are fragmented, outdated, or require accounts
+- People avoid searching due to fear of creating digital trails
+- Current options require knowing someone who knows someone
+- Providing contact info (email, phone) to get help creates a traceable record
 
 ### Trust Gap
 
@@ -78,6 +107,16 @@ Any solution that works only for food or supplies but fails for rent is insuffic
 - Informal or semi-formal
 - Deep local knowledge
 - Needs fast access to funds without exposure risk
+
+### Individual Resident (anonymous)
+
+- Facing housing insecurity, food insecurity, or other urgent need
+- Needs to find local resources without creating a digital trail
+- May be undocumented or otherwise vulnerable to authorities
+- Creates an anonymous mailbox using only a passphrase (no email/phone)
+- Specifies what help they need and their region
+- Receives encrypted messages from groups who can help
+- Relay cannot identify who they are or read their messages
 
 ### Verifier / Sponsor (implicit role)
 

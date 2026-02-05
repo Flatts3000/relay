@@ -4,6 +4,7 @@ import type { User } from '../db/schema/index.js';
 
 // Extend Express Request type
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: User;

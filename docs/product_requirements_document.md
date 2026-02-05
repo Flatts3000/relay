@@ -10,9 +10,11 @@
 
 ## Executive Summary
 
-Relay is a minimal coordination layer that connects local mutual aid groups with centralized fund hubs. The platform enables safer, faster fund routing without collecting or storing individual recipient data.
+Relay is a minimal coordination layer that connects local mutual aid groups with centralized fund hubs, and helps individuals in crisis discover local resources. The platform enables safer, faster fund routing without collecting or storing individual recipient data—and provides anonymous resource discovery without creating digital trails.
 
-This is not a fundraising platform, benefits application system, or case management tool. Relay solves a specific coordination problem: helping fund hubs discover and trust local groups, and helping local groups access funds without bureaucratic overhead or privacy risk.
+This is not a fundraising platform, benefits application system, or case management tool. Relay solves two specific coordination problems:
+1. Helping fund hubs discover and trust local groups, and helping local groups access funds without bureaucratic overhead or privacy risk
+2. Helping individual residents find mutual aid resources without providing information that could endanger them if obtained by federal authorities
 
 ---
 
@@ -45,9 +47,15 @@ Any solution must handle rent relief—the most challenging category:
 
 A solution that works only for food or supplies but fails for rent is insufficient.
 
-### Core Problem Statement
+### Core Problem Statements
+
+**1. Group-to-Hub Connection Gap**
 
 Local mutual aid groups lack a safe, reliable, low-friction way to discover, connect to, and receive funds from centralized hubs, while hubs lack a safe way to identify and trust local groups—without collecting sensitive personal data or creating risk for undocumented or vulnerable people.
+
+**2. Individual-to-Group Discovery Gap**
+
+Individual residents facing housing insecurity and other urgent needs lack a safe way to connect with mutual aid groups who can help—without providing information that would put them in danger if obtained by federal authorities. Existing options require email addresses, phone numbers, or accounts that create traceable records.
 
 ---
 
@@ -56,9 +64,10 @@ Local mutual aid groups lack a safe, reliable, low-friction way to discover, con
 ### Primary Goals
 
 1. **Enable discovery** — Groups and hubs can find each other without relying on personal introductions
-2. **Establish trust** — Lightweight verification that doesn't require invasive documentation
-3. **Accelerate funding** — Reduce time from request to funds disbursed
-4. **Protect privacy** — Zero individual recipient data collection or retention
+2. **Enable anonymous help requests** — Individuals can request help and receive responses from groups without providing identifying information
+3. **Establish trust** — Lightweight verification that doesn't require invasive documentation
+4. **Accelerate funding** — Reduce time from request to funds disbursed
+5. **Protect privacy** — Zero identifiable individual data; passphrase-only access; E2E encryption; subpoena-resistant design
 
 ### Success Metrics
 
@@ -69,14 +78,19 @@ Local mutual aid groups lack a safe, reliable, low-friction way to discover, con
 | Time from request to funds sent | Faster than current process |
 | Participant safety perception | "Feels safer than existing tools" |
 | Recipient data requests | Zero (system doesn't need it) |
+| Individuals can request help without accounts | Yes/No |
+| Individuals can receive group responses anonymously | Yes/No |
+| Individual usage tracking | Zero (no analytics, no logs) |
+| Data producible if subpoenaed | Only encrypted blobs Relay cannot decrypt |
 
 ### Non-Goals
 
 - Replacing how local groups distribute aid
 - Standardizing mutual aid practices
 - Building donor engagement features
-- Creating a public directory of groups
 - Automating eligibility decisions
+- Storing individual contact information (email, phone, address)
+- Reading or moderating individual-to-group messages (E2E encrypted)
 
 ---
 
@@ -129,6 +143,33 @@ Local mutual aid groups lack a safe, reliable, low-friction way to discover, con
 - Existing processes feel invasive or bureaucratic
 - Status updates require manual follow-up
 - Fear of creating records that could harm recipients
+
+---
+
+#### Individual Resident (Anonymous User)
+
+**Role:** Person in crisis seeking help from local mutual aid groups
+
+**Characteristics:**
+- Facing housing insecurity, food insecurity, or other urgent need
+- May be undocumented or otherwise vulnerable to authorities
+- Cannot risk creating digital trails that could be subpoenaed
+- Needs fast access to help without barriers
+- May have limited internet access or shared devices
+
+**Goals:**
+- Request help without providing identifying information
+- Receive responses from groups who can help
+- Connect with a group directly using contact info they provide
+- Do all of this without email, phone number, or account
+
+**Frustrations:**
+- Existing help systems require email or phone (creates traceable record)
+- Fear of creating records that could be used against them
+- Doesn't know who to trust or where to start
+- Current options require knowing someone who knows someone
+
+**Key constraint:** Individuals access Relay using only a passphrase—no email, phone, or account. Messages from groups are end-to-end encrypted; Relay cannot read them. Mailboxes auto-delete after 7 days. If subpoenaed, Relay can only produce encrypted data it cannot decrypt.
 
 ---
 
@@ -304,6 +345,105 @@ The system shall provide secure, email-based authentication.
 
 ---
 
+### FR-7: Anonymous Help Requests
+
+**Priority:** P0 (Must Have)
+
+The system shall allow individuals in crisis to request help and receive responses from groups—without providing any identifying information.
+
+**User flow:**
+
+1. Individual visits site and selects "I need help"
+2. System generates a random passphrase (e.g., "blue-river-mountain-4729")
+3. Individual specifies: type of help needed (rent, food, utilities), general region
+4. Individual writes down passphrase—this is their only way to access responses
+5. Relevant groups see the request (category + region only)
+6. Groups send encrypted messages with their contact info and how they can help
+7. Individual returns to site, enters passphrase, decrypts and reads messages
+8. Individual contacts group directly using the info provided
+
+**What the system stores:**
+
+| Data | Stored | Notes |
+|------|--------|-------|
+| Passphrase | No | Used to derive encryption key client-side |
+| Mailbox ID | Yes | Random identifier, not linked to any person |
+| Help category | Yes | e.g., "rent", "food" |
+| Region | Yes | City/county level |
+| Encrypted messages | Yes | Relay cannot decrypt |
+| Email/phone/name | No | Never collected |
+| IP address | No | Not logged for anonymous routes |
+
+**Cryptographic design:**
+
+- Passphrase generates a keypair client-side (e.g., using libsodium)
+- Public key stored with mailbox; private key never leaves client
+- Groups encrypt messages with mailbox's public key
+- Only someone with the passphrase can derive the private key and decrypt
+- Relay stores only ciphertext it cannot read
+
+**Retention and deletion:**
+
+- Mailboxes delete after 7 days of inactivity (no access)
+- Activity (entering passphrase to check messages) resets the 7-day timer
+- Individual can manually delete earlier
+
+**Soft delete (tombstone retained for groups/hubs):**
+- Record that a request existed
+- Help category and region
+- That a group responded (yes/no)
+- Deletion type: manual or auto (inactivity)
+- Created and deleted timestamps
+
+**Hard delete (permanently removed, no recovery):**
+- Encrypted messages
+- Public key
+- Original mailbox ID
+- Any data that could identify or correlate to the individual
+
+This allows groups to see: "You responded to a rent request in Hennepin County. Mailbox deleted (inactivity) on [date]." — without retaining any sensitive content.
+
+**What groups see:**
+
+- Category of help needed
+- General region
+- "Reply" button to send encrypted message
+- Number of other groups who have replied (optional)
+
+**What groups do NOT see:**
+
+- Any identifying information
+- Other groups' message contents
+- Whether the individual has read their message
+
+**Explicitly prohibited:**
+
+- Email, phone, or any contact info collection from individuals
+- IP address logging on anonymous routes
+- Analytics or tracking of any kind
+- Server-side ability to read messages
+- Persistent cookies for anonymous users
+
+**Acceptance Criteria:**
+
+- [ ] Individual can create mailbox with only a passphrase (no email/phone)
+- [ ] Passphrase is generated client-side and displayed once
+- [ ] Individual can specify help type and region
+- [ ] Groups can view anonymous requests matching their service area
+- [ ] Groups can send encrypted replies
+- [ ] Individual can return from any device with passphrase and read messages
+- [ ] Messages are encrypted client-side before transmission
+- [ ] Server cannot decrypt stored messages
+- [ ] Mailboxes delete after 7 days of inactivity
+- [ ] On deletion: tombstone retained (category, region, response status, timestamps)
+- [ ] On deletion: messages, keys, and mailbox ID hard deleted with no recovery
+- [ ] Groups can see tombstones of deleted mailboxes they responded to
+- [ ] No IP logging on anonymous routes
+- [ ] No cookies set for anonymous users
+- [ ] Works on slow/intermittent connections
+
+---
+
 ## Non-Functional Requirements
 
 ### NFR-1: Security
@@ -313,12 +453,90 @@ The system shall provide secure, email-based authentication.
 | Requirement | Specification |
 |-------------|---------------|
 | Data encryption | TLS 1.3 in transit; AES-256 at rest |
+| E2E encryption | Client-side encryption for anonymous mailbox messages (libsodium or similar) |
 | Input validation | All user inputs validated and sanitized |
 | SQL injection prevention | Parameterized queries only |
 | XSS prevention | Output encoding on all rendered content |
-| Authentication | Secure token-based, short-lived sessions |
+| Authentication | Secure token-based, short-lived sessions (for groups/hubs only) |
 | Authorization | Role-based access control enforced server-side |
-| Audit logging | All data access and modifications logged |
+| Audit logging | Data access logged for authenticated routes only; no logging on anonymous routes |
+| Key management | Private keys never transmitted to or stored on server |
+
+---
+
+### NFR-1a: Infrastructure Security (AWS)
+
+**Priority:** P0 (Must Have)
+
+#### IAM (Identity and Access Management)
+
+| Requirement | Specification |
+|-------------|---------------|
+| Least privilege | All IAM roles grant minimum permissions required for function |
+| No root access | AWS root account not used for operations; MFA required |
+| Service roles | Fargate tasks use dedicated IAM roles, not shared credentials |
+| No long-lived keys | No IAM access keys in code or config; use IAM roles for service-to-service |
+| Role boundaries | Permission boundaries on all IAM roles to prevent privilege escalation |
+
+#### Network Security
+
+| Requirement | Specification |
+|-------------|---------------|
+| VPC isolation | All resources deployed in private VPC |
+| Private subnets | RDS and Fargate tasks in private subnets (no direct internet access) |
+| Public subnets | Only load balancer in public subnets |
+| Security groups | Principle of least privilege; only required ports open |
+| RDS access | Database accessible only from Fargate security group |
+| No public endpoints | RDS not publicly accessible; no public IPs on Fargate tasks |
+| NAT gateway | Outbound internet access (for email sending) via NAT gateway only |
+
+#### Secrets Management
+
+| Requirement | Specification |
+|-------------|---------------|
+| No hardcoded secrets | No secrets in code, environment variables, or config files |
+| AWS Secrets Manager | Database credentials, API keys stored in Secrets Manager |
+| Rotation | Database credentials rotated automatically (90-day minimum) |
+| Access logging | All secret access logged via CloudTrail |
+| Fargate integration | Secrets injected at runtime via Secrets Manager integration |
+
+#### Encryption
+
+| Requirement | Specification |
+|-------------|---------------|
+| RDS encryption | Encryption at rest enabled using AWS KMS |
+| KMS key management | Customer-managed KMS keys (not AWS-managed) for audit control |
+| EBS encryption | Any EBS volumes encrypted with KMS |
+| S3 encryption | If S3 used, server-side encryption with KMS required |
+| TLS termination | TLS 1.3 at load balancer; internal traffic encrypted |
+
+#### Audit and Monitoring
+
+| Requirement | Specification |
+|-------------|---------------|
+| CloudTrail | Enabled for all AWS API calls; logs stored in S3 with integrity validation |
+| CloudWatch Logs | Application logs sent to CloudWatch (no PII in logs) |
+| CloudWatch Alarms | Alerts for security events (failed auth, unusual API calls) |
+| Log retention | CloudTrail logs retained minimum 1 year |
+| VPC Flow Logs | Enabled for network traffic analysis (anonymized for individual routes) |
+
+#### Container Security
+
+| Requirement | Specification |
+|-------------|---------------|
+| ECR scanning | Vulnerability scanning enabled on container images |
+| No privileged containers | Fargate tasks run as non-root user |
+| Image immutability | Container images tagged immutably; no `:latest` in production |
+| Base image updates | Base images updated regularly for security patches |
+
+#### Additional Protections
+
+| Requirement | Specification |
+|-------------|---------------|
+| WAF | AWS WAF on ALB with rules for common attacks (SQLi, XSS, rate limiting) |
+| DDoS protection | AWS Shield Standard (included); evaluate Shield Advanced for pilot |
+| Backup encryption | RDS automated backups encrypted; retention per data policy |
+| Multi-AZ | RDS Multi-AZ for availability (evaluate for pilot scope) |
 
 ---
 
@@ -328,11 +546,15 @@ The system shall provide secure, email-based authentication.
 
 | Requirement | Specification |
 |-------------|---------------|
-| Data minimization | Collect only what's explicitly needed |
-| Retention limits | Request details purged after defined period |
-| No tracking | No analytics that could identify individuals |
-| Subpoena consideration | Assume any stored data could be legally compelled |
+| Data minimization | Collect only what's explicitly needed; no email/phone from individuals |
+| E2E encryption | Individual-to-group messages encrypted client-side; server cannot read |
+| Passphrase-only access | Individuals access mailboxes with passphrase only; no account |
+| Retention limits | Anonymous mailboxes auto-delete after 7 days of inactivity |
+| No IP logging | Anonymous routes do not log IP addresses |
+| No tracking | No analytics, cookies, or tracking for anonymous users |
+| Subpoena-resistant | If legally compelled, Relay can only produce encrypted blobs it cannot decrypt |
 | No third-party data sharing | Data never shared outside pilot participants |
+| No third-party scripts | No external analytics, fonts, or CDNs that could track users |
 
 ---
 
@@ -375,6 +597,28 @@ The system shall provide secure, email-based authentication.
 
 ---
 
+### NFR-6: Internationalization (i18n)
+
+**Priority:** P0 (Must Have)
+
+| Requirement | Specification |
+|-------------|---------------|
+| Supported languages | English (en), Spanish (es) |
+| Language detection | Browser language preference, user-selectable |
+| Language persistence | Stored in localStorage |
+| Translation coverage | All UI text, form labels, error messages, status indicators |
+| RTL support | Not required (neither English nor Spanish is RTL) |
+
+**Implementation:**
+- Frontend: react-i18next with JSON translation files
+- Namespace separation by feature (common, groups, requests, auth)
+- Language switcher accessible from all pages
+- Fallback to English for missing translations
+
+**Rationale:** Many mutual aid communities serve Spanish-speaking populations. Language access is essential for equitable participation.
+
+---
+
 ## Constraints
 
 ### Technical Constraints
@@ -386,16 +630,21 @@ The system shall provide secure, email-based authentication.
 
 ### Operational Constraints
 
-- **Invite-only:** No public registration; all participants vetted
+- **Invite-only for groups:** No public group registration; all participating groups vetted
+- **Anonymous for individuals:** Passphrase-only access; no registration, email, or phone required
 - **Pilot scope:** 1 hub, 3-5 groups, 30-45 days
 - **Veto power:** Any participant can pause or end pilot
 - **No expansion by default:** Post-pilot decisions made collaboratively
 
 ### Data Constraints
 
-- **No recipient PII:** System architecture prevents collection
-- **Group-level only:** No individual case tracking
-- **Short retention:** Request details not retained indefinitely
+- **No individual PII:** No email, phone, name, or address collected from individuals
+- **E2E encryption:** Individual-to-group messages encrypted; server cannot read
+- **Passphrase-only:** Individuals access mailboxes with passphrase; nothing links to identity
+- **Auto-deletion:** Anonymous mailboxes purged after 7 days of inactivity
+- **No IP logging:** Anonymous routes do not log IP addresses
+- **Group-level funding:** No individual case tracking for fund requests
+- **Short retention:** Group funding request details not retained indefinitely
 - **Aggregate reporting only:** No per-person or per-household reports
 
 ---
@@ -406,16 +655,19 @@ The following are explicitly excluded from this product:
 
 | Feature | Reason |
 |---------|--------|
-| Individual aid applications | Privacy risk; not group-level |
+| Individual accounts/registration | Privacy risk; passphrase-only access |
+| Collection of email/phone from individuals | Privacy risk; creates traceable records |
+| Server-readable messages | Privacy risk; all individual messages E2E encrypted |
 | Case management | Scope creep; different product |
-| Recipient data storage | Core constraint violation |
+| Long-term storage of individual requests | Privacy risk; mailboxes auto-delete after 7 days |
 | Document uploads | Privacy risk; not needed for workflow |
 | Donor-facing dashboards | Different audience; scope creep |
-| Messaging or chat | Scope creep; use existing channels |
+| Real-time chat | Scope creep; async encrypted mailbox approach instead |
 | Eligibility automation | Removes human judgment; scope creep |
-| Public group directory | Privacy/safety risk |
 | Native mobile apps | Pilot scope; reassess post-pilot |
-| Push notifications | Privacy risk |
+| Push notifications | Privacy risk; individuals must return to check messages |
+| Analytics on individual usage | Privacy risk; cannot track who views what |
+| Passphrase recovery | By design; Relay cannot recover access (would require storing identity) |
 
 If any out-of-scope feature becomes necessary, the pilot pauses for reevaluation.
 
@@ -428,10 +680,16 @@ If any out-of-scope feature becomes necessary, the pilot pauses for reevaluation
 | Groups enter recipient PII in free-text fields | Medium | High | UX guidance; field labels; no "name" or "address" fields |
 | Verification process too slow | Medium | Medium | Multiple verification paths; hub admin can fast-track |
 | Low adoption during pilot | Medium | Medium | Direct outreach; personal onboarding support |
-| Data breach | Low | Critical | Encryption; minimal data retention; security audit |
-| Legal subpoena for records | Low | High | Data minimization; short retention; no recipient data |
+| Data breach | Low | High | E2E encryption means breached data is unreadable; minimal retention |
+| Legal subpoena for records | Low | High | E2E encryption; Relay can only produce encrypted blobs it cannot decrypt |
+| Individual loses passphrase | High | Medium | Clear UX warning; encourage writing it down; no recovery by design |
+| Cryptographic implementation flaws | Low | Critical | Use proven libraries (libsodium); security audit; no custom crypto |
 | Hub or group withdraws mid-pilot | Medium | Low | Graceful offboarding; data export; no lock-in |
 | Scope creep requests | High | Medium | Clear PRD; out-of-scope list; pause-and-evaluate policy |
+| Third-party tracking | Medium | Critical | No analytics scripts; no third-party resources; CSP headers |
+| Accidental logging of individual activity | Medium | High | Code review; no logging on anonymous routes; audit log configuration |
+| Groups abuse anonymous requests (spam) | Low | Medium | Rate limiting by mailbox; groups can ignore; report mechanism |
+| Individuals don't return to check messages | Medium | Medium | Clear UX explaining async nature; encourage checking back |
 
 ---
 
@@ -450,6 +708,7 @@ If any out-of-scope feature becomes necessary, the pilot pauses for reevaluation
 | CI/CD | GitHub Actions | Integrated with repo; automated testing and deployment |
 | Containers | Docker | Consistent environments; portable deployments |
 | Authentication | Magic link / passwordless | No password storage; works on shared devices |
+| E2E Encryption | libsodium (TweetNaCl.js) | Proven cryptography; client-side key generation; no custom crypto |
 
 ### Repository Structure
 
@@ -462,11 +721,15 @@ Monorepo with the following structure:
 
 ### Key Architectural Decisions
 
-1. **No recipient data in schema** — Cannot be collected even accidentally
-2. **Role-based access control** — Enforced at API level, not just UI
-3. **Audit logging** — All data access logged for accountability
-4. **Soft deletes with purge** — Data retained briefly for recovery, then purged
-5. **Stateless sessions** — No persistent login; works on shared devices
+1. **No individual PII in schema** — Cannot be collected even accidentally; no email/phone fields for individuals
+2. **E2E encryption for individual messages** — Server stores only ciphertext it cannot decrypt
+3. **Passphrase-derived keys** — Private keys generated client-side from passphrase; never transmitted
+4. **Role-based access control** — Enforced at API level, not just UI (for groups/hubs)
+5. **Audit logging for authenticated routes only** — No logging on anonymous routes
+6. **Tombstone + hard delete for individual data** — After 7 days of inactivity: soft delete retains category/region/timestamps for group visibility; hard delete permanently removes messages, keys, and mailbox ID
+7. **Soft delete for group/hub data** — Group profiles, funding requests, verification records use soft delete with `deleted_at` timestamp; no auto-deletion, manual only
+8. **Stateless sessions** — No persistent login; works on shared devices
+9. **No third-party scripts** — Self-hosted fonts; no external analytics or CDNs
 
 ---
 
@@ -487,14 +750,24 @@ Monorepo with the following structure:
 - [ ] Implement status tracking (FR-4)
 - [ ] Security review and hardening
 
-### Phase 3: Pilot Launch
+### Phase 3: Anonymous Help Requests (Pre-Pilot)
+
+- [ ] Implement client-side encryption (libsodium/TweetNaCl.js)
+- [ ] Build anonymous mailbox creation with passphrase generation
+- [ ] Build encrypted message sending for groups
+- [ ] Build message decryption for individuals
+- [ ] Implement auto-deletion after 7 days
+- [ ] Verify no IP logging on anonymous routes
+- [ ] Security audit of cryptographic implementation
+
+### Phase 4: Pilot Launch
 
 - [ ] Onboard 1 hub administrator
 - [ ] Onboard 3-5 local groups
 - [ ] Monitor and support for 30-45 days
 - [ ] Collect qualitative feedback
 
-### Phase 4: Evaluation
+### Phase 5: Evaluation
 
 - [ ] Assess success criteria
 - [ ] Document learnings
@@ -514,6 +787,9 @@ Monorepo with the following structure:
 | **Verification** | Process of establishing a group as "trusted enough" to receive funds |
 | **Attestation** | Vouching for a group's legitimacy by peers or sponsors |
 | **Recipient** | Individual receiving aid from a local group (never tracked in Relay) |
+| **Mailbox** | Anonymous, encrypted inbox for an individual; accessed only via passphrase |
+| **Passphrase** | Random words (e.g., "blue-river-mountain-4729") used to access a mailbox; not stored by Relay |
+| **E2E Encryption** | End-to-end encryption; messages encrypted on sender's device, decrypted only on recipient's device; server cannot read |
 
 ### Related Documents
 
@@ -527,3 +803,4 @@ Monorepo with the following structure:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | February 2026 | — | Initial PRD |
+| 1.1 | February 2026 | — | Added FR-7 Anonymous Help Requests with E2E encryption |
