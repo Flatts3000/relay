@@ -6,6 +6,7 @@ import {
   getGroupById,
   listGroups,
   updateGroup,
+  deleteGroup,
   canUserAccessGroup,
   canUserModifyGroup,
 } from '../services/group.service.js';
@@ -112,13 +113,7 @@ groupsRouter.get('/:id', authenticate, async (req, res) => {
     const { id } = groupIdParamSchema.parse(req.params);
     const user = req.user!;
 
-    const canAccess = await canUserAccessGroup(
-      user.id,
-      user.role,
-      user.hubId,
-      user.groupId,
-      id
-    );
+    const canAccess = await canUserAccessGroup(user.id, user.role, user.hubId, user.groupId, id);
 
     if (!canAccess) {
       res.status(404).json({ error: 'Group not found' });
@@ -176,6 +171,50 @@ groupsRouter.patch('/:id', authenticate, async (req, res) => {
           message: e.message,
         })),
       });
+      return;
+    }
+    throw err;
+  }
+});
+
+/**
+ * DELETE /api/groups/:id - Soft delete a group
+ * Only hub admins can delete groups in their hub
+ */
+groupsRouter.delete('/:id', authenticate, requireHubAdmin, async (req, res) => {
+  try {
+    const { id } = groupIdParamSchema.parse(req.params);
+    const user = req.user!;
+
+    if (!user.hubId) {
+      res.status(400).json({ error: 'User is not associated with a hub' });
+      return;
+    }
+
+    // Verify the group belongs to this hub before deleting
+    const group = await getGroupById(id);
+
+    if (!group) {
+      res.status(404).json({ error: 'Group not found' });
+      return;
+    }
+
+    if (group.hubId !== user.hubId) {
+      res.status(403).json({ error: 'You can only delete groups in your hub' });
+      return;
+    }
+
+    const deleted = await deleteGroup(id, user.id, req);
+
+    if (!deleted) {
+      res.status(404).json({ error: 'Group not found' });
+      return;
+    }
+
+    res.status(204).send();
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({ error: 'Invalid group ID format' });
       return;
     }
     throw err;

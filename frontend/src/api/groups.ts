@@ -1,4 +1,4 @@
-import { get, post, patch } from './client';
+import { get, post, patch, del } from './client';
 import type {
   Group,
   CreateGroupInput,
@@ -34,9 +34,10 @@ export async function getGroup(id: string): Promise<{ group: Group }> {
   return get<{ group: Group }>(`/api/groups/${id}`);
 }
 
-export async function updateGroup(
-  id: string,
-  input: UpdateGroupInput
-): Promise<{ group: Group }> {
+export async function updateGroup(id: string, input: UpdateGroupInput): Promise<{ group: Group }> {
   return patch<{ group: Group }>(`/api/groups/${id}`, input);
+}
+
+export async function deleteGroup(id: string): Promise<void> {
+  return del<void>(`/api/groups/${id}`);
 }
