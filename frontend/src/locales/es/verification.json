@@ -1,0 +1,77 @@
+{
+  "title": "Verificación",
+  "requestVerification": "Solicitar verificación",
+  "verificationStatus": "Estado de verificación",
+  "verificationQueue": "Cola de verificación",
+  "pendingRequests": "Solicitudes pendientes",
+  "noRequestsPending": "No hay solicitudes de verificación pendientes",
+  "requestDetails": "Detalles de la solicitud",
+  "selectMethod": "Seleccionar método de verificación",
+  "methods": {
+    "hubApproval": "Aprobación del administrador",
+    "hubApprovalDescription": "Solicitar aprobación directa de un administrador del hub",
+    "peerAttestation": "Atestación de pares",
+    "peerAttestationDescription": "Obtener el respaldo de 2 grupos verificados existentes",
+    "sponsorReference": "Referencia de patrocinador",
+    "sponsorReferenceDescription": "Proporcionar una referencia de una organización patrocinadora conocida"
+  },
+  "peerAttestation": {
+    "title": "Atestación de pares",
+    "selectGroups": "Seleccionar grupos para solicitar atestación",
+    "requiresTwo": "Requiere atestación de 2 grupos verificados",
+    "attestationsPending": "{{count}} atestación(es) pendiente(s)",
+    "attestationsReceived": "{{count}} de 2 atestaciones recibidas",
+    "requestAttestation": "Solicitar atestación",
+    "attestationRequested": "Solicitud de atestación enviada",
+    "provideAttestation": "Proporcionar atestación",
+    "attestFor": "Atestar para {{groupName}}",
+    "confirmAttestation": "Confirmo que conozco a este grupo y respaldo su legitimidad",
+    "submitAttestation": "Enviar atestación",
+    "attestationSubmitted": "Atestación enviada exitosamente"
+  },
+  "sponsorReference": {
+    "title": "Referencia de patrocinador",
+    "sponsorInfo": "Información del patrocinador",
+    "sponsorInfoPlaceholder": "Nombre de la organización e información de contacto",
+    "sponsorInfoHelper": "Proporcione el nombre y los datos de contacto de una organización que pueda respaldar a su grupo"
+  },
+  "status": {
+    "pending": "Pendiente de revisión",
+    "approved": "Aprobado",
+    "denied": "Denegado",
+    "awaitingAttestations": "Esperando atestaciones de pares"
+  },
+  "actions": {
+    "approve": "Aprobar",
+    "deny": "Denegar",
+    "revoke": "Revocar verificación"
+  },
+  "approve": {
+    "title": "Aprobar verificación",
+    "confirmMessage": "¿Está seguro de que desea aprobar la verificación para {{groupName}}?",
+    "success": "Verificación aprobada exitosamente"
+  },
+  "deny": {
+    "title": "Denegar verificación",
+    "reason": "Motivo de la denegación",
+    "reasonPlaceholder": "Por favor proporcione un motivo para denegar esta solicitud",
+    "reasonRequired": "Se requiere un motivo al denegar la verificación",
+    "confirmMessage": "¿Está seguro de que desea denegar la verificación para {{groupName}}?",
+    "success": "Verificación denegada"
+  },
+  "revoke": {
+    "title": "Revocar verificación",
+    "confirmMessage": "¿Está seguro de que desea revocar la verificación para {{groupName}}? Necesitarán verificarse de nuevo.",
+    "success": "Verificación revocada"
+  },
+  "requestSubmitted": "Solicitud de verificación enviada",
+  "errors": {
+    "failedToLoad": "Error al cargar las solicitudes de verificación",
+    "failedToSubmit": "Error al enviar la solicitud de verificación",
+    "failedToApprove": "Error al aprobar la verificación",
+    "failedToDeny": "Error al denegar la verificación",
+    "failedToRevoke": "Error al revocar la verificación",
+    "alreadyVerified": "Este grupo ya está verificado",
+    "pendingRequest": "Ya hay una solicitud de verificación pendiente"
+  }
+}

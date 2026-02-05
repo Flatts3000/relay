@@ -1,0 +1,111 @@
+{
+  "title": "Solicitudes de fondos",
+  "newRequest": "Nueva solicitud",
+  "submitRequest": "Enviar solicitud",
+  "requestHistory": "Historial de solicitudes",
+  "requestDetails": "Detalles de la solicitud",
+  "noRequests": "Sin solicitudes de fondos",
+  "noRequestsDescription": "Envíe su primera solicitud de fondos para comenzar.",
+  "form": {
+    "amount": "Monto solicitado",
+    "amountPlaceholder": "0.00",
+    "amountHelper": "Ingrese el monto total necesario",
+    "amountRequired": "El monto es requerido",
+    "amountInvalid": "Ingrese un monto válido mayor que 0",
+    "category": "Categoría",
+    "categoryRequired": "La categoría es requerida",
+    "urgency": "Urgencia",
+    "urgencyNormal": "Normal",
+    "urgencyUrgent": "Urgente",
+    "region": "Región",
+    "regionHelper": "Pre-llenado desde el área de servicio de su grupo",
+    "justification": "Justificación",
+    "justificationPlaceholder": "Breve descripción de la necesidad (opcional)",
+    "justificationHelper": "Manténgalo general. No incluya nombres, direcciones u otros detalles identificatorios sobre individuos.",
+    "privacyWarning": "Aviso de privacidad: No incluya detalles personales sobre los beneficiarios de la ayuda. Este campo es opcional."
+  },
+  "status": {
+    "submitted": "Enviada",
+    "approved": "Aprobada",
+    "declined": "Rechazada",
+    "fundsSent": "Fondos enviados",
+    "acknowledged": "Confirmada"
+  },
+  "statusTimeline": {
+    "title": "Línea de tiempo del estado",
+    "submittedAt": "Enviada",
+    "approvedAt": "Aprobada",
+    "fundsSentAt": "Fondos enviados",
+    "acknowledgedAt": "Confirmada"
+  },
+  "actions": {
+    "approve": "Aprobar",
+    "decline": "Rechazar",
+    "requestClarification": "Solicitar aclaración",
+    "markFundsSent": "Marcar fondos enviados",
+    "acknowledgeReceipt": "Confirmar recepción"
+  },
+  "approve": {
+    "title": "Aprobar solicitud",
+    "confirmMessage": "¿Aprobar esta solicitud de fondos por {{amount}}?",
+    "success": "Solicitud aprobada"
+  },
+  "decline": {
+    "title": "Rechazar solicitud",
+    "reason": "Motivo del rechazo",
+    "reasonPlaceholder": "Por favor proporcione un motivo",
+    "reasonRequired": "Se requiere un motivo al rechazar",
+    "success": "Solicitud rechazada"
+  },
+  "clarify": {
+    "title": "Solicitar aclaración",
+    "message": "Aclaración necesaria",
+    "messagePlaceholder": "¿Qué información adicional necesita?",
+    "messageRequired": "Por favor especifique qué aclaración se necesita",
+    "success": "Aclaración solicitada",
+    "pending": "Aclaración solicitada",
+    "pendingNote": "El hub ha solicitado información adicional sobre esta solicitud."
+  },
+  "fundsSent": {
+    "title": "Marcar fondos enviados",
+    "confirmMessage": "¿Confirmar que los fondos han sido enviados para esta solicitud?",
+    "success": "Marcado como fondos enviados"
+  },
+  "acknowledge": {
+    "title": "Confirmar recepción",
+    "confirmMessage": "¿Confirmar que su grupo ha recibido los fondos?",
+    "success": "Recepción confirmada"
+  },
+  "filters": {
+    "allStatuses": "Todos los estados",
+    "allCategories": "Todas las categorías",
+    "allUrgencies": "Todas las urgencias",
+    "sortBy": "Ordenar por",
+    "sortNewest": "Más recientes primero",
+    "sortOldest": "Más antiguos primero",
+    "sortAmountHigh": "Monto (mayor a menor)",
+    "sortAmountLow": "Monto (menor a mayor)",
+    "sortUrgent": "Urgentes primero"
+  },
+  "details": {
+    "requestedBy": "Solicitado por",
+    "amount": "Monto",
+    "category": "Categoría",
+    "urgency": "Urgencia",
+    "region": "Región",
+    "justification": "Justificación",
+    "declineReason": "Motivo del rechazo",
+    "submittedAt": "Enviada",
+    "processedBy": "Procesado por"
+  },
+  "errors": {
+    "failedToLoad": "Error al cargar las solicitudes",
+    "failedToSubmit": "Error al enviar la solicitud",
+    "failedToApprove": "Error al aprobar la solicitud",
+    "failedToDecline": "Error al rechazar la solicitud",
+    "failedToMarkSent": "Error al marcar fondos enviados",
+    "failedToAcknowledge": "Error al confirmar la recepción",
+    "notVerified": "Solo los grupos verificados pueden enviar solicitudes de fondos",
+    "invalidStatus": "Esta acción no está disponible para el estado actual"
+  }
+}

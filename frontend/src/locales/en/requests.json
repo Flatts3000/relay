@@ -1,0 +1,111 @@
+{
+  "title": "Funding Requests",
+  "newRequest": "New Request",
+  "submitRequest": "Submit Request",
+  "requestHistory": "Request History",
+  "requestDetails": "Request Details",
+  "noRequests": "No funding requests",
+  "noRequestsDescription": "Submit your first funding request to get started.",
+  "form": {
+    "amount": "Amount Requested",
+    "amountPlaceholder": "0.00",
+    "amountHelper": "Enter the total amount needed",
+    "amountRequired": "Amount is required",
+    "amountInvalid": "Enter a valid amount greater than 0",
+    "category": "Category",
+    "categoryRequired": "Category is required",
+    "urgency": "Urgency",
+    "urgencyNormal": "Normal",
+    "urgencyUrgent": "Urgent",
+    "region": "Region",
+    "regionHelper": "Pre-filled from your group's service area",
+    "justification": "Justification",
+    "justificationPlaceholder": "Brief description of the need (optional)",
+    "justificationHelper": "Keep it general. Do not include names, addresses, or other identifying details about individuals.",
+    "privacyWarning": "Privacy Notice: Do not include personal details about aid recipients. This field is optional."
+  },
+  "status": {
+    "submitted": "Submitted",
+    "approved": "Approved",
+    "declined": "Declined",
+    "fundsSent": "Funds Sent",
+    "acknowledged": "Acknowledged"
+  },
+  "statusTimeline": {
+    "title": "Status Timeline",
+    "submittedAt": "Submitted",
+    "approvedAt": "Approved",
+    "fundsSentAt": "Funds Sent",
+    "acknowledgedAt": "Acknowledged"
+  },
+  "actions": {
+    "approve": "Approve",
+    "decline": "Decline",
+    "requestClarification": "Request Clarification",
+    "markFundsSent": "Mark Funds Sent",
+    "acknowledgeReceipt": "Acknowledge Receipt"
+  },
+  "approve": {
+    "title": "Approve Request",
+    "confirmMessage": "Approve this funding request for {{amount}}?",
+    "success": "Request approved"
+  },
+  "decline": {
+    "title": "Decline Request",
+    "reason": "Reason for Declining",
+    "reasonPlaceholder": "Please provide a reason",
+    "reasonRequired": "A reason is required when declining",
+    "success": "Request declined"
+  },
+  "clarify": {
+    "title": "Request Clarification",
+    "message": "Clarification Needed",
+    "messagePlaceholder": "What additional information do you need?",
+    "messageRequired": "Please specify what clarification is needed",
+    "success": "Clarification requested",
+    "pending": "Clarification Requested",
+    "pendingNote": "The hub has requested additional information about this request."
+  },
+  "fundsSent": {
+    "title": "Mark Funds Sent",
+    "confirmMessage": "Confirm that funds have been sent for this request?",
+    "success": "Marked as funds sent"
+  },
+  "acknowledge": {
+    "title": "Acknowledge Receipt",
+    "confirmMessage": "Confirm that your group has received the funds?",
+    "success": "Receipt acknowledged"
+  },
+  "filters": {
+    "allStatuses": "All Statuses",
+    "allCategories": "All Categories",
+    "allUrgencies": "All Urgencies",
+    "sortBy": "Sort By",
+    "sortNewest": "Newest First",
+    "sortOldest": "Oldest First",
+    "sortAmountHigh": "Amount (High to Low)",
+    "sortAmountLow": "Amount (Low to High)",
+    "sortUrgent": "Urgent First"
+  },
+  "details": {
+    "requestedBy": "Requested By",
+    "amount": "Amount",
+    "category": "Category",
+    "urgency": "Urgency",
+    "region": "Region",
+    "justification": "Justification",
+    "declineReason": "Decline Reason",
+    "submittedAt": "Submitted",
+    "processedBy": "Processed By"
+  },
+  "errors": {
+    "failedToLoad": "Failed to load requests",
+    "failedToSubmit": "Failed to submit request",
+    "failedToApprove": "Failed to approve request",
+    "failedToDecline": "Failed to decline request",
+    "failedToMarkSent": "Failed to mark funds sent",
+    "failedToAcknowledge": "Failed to acknowledge receipt",
+    "notVerified": "Only verified groups can submit funding requests",
+    "invalidStatus": "This action is not available for the current status"
+  }
+}

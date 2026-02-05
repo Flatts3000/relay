@@ -1,0 +1,73 @@
+{
+  "title": "Reports",
+  "dashboard": "Reports Dashboard",
+  "dateRange": "Date Range",
+  "from": "From",
+  "to": "To",
+  "applyFilter": "Apply",
+  "clearFilter": "Clear",
+  "lastDays": "Last {{count}} days",
+  "thisMonth": "This Month",
+  "lastMonth": "Last Month",
+  "thisYear": "This Year",
+  "allTime": "All Time",
+  "summary": {
+    "title": "Summary",
+    "totalFunds": "Total Funds Distributed",
+    "totalRequests": "Total Requests",
+    "approvedRequests": "Approved Requests",
+    "groupsSupported": "Groups Supported",
+    "averageAmount": "Average Request Amount"
+  },
+  "byCategory": {
+    "title": "By Category",
+    "category": "Category",
+    "amount": "Total Amount",
+    "count": "Request Count",
+    "percentage": "Percentage"
+  },
+  "byStatus": {
+    "title": "By Status",
+    "status": "Status",
+    "count": "Count"
+  },
+  "timing": {
+    "title": "Processing Time",
+    "averageApprovalTime": "Average Approval Time",
+    "averageFundingTime": "Average Time to Funds Sent",
+    "averageAcknowledgmentTime": "Average Time to Acknowledgment",
+    "days": "days",
+    "hours": "hours",
+    "minutes": "minutes"
+  },
+  "groups": {
+    "title": "Groups",
+    "totalGroups": "Total Groups",
+    "verifiedGroups": "Verified Groups",
+    "activeGroups": "Active Groups",
+    "activeGroupsDescription": "Groups with at least one request in period"
+  },
+  "export": {
+    "title": "Export Report",
+    "exportCSV": "Export as CSV",
+    "exportPDF": "Export as PDF",
+    "exportSuccess": "Report exported successfully",
+    "exportError": "Failed to export report",
+    "preparing": "Preparing export...",
+    "noData": "No data available to export"
+  },
+  "charts": {
+    "fundsByCategory": "Funds by Category",
+    "requestsOverTime": "Requests Over Time",
+    "statusDistribution": "Status Distribution"
+  },
+  "errors": {
+    "failedToLoad": "Failed to load report data",
+    "invalidDateRange": "Invalid date range",
+    "noData": "No data available for the selected period"
+  },
+  "privacy": {
+    "notice": "Reports show aggregate data only. Individual request details are not available.",
+    "noDrillDown": "Drill-down to individual records is not supported for privacy reasons."
+  }
+}

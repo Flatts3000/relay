@@ -1,0 +1,73 @@
+{
+  "title": "Informes",
+  "dashboard": "Panel de informes",
+  "dateRange": "Rango de fechas",
+  "from": "Desde",
+  "to": "Hasta",
+  "applyFilter": "Aplicar",
+  "clearFilter": "Limpiar",
+  "lastDays": "Últimos {{count}} días",
+  "thisMonth": "Este mes",
+  "lastMonth": "Mes pasado",
+  "thisYear": "Este año",
+  "allTime": "Todo el tiempo",
+  "summary": {
+    "title": "Resumen",
+    "totalFunds": "Total de fondos distribuidos",
+    "totalRequests": "Total de solicitudes",
+    "approvedRequests": "Solicitudes aprobadas",
+    "groupsSupported": "Grupos apoyados",
+    "averageAmount": "Monto promedio de solicitud"
+  },
+  "byCategory": {
+    "title": "Por categoría",
+    "category": "Categoría",
+    "amount": "Monto total",
+    "count": "Cantidad de solicitudes",
+    "percentage": "Porcentaje"
+  },
+  "byStatus": {
+    "title": "Por estado",
+    "status": "Estado",
+    "count": "Cantidad"
+  },
+  "timing": {
+    "title": "Tiempo de procesamiento",
+    "averageApprovalTime": "Tiempo promedio de aprobación",
+    "averageFundingTime": "Tiempo promedio hasta envío de fondos",
+    "averageAcknowledgmentTime": "Tiempo promedio hasta confirmación",
+    "days": "días",
+    "hours": "horas",
+    "minutes": "minutos"
+  },
+  "groups": {
+    "title": "Grupos",
+    "totalGroups": "Total de grupos",
+    "verifiedGroups": "Grupos verificados",
+    "activeGroups": "Grupos activos",
+    "activeGroupsDescription": "Grupos con al menos una solicitud en el período"
+  },
+  "export": {
+    "title": "Exportar informe",
+    "exportCSV": "Exportar como CSV",
+    "exportPDF": "Exportar como PDF",
+    "exportSuccess": "Informe exportado exitosamente",
+    "exportError": "Error al exportar el informe",
+    "preparing": "Preparando exportación...",
+    "noData": "No hay datos disponibles para exportar"
+  },
+  "charts": {
+    "fundsByCategory": "Fondos por categoría",
+    "requestsOverTime": "Solicitudes a lo largo del tiempo",
+    "statusDistribution": "Distribución por estado"
+  },
+  "errors": {
+    "failedToLoad": "Error al cargar los datos del informe",
+    "invalidDateRange": "Rango de fechas inválido",
+    "noData": "No hay datos disponibles para el período seleccionado"
+  },
+  "privacy": {
+    "notice": "Los informes muestran solo datos agregados. Los detalles de solicitudes individuales no están disponibles.",
+    "noDrillDown": "No se permite desglosar a registros individuales por razones de privacidad."
+  }
+}

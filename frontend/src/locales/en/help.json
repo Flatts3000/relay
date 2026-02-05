@@ -1,0 +1,124 @@
+{
+  "title": "Get Help",
+  "subtitle": "Connect with local mutual aid groups anonymously",
+  "needHelp": "I Need Help",
+  "checkMessages": "Check My Messages",
+  "howItWorks": {
+    "title": "How It Works",
+    "step1": {
+      "title": "Create a Mailbox",
+      "description": "We'll give you a secret passphrase. No email or phone needed."
+    },
+    "step2": {
+      "title": "Describe Your Need",
+      "description": "Select a category (rent, food, utilities) and your area."
+    },
+    "step3": {
+      "title": "Groups Respond",
+      "description": "Local mutual aid groups will see your request and send encrypted messages."
+    },
+    "step4": {
+      "title": "Check Back",
+      "description": "Return with your passphrase to read messages and contact groups directly."
+    }
+  },
+  "passphrase": {
+    "title": "Your Secret Passphrase",
+    "description": "This passphrase is the only way to access your mailbox. Write it down somewhere safe.",
+    "warning": "If you lose this passphrase, you cannot recover your mailbox. There is no reset option.",
+    "writeItDown": "Write this down now",
+    "copied": "Copied to clipboard",
+    "copy": "Copy",
+    "confirm": "I have saved my passphrase",
+    "confirmRequired": "Please confirm you have saved your passphrase"
+  },
+  "createMailbox": {
+    "title": "Create Anonymous Mailbox",
+    "selectCategory": "What kind of help do you need?",
+    "selectRegion": "What area are you in?",
+    "regionPlaceholder": "City or county (e.g., Minneapolis, MN)",
+    "regionHelper": "This helps connect you with groups that serve your area",
+    "categoryRequired": "Please select a category",
+    "regionRequired": "Please enter your area",
+    "creating": "Creating your mailbox...",
+    "success": "Your mailbox has been created"
+  },
+  "mailboxCreated": {
+    "title": "Mailbox Created",
+    "description": "Your anonymous mailbox is ready. Groups in your area can now see your request and send you messages.",
+    "rememberPassphrase": "Remember: you need your passphrase to check for messages.",
+    "checkBackSoon": "Check back in a day or two to see if any groups have responded.",
+    "checkMessages": "Check for Messages"
+  },
+  "checkMailbox": {
+    "title": "Check Your Mailbox",
+    "enterPassphrase": "Enter Your Passphrase",
+    "passphrasePlaceholder": "Enter your passphrase",
+    "checking": "Checking mailbox...",
+    "invalidPassphrase": "Invalid passphrase. Please try again.",
+    "notFound": "Mailbox not found. It may have been deleted.",
+    "submit": "Check Messages"
+  },
+  "messages": {
+    "title": "Your Messages",
+    "noMessages": "No messages yet",
+    "noMessagesDescription": "Groups haven't responded yet. Check back in a day or two.",
+    "from": "From",
+    "received": "Received",
+    "contactGroup": "Contact this group directly using the information in their message.",
+    "decrypting": "Decrypting messages..."
+  },
+  "deleteMailbox": {
+    "title": "Delete Mailbox",
+    "warning": "This will permanently delete your mailbox and all messages. This cannot be undone.",
+    "confirm": "Yes, delete my mailbox",
+    "cancel": "Keep my mailbox",
+    "deleting": "Deleting...",
+    "success": "Your mailbox has been deleted"
+  },
+  "inactivityWarning": {
+    "title": "Important: Auto-Deletion",
+    "message": "Your mailbox will be automatically deleted after 7 days of inactivity. Check back regularly to keep it active.",
+    "lastAccessed": "Last accessed: {{date}}"
+  },
+  "privacy": {
+    "title": "Your Privacy",
+    "noAccount": "No account or email required",
+    "noTracking": "We don't track your visits",
+    "encrypted": "Messages are encrypted - only you can read them",
+    "autoDelete": "Mailboxes are deleted after 7 days of inactivity",
+    "noLogs": "No logs of your IP address or location"
+  },
+  "groupView": {
+    "title": "Help Requests",
+    "description": "Anonymous requests from people in your service area",
+    "noRequests": "No help requests matching your service area",
+    "respondToRequest": "Respond to Request",
+    "sendReply": "Send Encrypted Reply",
+    "replyPlaceholder": "Include how they can contact your group...",
+    "replyHelper": "This message will be encrypted. Only the requester can read it.",
+    "replySent": "Reply sent successfully",
+    "alreadyReplied": "You have already replied to this request",
+    "tombstones": {
+      "title": "Past Requests",
+      "description": "Requests you responded to that have been deleted",
+      "deletedOn": "Deleted on {{date}}",
+      "deletionType": {
+        "manual": "Manually deleted by requester",
+        "autoInactivity": "Auto-deleted after 7 days"
+      }
+    }
+  },
+  "errors": {
+    "failedToCreate": "Failed to create mailbox. Please try again.",
+    "failedToLoad": "Failed to load mailbox. Please try again.",
+    "failedToDelete": "Failed to delete mailbox. Please try again.",
+    "failedToSendReply": "Failed to send reply. Please try again.",
+    "networkError": "Network error. Please check your connection and try again."
+  },
+  "accessibility": {
+    "passphraseVisible": "Passphrase is visible",
+    "passphraseHidden": "Passphrase is hidden",
+    "toggleVisibility": "Toggle passphrase visibility"
+  }
+}

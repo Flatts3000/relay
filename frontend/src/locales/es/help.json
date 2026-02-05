@@ -1,0 +1,124 @@
+{
+  "title": "Obtener ayuda",
+  "subtitle": "Conéctese con grupos locales de ayuda mutua de forma anónima",
+  "needHelp": "Necesito ayuda",
+  "checkMessages": "Revisar mis mensajes",
+  "howItWorks": {
+    "title": "Cómo funciona",
+    "step1": {
+      "title": "Crear un buzón",
+      "description": "Le daremos una frase secreta. No se necesita correo electrónico ni teléfono."
+    },
+    "step2": {
+      "title": "Describa su necesidad",
+      "description": "Seleccione una categoría (alquiler, comida, servicios) y su área."
+    },
+    "step3": {
+      "title": "Los grupos responden",
+      "description": "Los grupos locales de ayuda mutua verán su solicitud y enviarán mensajes encriptados."
+    },
+    "step4": {
+      "title": "Regrese a revisar",
+      "description": "Vuelva con su frase secreta para leer mensajes y contactar a los grupos directamente."
+    }
+  },
+  "passphrase": {
+    "title": "Su frase secreta",
+    "description": "Esta frase secreta es la única forma de acceder a su buzón. Escríbala en un lugar seguro.",
+    "warning": "Si pierde esta frase secreta, no podrá recuperar su buzón. No hay opción de restablecimiento.",
+    "writeItDown": "Escríbala ahora",
+    "copied": "Copiado al portapapeles",
+    "copy": "Copiar",
+    "confirm": "He guardado mi frase secreta",
+    "confirmRequired": "Por favor confirme que ha guardado su frase secreta"
+  },
+  "createMailbox": {
+    "title": "Crear buzón anónimo",
+    "selectCategory": "¿Qué tipo de ayuda necesita?",
+    "selectRegion": "¿En qué área se encuentra?",
+    "regionPlaceholder": "Ciudad o condado (ej., Minneapolis, MN)",
+    "regionHelper": "Esto ayuda a conectarlo con grupos que sirven su área",
+    "categoryRequired": "Por favor seleccione una categoría",
+    "regionRequired": "Por favor ingrese su área",
+    "creating": "Creando su buzón...",
+    "success": "Su buzón ha sido creado"
+  },
+  "mailboxCreated": {
+    "title": "Buzón creado",
+    "description": "Su buzón anónimo está listo. Los grupos en su área ahora pueden ver su solicitud y enviarle mensajes.",
+    "rememberPassphrase": "Recuerde: necesita su frase secreta para revisar los mensajes.",
+    "checkBackSoon": "Regrese en uno o dos días para ver si algún grupo ha respondido.",
+    "checkMessages": "Revisar mensajes"
+  },
+  "checkMailbox": {
+    "title": "Revisar su buzón",
+    "enterPassphrase": "Ingrese su frase secreta",
+    "passphrasePlaceholder": "Ingrese su frase secreta",
+    "checking": "Revisando buzón...",
+    "invalidPassphrase": "Frase secreta inválida. Por favor intente de nuevo.",
+    "notFound": "Buzón no encontrado. Puede haber sido eliminado.",
+    "submit": "Revisar mensajes"
+  },
+  "messages": {
+    "title": "Sus mensajes",
+    "noMessages": "Sin mensajes aún",
+    "noMessagesDescription": "Los grupos aún no han respondido. Regrese en uno o dos días.",
+    "from": "De",
+    "received": "Recibido",
+    "contactGroup": "Contacte a este grupo directamente usando la información en su mensaje.",
+    "decrypting": "Desencriptando mensajes..."
+  },
+  "deleteMailbox": {
+    "title": "Eliminar buzón",
+    "warning": "Esto eliminará permanentemente su buzón y todos los mensajes. Esto no se puede deshacer.",
+    "confirm": "Sí, eliminar mi buzón",
+    "cancel": "Mantener mi buzón",
+    "deleting": "Eliminando...",
+    "success": "Su buzón ha sido eliminado"
+  },
+  "inactivityWarning": {
+    "title": "Importante: Eliminación automática",
+    "message": "Su buzón será eliminado automáticamente después de 7 días de inactividad. Regrese regularmente para mantenerlo activo.",
+    "lastAccessed": "Último acceso: {{date}}"
+  },
+  "privacy": {
+    "title": "Su privacidad",
+    "noAccount": "No se requiere cuenta ni correo electrónico",
+    "noTracking": "No rastreamos sus visitas",
+    "encrypted": "Los mensajes están encriptados - solo usted puede leerlos",
+    "autoDelete": "Los buzones se eliminan después de 7 días de inactividad",
+    "noLogs": "No hay registros de su dirección IP o ubicación"
+  },
+  "groupView": {
+    "title": "Solicitudes de ayuda",
+    "description": "Solicitudes anónimas de personas en su área de servicio",
+    "noRequests": "No hay solicitudes de ayuda que coincidan con su área de servicio",
+    "respondToRequest": "Responder a solicitud",
+    "sendReply": "Enviar respuesta encriptada",
+    "replyPlaceholder": "Incluya cómo pueden contactar a su grupo...",
+    "replyHelper": "Este mensaje será encriptado. Solo el solicitante puede leerlo.",
+    "replySent": "Respuesta enviada exitosamente",
+    "alreadyReplied": "Ya ha respondido a esta solicitud",
+    "tombstones": {
+      "title": "Solicitudes pasadas",
+      "description": "Solicitudes a las que respondió que han sido eliminadas",
+      "deletedOn": "Eliminado el {{date}}",
+      "deletionType": {
+        "manual": "Eliminado manualmente por el solicitante",
+        "autoInactivity": "Auto-eliminado después de 7 días"
+      }
+    }
+  },
+  "errors": {
+    "failedToCreate": "Error al crear el buzón. Por favor intente de nuevo.",
+    "failedToLoad": "Error al cargar el buzón. Por favor intente de nuevo.",
+    "failedToDelete": "Error al eliminar el buzón. Por favor intente de nuevo.",
+    "failedToSendReply": "Error al enviar la respuesta. Por favor intente de nuevo.",
+    "networkError": "Error de red. Por favor verifique su conexión e intente de nuevo."
+  },
+  "accessibility": {
+    "passphraseVisible": "Frase secreta visible",
+    "passphraseHidden": "Frase secreta oculta",
+    "toggleVisibility": "Alternar visibilidad de la frase secreta"
+  }
+}

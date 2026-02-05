@@ -1,0 +1,77 @@
+{
+  "title": "Verification",
+  "requestVerification": "Request Verification",
+  "verificationStatus": "Verification Status",
+  "verificationQueue": "Verification Queue",
+  "pendingRequests": "Pending Requests",
+  "noRequestsPending": "No verification requests pending",
+  "requestDetails": "Request Details",
+  "selectMethod": "Select Verification Method",
+  "methods": {
+    "hubApproval": "Hub Admin Approval",
+    "hubApprovalDescription": "Request direct approval from a hub administrator",
+    "peerAttestation": "Peer Attestation",
+    "peerAttestationDescription": "Get vouched for by 2 existing verified groups",
+    "sponsorReference": "Sponsor Reference",
+    "sponsorReferenceDescription": "Provide a reference from a known sponsor organization"
+  },
+  "peerAttestation": {
+    "title": "Peer Attestation",
+    "selectGroups": "Select groups to request attestation from",
+    "requiresTwo": "Requires attestation from 2 verified groups",
+    "attestationsPending": "{{count}} attestation(s) pending",
+    "attestationsReceived": "{{count}} of 2 attestations received",
+    "requestAttestation": "Request Attestation",
+    "attestationRequested": "Attestation request sent",
+    "provideAttestation": "Provide Attestation",
+    "attestFor": "Attest for {{groupName}}",
+    "confirmAttestation": "I confirm that I know this group and vouch for their legitimacy",
+    "submitAttestation": "Submit Attestation",
+    "attestationSubmitted": "Attestation submitted successfully"
+  },
+  "sponsorReference": {
+    "title": "Sponsor Reference",
+    "sponsorInfo": "Sponsor Information",
+    "sponsorInfoPlaceholder": "Organization name and contact information",
+    "sponsorInfoHelper": "Provide the name and contact details of an organization that can vouch for your group"
+  },
+  "status": {
+    "pending": "Pending Review",
+    "approved": "Approved",
+    "denied": "Denied",
+    "awaitingAttestations": "Awaiting Peer Attestations"
+  },
+  "actions": {
+    "approve": "Approve",
+    "deny": "Deny",
+    "revoke": "Revoke Verification"
+  },
+  "approve": {
+    "title": "Approve Verification",
+    "confirmMessage": "Are you sure you want to approve verification for {{groupName}}?",
+    "success": "Verification approved successfully"
+  },
+  "deny": {
+    "title": "Deny Verification",
+    "reason": "Reason for Denial",
+    "reasonPlaceholder": "Please provide a reason for denying this request",
+    "reasonRequired": "A reason is required when denying verification",
+    "confirmMessage": "Are you sure you want to deny verification for {{groupName}}?",
+    "success": "Verification denied"
+  },
+  "revoke": {
+    "title": "Revoke Verification",
+    "confirmMessage": "Are you sure you want to revoke verification for {{groupName}}? They will need to re-verify.",
+    "success": "Verification revoked"
+  },
+  "requestSubmitted": "Verification request submitted",
+  "errors": {
+    "failedToLoad": "Failed to load verification requests",
+    "failedToSubmit": "Failed to submit verification request",
+    "failedToApprove": "Failed to approve verification",
+    "failedToDeny": "Failed to deny verification",
+    "failedToRevoke": "Failed to revoke verification",
+    "alreadyVerified": "This group is already verified",
+    "pendingRequest": "A verification request is already pending"
+  }
+}
