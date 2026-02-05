@@ -4,7 +4,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - '3001:80'
     depends_on:
       - backend
     environment:
@@ -15,24 +15,26 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "4000:4000"
+      - '4000:4000'
     depends_on:
       db:
         condition: service_healthy
     environment:
       - NODE_ENV=production
       - PORT=4000
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:3001
+      - FRONTEND_URL=http://localhost:3001
       - DB_HOST=db
       - DB_PORT=5432
       - DB_NAME=relay
       - DB_USER=postgres
       - DB_PASSWORD=postgres
+      - EMAIL_PROVIDER=console
 
   db:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - '5434:5432'
     environment:
       - POSTGRES_DB=relay
       - POSTGRES_USER=postgres
@@ -40,7 +42,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
