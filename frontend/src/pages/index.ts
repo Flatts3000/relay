@@ -4,3 +4,7 @@ export { GroupProfilePage } from './GroupProfilePage';
 export { HubGroupsListPage } from './HubGroupsListPage';
 export { HubGroupDetailPage } from './HubGroupDetailPage';
 export { CreateGroupPage } from './CreateGroupPage';
+export { RequestVerificationPage } from './RequestVerificationPage';
+export { VerificationQueuePage } from './VerificationQueuePage';
+export { VerificationRequestDetailPage } from './VerificationRequestDetailPage';
+export { AttestationRequestsPage } from './AttestationRequestsPage';

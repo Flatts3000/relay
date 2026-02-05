@@ -74,7 +74,7 @@ export const verificationRequestResponseSchema = z.object({
   method: z.enum(verificationMethods),
   status: z.enum(verificationRequestStatuses),
   sponsorInfo: z.string().nullable(),
-  attestationCount: z.number().int().nonnegative().optional(),
+  attestationCount: z.number().int().nonnegative().default(0),
   reviewedBy: z.string().uuid().nullable(),
   reviewedAt: z.string().datetime().nullable(),
   denialReason: z.string().nullable(),

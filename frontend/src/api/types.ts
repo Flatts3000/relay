@@ -73,3 +73,55 @@ export interface ApiError {
     message: string;
   }>;
 }
+
+// Verification types
+export const VERIFICATION_METHODS = [
+  'hub_approval',
+  'peer_attestation',
+  'sponsor_reference',
+] as const;
+export type VerificationMethod = (typeof VERIFICATION_METHODS)[number];
+
+export const VERIFICATION_REQUEST_STATUSES = ['pending', 'approved', 'denied'] as const;
+export type VerificationRequestStatus = (typeof VERIFICATION_REQUEST_STATUSES)[number];
+
+export interface VerificationRequest {
+  id: string;
+  groupId: string;
+  groupName: string;
+  groupServiceArea: string;
+  method: VerificationMethod;
+  status: VerificationRequestStatus;
+  sponsorInfo: string | null;
+  attestationCount: number;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  denialReason: string | null;
+  createdAt: string;
+}
+
+export interface PeerAttestation {
+  id: string;
+  attestingGroupId: string;
+  attestingGroupName: string;
+  attestedAt: string;
+}
+
+export interface CreateVerificationRequestInput {
+  method: VerificationMethod;
+  sponsorInfo?: string;
+}
+
+export interface DenyVerificationInput {
+  reason: string;
+}
+
+export interface VerificationRequestsListResponse {
+  requests: VerificationRequest[];
+  total: number;
+}
+
+export interface ListVerificationRequestsQuery {
+  status?: VerificationRequestStatus;
+  method?: VerificationMethod;
+}

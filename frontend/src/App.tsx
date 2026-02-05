@@ -8,6 +8,10 @@ import {
   HubGroupsListPage,
   HubGroupDetailPage,
   CreateGroupPage,
+  RequestVerificationPage,
+  VerificationQueuePage,
+  VerificationRequestDetailPage,
+  AttestationRequestsPage,
 } from './pages';
 
 function NotFound() {
@@ -52,6 +56,26 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/verification/request"
+        element={
+          <ProtectedRoute allowedRoles={['group_coordinator']}>
+            <Layout>
+              <RequestVerificationPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/verification/attestations"
+        element={
+          <ProtectedRoute allowedRoles={['group_coordinator']}>
+            <Layout>
+              <AttestationRequestsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
 
       {/* Hub admin routes */}
       <Route
@@ -80,6 +104,26 @@ export default function App() {
           <ProtectedRoute allowedRoles={['hub_admin']}>
             <Layout>
               <HubGroupDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/verification"
+        element={
+          <ProtectedRoute allowedRoles={['hub_admin']}>
+            <Layout>
+              <VerificationQueuePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/verification/requests/:id"
+        element={
+          <ProtectedRoute allowedRoles={['hub_admin']}>
+            <Layout>
+              <VerificationRequestDetailPage />
             </Layout>
           </ProtectedRoute>
         }
