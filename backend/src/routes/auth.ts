@@ -6,6 +6,7 @@ import {
   verifyMagicLinkToken,
   invalidateSession,
 } from '../services/auth.service.js';
+import { sendMagicLinkEmail } from '../services/email.service.js';
 import { authenticate } from '../middleware/auth.js';
 import { logLogin, logLogout } from '../services/audit.service.js';
 
@@ -36,11 +37,13 @@ authRouter.post('/login', async (req, res) => {
 
     const token = await createMagicLinkToken(user.id);
 
-    // TODO: Send email with magic link
-    // For now, log it in development
-    if (process.env['NODE_ENV'] !== 'production') {
-      console.log(`Magic link token for ${email}: ${token}`);
-      console.log(`Login URL: http://localhost:3000/auth/verify?token=${token}`);
+    // Send magic link email
+    try {
+      await sendMagicLinkEmail(email, token);
+    } catch (emailError) {
+      // Log error but don't expose to user
+      console.error('Failed to send magic link email:', emailError);
+      // Still return success to not reveal if user exists
     }
 
     res.json({
