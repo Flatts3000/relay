@@ -22,7 +22,10 @@
     "lint:backend": "npm run lint --workspace=backend",
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -44,5 +47,23 @@
     "@esbuild-kit/core-utils": {
       "esbuild": ">=0.25.0"
     }
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1"
+  },
+  "lint-staged": {
+    "frontend/src/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix --max-warnings 0"
+    ],
+    "backend/src/**/*.ts": [
+      "prettier --write",
+      "eslint --fix --max-warnings 0"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

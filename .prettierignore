@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+
+# Coverage
+coverage/
+
+# Generated files
+*.min.js
+*.min.css
+package-lock.json
+
+# Terraform
+infra/.terraform/
+*.tfstate
+*.tfstate.*
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+!.env.example
