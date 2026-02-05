@@ -132,13 +132,12 @@ export function HomePage() {
                 </h1>
                 <p className="text-lg sm:text-xl text-gray-600 mb-10">{t('home:hero.subtitle')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                  <button
-                    type="button"
-                    onClick={() => scrollToSection('individual')}
+                  <Link
+                    to="/help"
                     className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-lg"
                   >
                     {t('home:hero.individualCta')}
-                  </button>
+                  </Link>
                   <button
                     type="button"
                     onClick={() => scrollToSection('organizations')}
