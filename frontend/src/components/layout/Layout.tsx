@@ -19,9 +19,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const getRoleLabel = (role: string) => {
-    return role === 'hub_admin'
-      ? t('roles.hubAdmin')
-      : t('roles.groupCoordinator');
+    return role === 'hub_admin' ? t('roles.hubAdmin') : t('roles.groupCoordinator');
   };
 
   return (
@@ -41,7 +39,7 @@ export function Layout({ children }: LayoutProps) {
                   <span className="text-sm text-gray-600 hidden sm:inline">
                     {user.email} ({getRoleLabel(user.role)})
                   </span>
-                  <Button variant="secondary" size="sm" onClick={handleLogout}>
+                  <Button variant="secondary" onClick={handleLogout}>
                     {t('navigation.logout')}
                   </Button>
                 </>
@@ -51,9 +49,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
     </div>
   );
 }

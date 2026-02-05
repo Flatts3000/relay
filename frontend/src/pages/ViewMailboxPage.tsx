@@ -147,7 +147,7 @@ export function ViewMailboxPage() {
               {t(`common:aidCategories.${mailbox.helpCategory}`)} • {mailbox.region}
             </p>
           </div>
-          <Button type="button" variant="secondary" size="sm" onClick={loadMailbox}>
+          <Button type="button" variant="secondary" onClick={loadMailbox}>
             {t('help:view.refresh')}
           </Button>
         </div>

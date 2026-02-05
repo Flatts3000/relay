@@ -91,7 +91,6 @@ export function CreateMailboxPage() {
             <Button
               type="button"
               variant="secondary"
-              size="sm"
               className="mt-2"
               onClick={() => navigate(`/help/mailbox/${existingMailbox}`)}
             >
