@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum, text } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, timestamp, pgEnum, text } from 'drizzle-orm/pg-core';
 import { groups } from './groups.js';
 import { users } from './users.js';
 

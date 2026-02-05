@@ -56,11 +56,11 @@
   "lint-staged": {
     "frontend/src/**/*.{ts,tsx}": [
       "prettier --write",
-      "eslint --fix --max-warnings 0"
+      "eslint --fix --max-warnings 0 --config frontend/eslint.config.js"
     ],
     "backend/src/**/*.ts": [
       "prettier --write",
-      "eslint --fix --max-warnings 0"
+      "eslint --fix --max-warnings 0 --config backend/eslint.config.js"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"

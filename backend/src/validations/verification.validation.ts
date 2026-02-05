@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
 // Verification methods must match the database enum
-export const verificationMethods = ['hub_approval', 'peer_attestation', 'sponsor_reference'] as const;
+export const verificationMethods = [
+  'hub_approval',
+  'peer_attestation',
+  'sponsor_reference',
+] as const;
 export type VerificationMethod = (typeof verificationMethods)[number];
 
 // Verification request statuses must match the database enum
@@ -9,25 +13,27 @@ export const verificationRequestStatuses = ['pending', 'approved', 'denied'] as 
 export type VerificationRequestStatus = (typeof verificationRequestStatuses)[number];
 
 // Create verification request schema
-export const createVerificationRequestSchema = z.object({
-  method: z.enum(verificationMethods),
-  sponsorInfo: z
-    .string()
-    .max(1000, 'Sponsor information must be 1000 characters or less')
-    .optional(),
-}).refine(
-  (data) => {
-    // sponsorInfo is required for sponsor_reference method
-    if (data.method === 'sponsor_reference' && !data.sponsorInfo?.trim()) {
-      return false;
+export const createVerificationRequestSchema = z
+  .object({
+    method: z.enum(verificationMethods),
+    sponsorInfo: z
+      .string()
+      .max(1000, 'Sponsor information must be 1000 characters or less')
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // sponsorInfo is required for sponsor_reference method
+      if (data.method === 'sponsor_reference' && !data.sponsorInfo?.trim()) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: 'Sponsor information is required for sponsor reference verification',
+      path: ['sponsorInfo'],
     }
-    return true;
-  },
-  {
-    message: 'Sponsor information is required for sponsor reference verification',
-    path: ['sponsorInfo'],
-  }
-);
+  );
 
 export type CreateVerificationRequestInput = z.infer<typeof createVerificationRequestSchema>;
 
@@ -47,8 +53,8 @@ export const verificationRequestIdParamSchema = z.object({
 });
 
 // Group ID param schema for requesting verification
-export const groupIdParamSchema = z.object({
-  id: z.string().uuid('Invalid group ID format'),
+export const verificationGroupIdParamSchema = z.object({
+  groupId: z.string().uuid('Invalid group ID format'),
 });
 
 // List verification requests query schema

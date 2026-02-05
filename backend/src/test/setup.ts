@@ -14,9 +14,15 @@ afterEach(async () => {
   // Clean up test data between tests
   // Tables are cleaned in reverse order of dependencies
   await db.execute(sql`DELETE FROM audit_log`);
+  await db.execute(sql`DELETE FROM mailbox_tombstones`);
+  await db.execute(sql`DELETE FROM mailbox_messages`);
+  await db.execute(sql`DELETE FROM mailboxes`);
+  await db.execute(sql`DELETE FROM funding_request_status_history`);
+  await db.execute(sql`DELETE FROM funding_requests`);
+  await db.execute(sql`DELETE FROM peer_attestations`);
+  await db.execute(sql`DELETE FROM verification_requests`);
   await db.execute(sql`DELETE FROM sessions`);
   await db.execute(sql`DELETE FROM auth_tokens`);
-  await db.execute(sql`DELETE FROM funding_requests`);
   await db.execute(sql`DELETE FROM users`);
   await db.execute(sql`DELETE FROM groups`);
   await db.execute(sql`DELETE FROM hubs`);
