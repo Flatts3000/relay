@@ -12,6 +12,9 @@ import {
   VerificationQueuePage,
   VerificationRequestDetailPage,
   AttestationRequestsPage,
+  NewFundingRequestPage,
+  FundingRequestsListPage,
+  FundingRequestDetailPage,
 } from './pages';
 
 function NotFound() {
@@ -72,6 +75,38 @@ export default function App() {
           <ProtectedRoute allowedRoles={['group_coordinator']}>
             <Layout>
               <AttestationRequestsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests/new"
+        element={
+          <ProtectedRoute allowedRoles={['group_coordinator']}>
+            <Layout>
+              <NewFundingRequestPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Shared routes - both roles */}
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <FundingRequestsListPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <FundingRequestDetailPage />
             </Layout>
           </ProtectedRoute>
         }

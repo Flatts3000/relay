@@ -125,3 +125,72 @@ export interface ListVerificationRequestsQuery {
   status?: VerificationRequestStatus;
   method?: VerificationMethod;
 }
+
+// Funding request types
+export const REQUEST_STATUSES = [
+  'submitted',
+  'approved',
+  'declined',
+  'funds_sent',
+  'acknowledged',
+] as const;
+export type RequestStatus = (typeof REQUEST_STATUSES)[number];
+
+export const URGENCIES = ['normal', 'urgent'] as const;
+export type Urgency = (typeof URGENCIES)[number];
+
+export interface FundingRequest {
+  id: string;
+  groupId: string;
+  groupName: string;
+  amount: string;
+  category: AidCategory;
+  urgency: Urgency;
+  region: string;
+  justification: string | null;
+  status: RequestStatus;
+  declineReason: string | null;
+  clarificationRequest: string | null;
+  approvedBy: string | null;
+  submittedAt: string;
+  approvedAt: string | null;
+  declinedAt: string | null;
+  fundsSentAt: string | null;
+  acknowledgedAt: string | null;
+}
+
+export interface StatusHistoryEntry {
+  id: string;
+  status: RequestStatus;
+  changedBy: string | null;
+  changedAt: string;
+  notes: string | null;
+}
+
+export interface CreateFundingRequestInput {
+  amount: number;
+  category: AidCategory;
+  urgency: Urgency;
+  region: string;
+  justification?: string;
+}
+
+export interface DeclineFundingRequestInput {
+  reason: string;
+}
+
+export interface ClarifyFundingRequestInput {
+  message: string;
+}
+
+export interface FundingRequestsListResponse {
+  requests: FundingRequest[];
+  total: number;
+}
+
+export interface ListFundingRequestsQuery {
+  status?: RequestStatus;
+  category?: AidCategory;
+  urgency?: Urgency;
+  sortBy?: 'newest' | 'oldest' | 'amount_high' | 'amount_low' | 'urgent';
+}

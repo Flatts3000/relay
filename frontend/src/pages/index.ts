@@ -8,3 +8,6 @@ export { RequestVerificationPage } from './RequestVerificationPage';
 export { VerificationQueuePage } from './VerificationQueuePage';
 export { VerificationRequestDetailPage } from './VerificationRequestDetailPage';
 export { AttestationRequestsPage } from './AttestationRequestsPage';
+export { NewFundingRequestPage } from './NewFundingRequestPage';
+export { FundingRequestsListPage } from './FundingRequestsListPage';
+export { FundingRequestDetailPage } from './FundingRequestDetailPage';
