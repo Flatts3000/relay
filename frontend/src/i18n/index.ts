@@ -10,6 +10,7 @@ import enVerification from '../locales/en/verification.json';
 import enRequests from '../locales/en/requests.json';
 import enReports from '../locales/en/reports.json';
 import enHelp from '../locales/en/help.json';
+import enHome from '../locales/en/home.json';
 
 import esCommon from '../locales/es/common.json';
 import esAuth from '../locales/es/auth.json';
@@ -18,6 +19,7 @@ import esVerification from '../locales/es/verification.json';
 import esRequests from '../locales/es/requests.json';
 import esReports from '../locales/es/reports.json';
 import esHelp from '../locales/es/help.json';
+import esHome from '../locales/es/home.json';
 
 const resources = {
   en: {
@@ -28,6 +30,7 @@ const resources = {
     requests: enRequests,
     reports: enReports,
     help: enHelp,
+    home: enHome,
   },
   es: {
     common: esCommon,
@@ -37,6 +40,7 @@ const resources = {
     requests: esRequests,
     reports: esReports,
     help: esHelp,
+    home: esHome,
   },
 };
 
@@ -47,7 +51,7 @@ i18n
     resources,
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'auth', 'groups', 'verification', 'requests', 'reports', 'help'],
+    ns: ['common', 'auth', 'groups', 'verification', 'requests', 'reports', 'help', 'home'],
 
     detection: {
       // Order of language detection

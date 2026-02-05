@@ -11,6 +11,7 @@ html {
     'Segoe UI',
     Roboto,
     sans-serif;
+  scroll-behavior: smooth;
 }
 
 /* Focus styles for accessibility */

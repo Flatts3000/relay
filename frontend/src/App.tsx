@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Layout, ProtectedRoute } from './components/layout';
 import {
+  HomePage,
   LoginPage,
   DashboardPage,
   GroupProfilePage,
@@ -39,11 +40,12 @@ export default function App() {
   return (
     <Routes>
       {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
 
       {/* Protected routes - any authenticated user */}
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Layout>

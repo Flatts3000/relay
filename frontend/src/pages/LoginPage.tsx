@@ -44,7 +44,7 @@ export function LoginPage() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -72,10 +72,8 @@ export function LoginPage() {
         </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{t('common:appName')}</h1>
-          <p className="mt-2 text-gray-600">
-            {t('auth:signInDescription')}
-          </p>
+          <img src="/logo.png" alt={t('common:appName')} className="h-12 mx-auto mb-4" />
+          <p className="text-gray-600">{t('auth:signInDescription')}</p>
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -99,9 +97,7 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-4 text-sm text-gray-500 text-center">
-            {t('auth:magicLinkDescription')}
-          </p>
+          <p className="mt-4 text-sm text-gray-500 text-center">{t('auth:magicLinkDescription')}</p>
         </div>
       </div>
     </div>

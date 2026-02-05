@@ -1,0 +1,174 @@
+{
+  "skipToContent": "Ir al contenido principal",
+  "nav": {
+    "forIndividuals": "Necesito Ayuda",
+    "forOrganizations": "Para Organizaciones",
+    "safety": "Seguridad",
+    "contact": "Contacto"
+  },
+  "hero": {
+    "title": "Ayuda mutua, conectada.",
+    "subtitle": "Ya sea que necesites ayuda o formes parte de un grupo que la brinda, Relay está diseñado para proteger tu privacidad.",
+    "individualCta": "Necesito Ayuda",
+    "orgCta": "Para Organizaciones"
+  },
+  "paths": {
+    "individual": {
+      "title": "¿Necesitas Ayuda?",
+      "subtitle": "Conéctate con grupos locales de ayuda mutua de forma anónima",
+      "description": "Crea un buzón privado y encriptado. Los grupos locales en tu área pueden contactarte—sin que entregues ninguna información personal.",
+      "features": [
+        "No se requiere cuenta ni registro",
+        "No se recopila nombre, correo ni teléfono",
+        "Los mensajes están encriptados—solo tú puedes leerlos",
+        "Tu buzón se elimina automáticamente después de 7 días"
+      ],
+      "cta": "Obtener Ayuda Anónimamente",
+      "howItWorks": {
+        "title": "Cómo funciona",
+        "step1": {
+          "title": "Crea un buzón",
+          "description": "Recibirás una frase secreta. Anótala—es la única forma de revisar tus mensajes."
+        },
+        "step2": {
+          "title": "Elige tu área y necesidad",
+          "description": "Selecciona tu región y el tipo de ayuda que buscas (renta, comida, servicios, etc.)."
+        },
+        "step3": {
+          "title": "Los grupos te contactan",
+          "description": "Los grupos locales de ayuda mutua pueden enviarte mensajes encriptados con recursos o próximos pasos."
+        },
+        "step4": {
+          "title": "Conéctate directamente",
+          "description": "Si un grupo puede ayudarte, te conectas con ellos directamente—fuera de Relay."
+        }
+      },
+      "privacy": {
+        "title": "Tu privacidad está protegida",
+        "items": [
+          "Nunca pedimos tu nombre, dirección o identificación",
+          "No rastreamos quién visita este sitio",
+          "Los mensajes están encriptados de extremo a extremo",
+          "Todo se elimina automáticamente después de 7 días de inactividad"
+        ]
+      }
+    },
+    "org": {
+      "title": "Para Organizaciones",
+      "subtitle": "Centros de fondos y grupos de ayuda mutua",
+      "description": "Relay conecta centros de fondos con grupos locales de ayuda mutua—moviendo recursos más rápido mientras protege la privacidad de las personas que atienden.",
+      "forHubs": {
+        "title": "Para Centros de Fondos",
+        "items": [
+          "Administra una red de grupos de ayuda mutua verificados",
+          "Revisa y aprueba solicitudes de fondos",
+          "Rastrea desembolsos con reportes agregados",
+          "Sin datos de beneficiarios individuales—nunca"
+        ]
+      },
+      "forGroups": {
+        "title": "Para Grupos de Ayuda Mutua",
+        "items": [
+          "Verifícate a través de respaldo entre pares",
+          "Envía solicitudes de fondos para tu comunidad",
+          "Responde a solicitudes anónimas de ayuda en tu área",
+          "Sin requisitos invasivos ni papeleo"
+        ]
+      },
+      "howItWorks": {
+        "title": "Cómo funciona",
+        "step1": {
+          "title": "Los grupos se unen",
+          "description": "Los grupos locales son invitados por un centro de fondos y verificados a través de respaldo entre pares."
+        },
+        "step2": {
+          "title": "Los grupos solicitan fondos",
+          "description": "Los grupos verificados envían solicitudes—sin nombres ni datos personales de beneficiarios."
+        },
+        "step3": {
+          "title": "Los centros canalizan fondos",
+          "description": "Los centros de fondos revisan, aprueban y rastrean. Los grupos confirman recepción. Listo."
+        }
+      }
+    }
+  },
+  "whatIs": {
+    "title": "Qué es Relay",
+    "items": [
+      "Una herramienta de coordinación—no una plataforma de recaudación",
+      "Construido para la privacidad: sin bases de datos de beneficiarios, sin rastreo",
+      "Un puente entre centros de fondos y grupos locales de ayuda mutua"
+    ]
+  },
+  "whatIsNot": {
+    "title": "Qué NO es Relay",
+    "items": [
+      "No es un lugar donde las personas que buscan ayuda crean cuentas",
+      "No es un sistema de gestión de casos",
+      "No es un portal para donantes ni un sitio de recaudación"
+    ]
+  },
+  "safety": {
+    "title": "Seguridad por Diseño",
+    "subtitle": "No podemos entregar lo que no tenemos.",
+    "forIndividuals": {
+      "title": "Para personas que buscan ayuda",
+      "items": [
+        "Sin cuenta, sin inicio de sesión, sin información personal recopilada",
+        "Mensajería anónima encriptada",
+        "Eliminación automática después de 7 días",
+        "Sin historial de navegación ni analíticas"
+      ]
+    },
+    "forOrgs": {
+      "title": "Para organizaciones",
+      "items": [
+        "Solo datos a nivel de grupo, nunca de beneficiarios individuales",
+        "Correos basados en rol, no direcciones personales",
+        "Solo reportes agregados—sin desglose individual",
+        "Minimización de datos en cada paso"
+      ]
+    },
+    "tips": {
+      "title": "Consejos para organizadores",
+      "items": [
+        {
+          "title": "Usa Signal para detalles sensibles",
+          "description": "Relay es para coordinación. Mueve las conversaciones personales a canales encriptados."
+        },
+        {
+          "title": "No incluyas información personal en las solicitudes",
+          "description": "Los campos de solicitud están diseñados para montos y categorías—no nombres ni historias."
+        }
+      ]
+    }
+  },
+  "pilot": {
+    "badge": "Actualmente en piloto",
+    "title": "Programa Piloto",
+    "description": "Relay está ejecutando un piloto a pequeña escala con socios selectos para validar el enfoque antes de un lanzamiento más amplio.",
+    "details": [
+      "1 centro de fondos, 3-5 grupos de ayuda mutua",
+      "Período piloto de 30-45 días",
+      "Los socios pueden retirarse en cualquier momento"
+    ],
+    "cta": "¿Interesado en asociarte?"
+  },
+  "contact": {
+    "title": "Ponte en Contacto",
+    "description": "¿Tienes preguntas sobre Relay o te interesa el piloto? Nos encantaría saber de ti.",
+    "emailLabel": "Tu correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.org",
+    "messageLabel": "Mensaje",
+    "messagePlaceholder": "Cuéntanos sobre tu organización y cómo podríamos trabajar juntos...",
+    "submit": "Enviar Mensaje",
+    "success": "Gracias por contactarnos. Te responderemos pronto.",
+    "error": "Algo salió mal. Por favor intenta de nuevo."
+  },
+  "footer": {
+    "tagline": "Una capa de coordinación para ayuda mutua.",
+    "privacy": "Política de Privacidad",
+    "builtBy": "Construido por",
+    "builtByName": "Mythic Works LLC"
+  }
+}

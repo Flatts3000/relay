@@ -1,0 +1,174 @@
+{
+  "skipToContent": "Skip to main content",
+  "nav": {
+    "forIndividuals": "Need Help",
+    "forOrganizations": "For Organizations",
+    "safety": "Safety",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Mutual aid, connected.",
+    "subtitle": "Whether you need help or you're part of a group providing it, Relay is built to protect your privacy.",
+    "individualCta": "I Need Help",
+    "orgCta": "For Organizations"
+  },
+  "paths": {
+    "individual": {
+      "title": "Need Help?",
+      "subtitle": "Connect with local mutual aid groups anonymously",
+      "description": "Create a private, encrypted mailbox. Local groups in your area can reach out to you—without you giving up any personal information.",
+      "features": [
+        "No account or sign-up required",
+        "No name, email, or phone number collected",
+        "Messages are encrypted—only you can read them",
+        "Your mailbox auto-deletes after 7 days"
+      ],
+      "cta": "Get Help Anonymously",
+      "howItWorks": {
+        "title": "How it works",
+        "step1": {
+          "title": "Create a mailbox",
+          "description": "You'll get a passphrase. Write it down—it's the only way to check for messages."
+        },
+        "step2": {
+          "title": "Choose your area and need",
+          "description": "Select your region and what kind of help you're looking for (rent, food, utilities, etc.)."
+        },
+        "step3": {
+          "title": "Groups reach out",
+          "description": "Local mutual aid groups can send you encrypted messages with resources or next steps."
+        },
+        "step4": {
+          "title": "Connect directly",
+          "description": "If a group can help, you connect with them directly—outside of Relay."
+        }
+      },
+      "privacy": {
+        "title": "Your privacy is protected",
+        "items": [
+          "We never ask for your name, address, or ID",
+          "We don't track who visits this site",
+          "Messages are encrypted end-to-end",
+          "Everything auto-deletes after 7 days of inactivity"
+        ]
+      }
+    },
+    "org": {
+      "title": "For Organizations",
+      "subtitle": "Fund hubs and mutual aid groups",
+      "description": "Relay connects fund hubs with local mutual aid groups—moving resources faster while protecting the privacy of the people you serve.",
+      "forHubs": {
+        "title": "For Fund Hubs",
+        "items": [
+          "Manage a network of verified mutual aid groups",
+          "Review and approve funding requests",
+          "Track disbursements with aggregate reporting",
+          "No individual recipient data—ever"
+        ]
+      },
+      "forGroups": {
+        "title": "For Mutual Aid Groups",
+        "items": [
+          "Get verified through peer vouching",
+          "Submit funding requests for your community",
+          "Respond to anonymous help requests in your area",
+          "No invasive requirements or paperwork"
+        ]
+      },
+      "howItWorks": {
+        "title": "How it works",
+        "step1": {
+          "title": "Groups join",
+          "description": "Local groups are invited by a fund hub and verified through peer attestation."
+        },
+        "step2": {
+          "title": "Groups request funding",
+          "description": "Verified groups submit requests—no recipient names or personal details required."
+        },
+        "step3": {
+          "title": "Hubs route funds",
+          "description": "Fund hubs review, approve, and track. Groups confirm receipt. Done."
+        }
+      }
+    }
+  },
+  "whatIs": {
+    "title": "What Relay Is",
+    "items": [
+      "A coordination tool—not a fundraising platform",
+      "Built for privacy: no recipient databases, no tracking",
+      "A bridge between fund hubs and local mutual aid groups"
+    ]
+  },
+  "whatIsNot": {
+    "title": "What Relay Is Not",
+    "items": [
+      "Not a place where people seeking help create accounts",
+      "Not a case management system",
+      "Not a donor portal or fundraising site"
+    ]
+  },
+  "safety": {
+    "title": "Safety by Design",
+    "subtitle": "We can't hand over what we don't have.",
+    "forIndividuals": {
+      "title": "For people seeking help",
+      "items": [
+        "No account, no login, no personal info collected",
+        "Anonymous encrypted messaging",
+        "Automatic deletion after 7 days",
+        "No browsing history or analytics"
+      ]
+    },
+    "forOrgs": {
+      "title": "For organizations",
+      "items": [
+        "Only group-level data, never individual recipients",
+        "Role-based emails, not personal addresses",
+        "Aggregate reporting only—no drill-down",
+        "Data minimization at every step"
+      ]
+    },
+    "tips": {
+      "title": "Tips for organizers",
+      "items": [
+        {
+          "title": "Use Signal for sensitive details",
+          "description": "Relay is for coordination. Move personal conversations to encrypted channels."
+        },
+        {
+          "title": "Don't include personal info in requests",
+          "description": "Request fields are for amounts and categories—not names or stories."
+        }
+      ]
+    }
+  },
+  "pilot": {
+    "badge": "Currently in pilot",
+    "title": "Pilot Program",
+    "description": "Relay is running a small-scale pilot with select partners to validate the approach before wider release.",
+    "details": [
+      "1 fund hub, 3-5 mutual aid groups",
+      "30-45 day pilot period",
+      "Partners can opt out at any time"
+    ],
+    "cta": "Interested in partnering?"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "description": "Questions about Relay or interested in the pilot? We'd love to hear from you.",
+    "emailLabel": "Your email",
+    "emailPlaceholder": "you@example.org",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us about your organization and how we might work together...",
+    "submit": "Send Message",
+    "success": "Thanks for reaching out. We'll be in touch soon.",
+    "error": "Something went wrong. Please try again."
+  },
+  "footer": {
+    "tagline": "A coordination layer for mutual aid.",
+    "privacy": "Privacy Policy",
+    "builtBy": "Built by",
+    "builtByName": "Mythic Works LLC"
+  }
+}
