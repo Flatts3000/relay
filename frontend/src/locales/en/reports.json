@@ -1,73 +1,54 @@
 {
   "title": "Reports",
+  "subtitle": "Aggregate metrics for your hub",
   "dashboard": "Reports Dashboard",
-  "dateRange": "Date Range",
-  "from": "From",
-  "to": "To",
-  "applyFilter": "Apply",
+  "exportCSV": "Export CSV",
+  "startDate": "Start Date",
+  "endDate": "End Date",
+  "applyFilter": "Apply Filter",
   "clearFilter": "Clear",
-  "lastDays": "Last {{count}} days",
-  "thisMonth": "This Month",
-  "lastMonth": "Last Month",
-  "thisYear": "This Year",
-  "allTime": "All Time",
-  "summary": {
-    "title": "Summary",
-    "totalFunds": "Total Funds Distributed",
-    "totalRequests": "Total Requests",
-    "approvedRequests": "Approved Requests",
-    "groupsSupported": "Groups Supported",
-    "averageAmount": "Average Request Amount"
-  },
-  "byCategory": {
-    "title": "By Category",
-    "category": "Category",
-    "amount": "Total Amount",
-    "count": "Request Count",
-    "percentage": "Percentage"
-  },
-  "byStatus": {
-    "title": "By Status",
-    "status": "Status",
-    "count": "Count"
-  },
-  "timing": {
-    "title": "Processing Time",
-    "averageApprovalTime": "Average Approval Time",
-    "averageFundingTime": "Average Time to Funds Sent",
-    "averageAcknowledgmentTime": "Average Time to Acknowledgment",
-    "days": "days",
-    "hours": "hours",
-    "minutes": "minutes"
+  "noData": "No data",
+  "noTimingData": "No timing data available for the selected period",
+  "hoursFormat": "{{hours}} hours",
+  "daysFormat": "{{days}} days",
+  "requestsAnalyzed": "Based on {{count}} completed requests",
+  "totalFunds": "Total Funds",
+  "totalRequests": "Total Requests",
+  "groupsSupported": "Groups Funded",
+  "avgTimeToFunding": "Avg. Time to Funding",
+  "requestStatus": "Request Status",
+  "groupStats": "Group Statistics",
+  "categoryBreakdown": "Breakdown by Category",
+  "timingStats": "Processing Time Statistics",
+  "status": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "declined": "Declined",
+    "fundsSent": "Funds Sent",
+    "acknowledged": "Acknowledged"
   },
   "groups": {
-    "title": "Groups",
-    "totalGroups": "Total Groups",
-    "verifiedGroups": "Verified Groups",
-    "activeGroups": "Active Groups",
-    "activeGroupsDescription": "Groups with at least one request in period"
+    "total": "Total Groups",
+    "verified": "Verified Groups",
+    "withApproved": "With Approved Requests",
+    "withFunding": "With Funds Sent"
   },
-  "export": {
-    "title": "Export Report",
-    "exportCSV": "Export as CSV",
-    "exportPDF": "Export as PDF",
-    "exportSuccess": "Report exported successfully",
-    "exportError": "Failed to export report",
-    "preparing": "Preparing export...",
-    "noData": "No data available to export"
+  "table": {
+    "category": "Category",
+    "totalAmount": "Total Amount",
+    "requests": "Requests",
+    "approved": "Approved",
+    "declined": "Declined",
+    "pending": "Pending"
   },
-  "charts": {
-    "fundsByCategory": "Funds by Category",
-    "requestsOverTime": "Requests Over Time",
-    "statusDistribution": "Status Distribution"
+  "timing": {
+    "toApproval": "Avg. Time to Approval",
+    "toFundsSent": "Avg. Time to Funds Sent",
+    "toAcknowledged": "Avg. Time to Acknowledged",
+    "median": "Median Time to Approval"
   },
   "errors": {
-    "failedToLoad": "Failed to load report data",
-    "invalidDateRange": "Invalid date range",
-    "noData": "No data available for the selected period"
-  },
-  "privacy": {
-    "notice": "Reports show aggregate data only. Individual request details are not available.",
-    "noDrillDown": "Drill-down to individual records is not supported for privacy reasons."
+    "loadFailed": "Failed to load reports. Please try again.",
+    "exportFailed": "Failed to export report. Please try again."
   }
 }

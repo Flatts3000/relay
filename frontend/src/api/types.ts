@@ -265,3 +265,58 @@ export interface TombstonesListResponse {
   tombstones: Tombstone[];
   total: number;
 }
+
+// Report types
+export interface DateRangeQuery {
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CategorySummary {
+  category: AidCategory;
+  totalAmount: string;
+  requestCount: number;
+  approvedCount: number;
+  declinedCount: number;
+  pendingCount: number;
+}
+
+export interface SummaryReport {
+  period: {
+    startDate: string | null;
+    endDate: string | null;
+  };
+  totals: {
+    totalAmount: string;
+    totalRequests: number;
+    approvedRequests: number;
+    declinedRequests: number;
+    pendingRequests: number;
+    fundsSentRequests: number;
+    acknowledgedRequests: number;
+  };
+  byCategory: CategorySummary[];
+}
+
+export interface GroupsReport {
+  period: {
+    startDate: string | null;
+    endDate: string | null;
+  };
+  totalGroups: number;
+  groupsWithFunding: number;
+  groupsWithApprovedRequests: number;
+  verifiedGroups: number;
+}
+
+export interface TimingReport {
+  period: {
+    startDate: string | null;
+    endDate: string | null;
+  };
+  averageTimeToApproval: number | null;
+  averageTimeToFundsSent: number | null;
+  averageTimeToAcknowledged: number | null;
+  medianTimeToApproval: number | null;
+  requestsAnalyzed: number;
+}

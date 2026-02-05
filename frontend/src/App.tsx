@@ -19,6 +19,7 @@ import {
   ViewMailboxPage,
   HelpRequestsListPage,
   HelpRequestDetailPage,
+  ReportsDashboardPage,
 } from './pages';
 
 function NotFound() {
@@ -163,6 +164,16 @@ export default function App() {
           <ProtectedRoute allowedRoles={['hub_admin']}>
             <Layout>
               <VerificationRequestDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute allowedRoles={['hub_admin']}>
+            <Layout>
+              <ReportsDashboardPage />
             </Layout>
           </ProtectedRoute>
         }

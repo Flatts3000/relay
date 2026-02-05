@@ -1,73 +1,54 @@
 {
   "title": "Informes",
-  "dashboard": "Panel de informes",
-  "dateRange": "Rango de fechas",
-  "from": "Desde",
-  "to": "Hasta",
-  "applyFilter": "Aplicar",
+  "subtitle": "Métricas agregadas para su hub",
+  "dashboard": "Panel de Informes",
+  "exportCSV": "Exportar CSV",
+  "startDate": "Fecha de inicio",
+  "endDate": "Fecha de fin",
+  "applyFilter": "Aplicar filtro",
   "clearFilter": "Limpiar",
-  "lastDays": "Últimos {{count}} días",
-  "thisMonth": "Este mes",
-  "lastMonth": "Mes pasado",
-  "thisYear": "Este año",
-  "allTime": "Todo el tiempo",
-  "summary": {
-    "title": "Resumen",
-    "totalFunds": "Total de fondos distribuidos",
-    "totalRequests": "Total de solicitudes",
-    "approvedRequests": "Solicitudes aprobadas",
-    "groupsSupported": "Grupos apoyados",
-    "averageAmount": "Monto promedio de solicitud"
-  },
-  "byCategory": {
-    "title": "Por categoría",
-    "category": "Categoría",
-    "amount": "Monto total",
-    "count": "Cantidad de solicitudes",
-    "percentage": "Porcentaje"
-  },
-  "byStatus": {
-    "title": "Por estado",
-    "status": "Estado",
-    "count": "Cantidad"
-  },
-  "timing": {
-    "title": "Tiempo de procesamiento",
-    "averageApprovalTime": "Tiempo promedio de aprobación",
-    "averageFundingTime": "Tiempo promedio hasta envío de fondos",
-    "averageAcknowledgmentTime": "Tiempo promedio hasta confirmación",
-    "days": "días",
-    "hours": "horas",
-    "minutes": "minutos"
+  "noData": "Sin datos",
+  "noTimingData": "No hay datos de tiempo disponibles para el período seleccionado",
+  "hoursFormat": "{{hours}} horas",
+  "daysFormat": "{{days}} días",
+  "requestsAnalyzed": "Basado en {{count}} solicitudes completadas",
+  "totalFunds": "Fondos Totales",
+  "totalRequests": "Total de Solicitudes",
+  "groupsSupported": "Grupos Financiados",
+  "avgTimeToFunding": "Tiempo Promedio de Financiamiento",
+  "requestStatus": "Estado de Solicitudes",
+  "groupStats": "Estadísticas de Grupos",
+  "categoryBreakdown": "Desglose por Categoría",
+  "timingStats": "Estadísticas de Tiempo de Procesamiento",
+  "status": {
+    "pending": "Pendiente",
+    "approved": "Aprobada",
+    "declined": "Rechazada",
+    "fundsSent": "Fondos Enviados",
+    "acknowledged": "Confirmada"
   },
   "groups": {
-    "title": "Grupos",
-    "totalGroups": "Total de grupos",
-    "verifiedGroups": "Grupos verificados",
-    "activeGroups": "Grupos activos",
-    "activeGroupsDescription": "Grupos con al menos una solicitud en el período"
+    "total": "Grupos Totales",
+    "verified": "Grupos Verificados",
+    "withApproved": "Con Solicitudes Aprobadas",
+    "withFunding": "Con Fondos Enviados"
   },
-  "export": {
-    "title": "Exportar informe",
-    "exportCSV": "Exportar como CSV",
-    "exportPDF": "Exportar como PDF",
-    "exportSuccess": "Informe exportado exitosamente",
-    "exportError": "Error al exportar el informe",
-    "preparing": "Preparando exportación...",
-    "noData": "No hay datos disponibles para exportar"
+  "table": {
+    "category": "Categoría",
+    "totalAmount": "Monto Total",
+    "requests": "Solicitudes",
+    "approved": "Aprobadas",
+    "declined": "Rechazadas",
+    "pending": "Pendientes"
   },
-  "charts": {
-    "fundsByCategory": "Fondos por categoría",
-    "requestsOverTime": "Solicitudes a lo largo del tiempo",
-    "statusDistribution": "Distribución por estado"
+  "timing": {
+    "toApproval": "Tiempo Promedio a Aprobación",
+    "toFundsSent": "Tiempo Promedio a Envío de Fondos",
+    "toAcknowledged": "Tiempo Promedio a Confirmación",
+    "median": "Tiempo Mediano a Aprobación"
   },
   "errors": {
-    "failedToLoad": "Error al cargar los datos del informe",
-    "invalidDateRange": "Rango de fechas inválido",
-    "noData": "No hay datos disponibles para el período seleccionado"
-  },
-  "privacy": {
-    "notice": "Los informes muestran solo datos agregados. Los detalles de solicitudes individuales no están disponibles.",
-    "noDrillDown": "No se permite desglosar a registros individuales por razones de privacidad."
+    "loadFailed": "Error al cargar los informes. Por favor intente de nuevo.",
+    "exportFailed": "Error al exportar el informe. Por favor intente de nuevo."
   }
 }

@@ -17,3 +17,5 @@ export { ViewMailboxPage } from './ViewMailboxPage';
 // Group coordinator help request pages
 export { HelpRequestsListPage } from './HelpRequestsListPage';
 export { HelpRequestDetailPage } from './HelpRequestDetailPage';
+// Hub admin reports
+export { ReportsDashboardPage } from './ReportsDashboardPage';
