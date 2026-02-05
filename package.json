@@ -35,5 +35,14 @@
   "bugs": {
     "url": "https://github.com/Flatts3000/relay/issues"
   },
-  "homepage": "https://github.com/Flatts3000/relay#readme"
+  "homepage": "https://github.com/Flatts3000/relay#readme",
+  "overrides": {
+    "esbuild": ">=0.25.0",
+    "vite": {
+      "esbuild": ">=0.25.0"
+    },
+    "@esbuild-kit/core-utils": {
+      "esbuild": ">=0.25.0"
+    }
+  }
 }
