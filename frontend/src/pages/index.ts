@@ -11,3 +11,9 @@ export { AttestationRequestsPage } from './AttestationRequestsPage';
 export { NewFundingRequestPage } from './NewFundingRequestPage';
 export { FundingRequestsListPage } from './FundingRequestsListPage';
 export { FundingRequestDetailPage } from './FundingRequestDetailPage';
+// Anonymous help request pages
+export { CreateMailboxPage } from './CreateMailboxPage';
+export { ViewMailboxPage } from './ViewMailboxPage';
+// Group coordinator help request pages
+export { HelpRequestsListPage } from './HelpRequestsListPage';
+export { HelpRequestDetailPage } from './HelpRequestDetailPage';

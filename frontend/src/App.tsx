@@ -15,6 +15,10 @@ import {
   NewFundingRequestPage,
   FundingRequestsListPage,
   FundingRequestDetailPage,
+  CreateMailboxPage,
+  ViewMailboxPage,
+  HelpRequestsListPage,
+  HelpRequestDetailPage,
 } from './pages';
 
 function NotFound() {
@@ -159,6 +163,32 @@ export default function App() {
           <ProtectedRoute allowedRoles={['hub_admin']}>
             <Layout>
               <VerificationRequestDetailPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Anonymous help request routes - NO authentication */}
+      <Route path="/help" element={<CreateMailboxPage />} />
+      <Route path="/help/mailbox/:id" element={<ViewMailboxPage />} />
+
+      {/* Group coordinator help request routes */}
+      <Route
+        path="/help-requests"
+        element={
+          <ProtectedRoute allowedRoles={['group_coordinator']}>
+            <Layout>
+              <HelpRequestsListPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/help-requests/:mailboxId"
+        element={
+          <ProtectedRoute allowedRoles={['group_coordinator']}>
+            <Layout>
+              <HelpRequestDetailPage />
             </Layout>
           </ProtectedRoute>
         }

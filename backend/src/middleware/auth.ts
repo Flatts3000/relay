@@ -1,13 +1,12 @@
 import type { RequestHandler } from 'express';
-import { validateSession } from '../services/auth.service.js';
-import type { User } from '../db/schema/index.js';
+import { validateSession, type AuthenticatedUser } from '../services/auth.service.js';
 
 // Extend Express Request type
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: User;
+      user?: AuthenticatedUser;
       sessionToken?: string;
     }
   }

@@ -32,6 +32,23 @@
     "confirm": "I have saved my passphrase",
     "confirmRequired": "Please confirm you have saved your passphrase"
   },
+  "create": {
+    "title": "Request Help Anonymously",
+    "description": "Create a secure mailbox to receive messages from local mutual aid groups. No login required.",
+    "privacyTitle": "Your Privacy is Protected",
+    "privacy1": "No account or email required",
+    "privacy2": "We don't track your visits or IP address",
+    "privacy3": "Messages are encrypted end-to-end",
+    "privacy4": "Mailbox auto-deletes after 30 days of inactivity",
+    "existingMailbox": "You already have a mailbox. Would you like to view it?",
+    "viewExisting": "View My Mailbox",
+    "region": "Your Area",
+    "regionPlaceholder": "City or county (e.g., Minneapolis, MN)",
+    "regionHelper": "Enter your city or county to connect with local groups",
+    "category": "Type of Help Needed",
+    "privacyWarning": "Do NOT include any personal details (name, address, phone number) in this form. Groups will contact you through encrypted messages.",
+    "submit": "Create Mailbox"
+  },
   "createMailbox": {
     "title": "Create Anonymous Mailbox",
     "selectCategory": "What kind of help do you need?",
@@ -59,6 +76,22 @@
     "notFound": "Mailbox not found. It may have been deleted.",
     "submit": "Check Messages"
   },
+  "view": {
+    "title": "Your Mailbox",
+    "notFound": "Mailbox not found. It may have been deleted.",
+    "backToHelp": "Back to Help",
+    "refresh": "Refresh",
+    "noLocalKeys": "Cannot decrypt messages - private key not found on this device. You may have created this mailbox on a different device.",
+    "noMessages": "No messages yet",
+    "noMessagesDescription": "Check back later - groups in your area may send you encrypted messages.",
+    "decryptionFailed": "[Unable to decrypt this message]",
+    "noKeys": "[Cannot decrypt - no private key found]",
+    "createdAt": "Mailbox created on {{date}}",
+    "mailboxId": "Mailbox ID",
+    "deleteMailbox": "Delete Mailbox",
+    "deleteWarning": "This will permanently delete your mailbox and all messages. This cannot be undone. Are you sure?",
+    "confirmDelete": "Delete Forever"
+  },
   "messages": {
     "title": "Your Messages",
     "noMessages": "No messages yet",
@@ -67,6 +100,34 @@
     "received": "Received",
     "contactGroup": "Contact this group directly using the information in their message.",
     "decrypting": "Decrypting messages..."
+  },
+  "list": {
+    "title": "Help Requests",
+    "requestCount": "request(s) in your area",
+    "requestCount_one": "request in your area",
+    "requestCount_other": "requests in your area",
+    "allCategories": "All Categories",
+    "noRequests": "No help requests in your service area",
+    "noRequestsDescription": "Check back later for new requests from people seeking help.",
+    "privacyTitle": "Privacy Reminder",
+    "privacy1": "These requests are anonymous - you cannot see who made them",
+    "privacy2": "Your replies are encrypted end-to-end",
+    "privacy3": "Do not ask for personal information in your replies"
+  },
+  "detail": {
+    "title": "Help Request",
+    "notFound": "Request not found or no longer available.",
+    "backToList": "Back to Help Requests",
+    "category": "Category",
+    "region": "Region",
+    "createdAt": "Request Date",
+    "sendReply": "Send Encrypted Reply",
+    "encryptionNotice": "Your message will be encrypted. Only the requester can read it using their private key.",
+    "replyPlaceholder": "Include contact information for your group (email or phone)...",
+    "replyHelper": "Include how they can reach your group directly.",
+    "replyWarning": "Do not ask for personal information. The requester will contact you directly using the information you provide.",
+    "send": "Send Encrypted Reply",
+    "replySent": "Your encrypted reply has been sent successfully."
   },
   "deleteMailbox": {
     "title": "Delete Mailbox",
@@ -110,6 +171,12 @@
     }
   },
   "errors": {
+    "regionRequired": "Please enter your area/region",
+    "createFailed": "Failed to create mailbox. Please try again.",
+    "loadFailed": "Failed to load mailbox. Please try again.",
+    "deleteFailed": "Failed to delete mailbox. Please try again.",
+    "sendFailed": "Failed to send reply. Please try again.",
+    "loadRequestsFailed": "Failed to load help requests. Please try again.",
     "failedToCreate": "Failed to create mailbox. Please try again.",
     "failedToLoad": "Failed to load mailbox. Please try again.",
     "failedToDelete": "Failed to delete mailbox. Please try again.",

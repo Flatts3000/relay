@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { anonymousRateLimiter, mailboxCreationRateLimiter } from '../middleware/rate-limit.js';
+import { createMailboxSchema, mailboxIdParamSchema } from '../validations/mailbox.validation.js';
+import { createMailbox, getMailbox, deleteMailbox } from '../services/mailbox.service.js';
 
 export const mailboxRouter = Router();
 
@@ -33,13 +35,19 @@ mailboxRouter.use(anonymousRateLimiter);
  *
  * CRITICAL: No cookies, no logging, no tracking.
  */
-mailboxRouter.post('/', mailboxCreationRateLimiter, async (_req, res) => {
-  // TODO: Implement create mailbox
-  // 1. Validate request body
-  // 2. Create mailbox with random UUID
-  // 3. Store public key, category, region
-  // 4. Return only the mailbox ID
-  res.status(501).json({ error: 'Not implemented' });
+mailboxRouter.post('/', mailboxCreationRateLimiter, async (req, res) => {
+  const parsed = createMailboxSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    res.status(400).json({
+      error: 'Validation failed',
+      details: parsed.error.issues.map((i) => i.message),
+    });
+    return;
+  }
+
+  const result = await createMailbox(parsed.data);
+  res.status(201).json(result);
 });
 
 /**
@@ -57,13 +65,25 @@ mailboxRouter.post('/', mailboxCreationRateLimiter, async (_req, res) => {
  *
  * CRITICAL: No cookies, no logging, no tracking.
  */
-mailboxRouter.get('/:id', async (_req, res) => {
-  // TODO: Implement get mailbox
-  // 1. Fetch mailbox by ID
-  // 2. Update last_accessed_at
-  // 3. Fetch encrypted messages
-  // 4. Return mailbox + messages
-  res.status(501).json({ error: 'Not implemented' });
+mailboxRouter.get('/:id', async (req, res) => {
+  const paramsParsed = mailboxIdParamSchema.safeParse(req.params);
+
+  if (!paramsParsed.success) {
+    res.status(400).json({
+      error: 'Invalid mailbox ID',
+      details: paramsParsed.error.issues.map((i) => i.message),
+    });
+    return;
+  }
+
+  const mailbox = await getMailbox(paramsParsed.data.id);
+
+  if (!mailbox) {
+    res.status(404).json({ error: 'Mailbox not found' });
+    return;
+  }
+
+  res.json(mailbox);
 });
 
 /**
@@ -78,10 +98,23 @@ mailboxRouter.get('/:id', async (_req, res) => {
  * CRITICAL: No cookies, no logging, no tracking.
  * CRITICAL: This is a destructive operation with no recovery.
  */
-mailboxRouter.delete('/:id', async (_req, res) => {
-  // TODO: Implement delete mailbox
-  // 1. Create tombstone with metadata
-  // 2. Hard delete messages
-  // 3. Hard delete mailbox
-  res.status(501).json({ error: 'Not implemented' });
+mailboxRouter.delete('/:id', async (req, res) => {
+  const paramsParsed = mailboxIdParamSchema.safeParse(req.params);
+
+  if (!paramsParsed.success) {
+    res.status(400).json({
+      error: 'Invalid mailbox ID',
+      details: paramsParsed.error.issues.map((i) => i.message),
+    });
+    return;
+  }
+
+  const deleted = await deleteMailbox(paramsParsed.data.id);
+
+  if (!deleted) {
+    res.status(404).json({ error: 'Mailbox not found' });
+    return;
+  }
+
+  res.status(204).send();
 });

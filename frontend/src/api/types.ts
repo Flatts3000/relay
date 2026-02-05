@@ -194,3 +194,74 @@ export interface ListFundingRequestsQuery {
   urgency?: Urgency;
   sortBy?: 'newest' | 'oldest' | 'amount_high' | 'amount_low' | 'urgent';
 }
+
+// Anonymous mailbox types
+export const DELETION_TYPES = ['manual', 'auto_inactivity'] as const;
+export type DeletionType = (typeof DELETION_TYPES)[number];
+
+export interface Mailbox {
+  id: string;
+  helpCategory: AidCategory;
+  region: string;
+  createdAt: string;
+  messages: MailboxMessage[];
+}
+
+export interface MailboxMessage {
+  id: string;
+  groupId: string;
+  groupName: string;
+  ciphertext: string; // base64-encoded
+  createdAt: string;
+}
+
+export interface CreateMailboxInput {
+  publicKey: string; // base64-encoded
+  helpCategory: AidCategory;
+  region: string;
+}
+
+export interface CreateMailboxResponse {
+  id: string;
+}
+
+// Help requests (group coordinator view)
+export interface HelpRequest {
+  mailboxId: string;
+  helpCategory: AidCategory;
+  region: string;
+  createdAt: string;
+}
+
+export interface HelpRequestsListResponse {
+  requests: HelpRequest[];
+  total: number;
+}
+
+export interface ListHelpRequestsQuery {
+  category?: AidCategory;
+}
+
+export interface PublicKeyResponse {
+  publicKey: string; // base64-encoded
+}
+
+export interface SendReplyInput {
+  ciphertext: string; // base64-encoded
+}
+
+export interface SendReplyResponse {
+  id: string;
+}
+
+export interface Tombstone {
+  helpCategory: AidCategory;
+  region: string;
+  deletedAt: string;
+  deletionType: DeletionType;
+}
+
+export interface TombstonesListResponse {
+  tombstones: Tombstone[];
+  total: number;
+}

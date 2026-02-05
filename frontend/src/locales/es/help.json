@@ -32,6 +32,23 @@
     "confirm": "He guardado mi frase secreta",
     "confirmRequired": "Por favor confirme que ha guardado su frase secreta"
   },
+  "create": {
+    "title": "Solicitar ayuda de forma anónima",
+    "description": "Cree un buzón seguro para recibir mensajes de grupos locales de ayuda mutua. No se requiere inicio de sesión.",
+    "privacyTitle": "Su privacidad está protegida",
+    "privacy1": "No se requiere cuenta ni correo electrónico",
+    "privacy2": "No rastreamos sus visitas ni su dirección IP",
+    "privacy3": "Los mensajes están encriptados de extremo a extremo",
+    "privacy4": "El buzón se auto-elimina después de 30 días de inactividad",
+    "existingMailbox": "Ya tiene un buzón. ¿Desea verlo?",
+    "viewExisting": "Ver mi buzón",
+    "region": "Su área",
+    "regionPlaceholder": "Ciudad o condado (ej., Minneapolis, MN)",
+    "regionHelper": "Ingrese su ciudad o condado para conectarse con grupos locales",
+    "category": "Tipo de ayuda necesaria",
+    "privacyWarning": "NO incluya información personal (nombre, dirección, número de teléfono) en este formulario. Los grupos lo contactarán a través de mensajes encriptados.",
+    "submit": "Crear buzón"
+  },
   "createMailbox": {
     "title": "Crear buzón anónimo",
     "selectCategory": "¿Qué tipo de ayuda necesita?",
@@ -59,6 +76,22 @@
     "notFound": "Buzón no encontrado. Puede haber sido eliminado.",
     "submit": "Revisar mensajes"
   },
+  "view": {
+    "title": "Su buzón",
+    "notFound": "Buzón no encontrado. Puede haber sido eliminado.",
+    "backToHelp": "Volver a ayuda",
+    "refresh": "Actualizar",
+    "noLocalKeys": "No se pueden descifrar los mensajes - no se encontró la clave privada en este dispositivo. Es posible que haya creado este buzón en otro dispositivo.",
+    "noMessages": "Sin mensajes aún",
+    "noMessagesDescription": "Regrese más tarde - los grupos en su área pueden enviarle mensajes encriptados.",
+    "decryptionFailed": "[No se pudo descifrar este mensaje]",
+    "noKeys": "[No se puede descifrar - no se encontró la clave privada]",
+    "createdAt": "Buzón creado el {{date}}",
+    "mailboxId": "ID del buzón",
+    "deleteMailbox": "Eliminar buzón",
+    "deleteWarning": "Esto eliminará permanentemente su buzón y todos los mensajes. Esto no se puede deshacer. ¿Está seguro?",
+    "confirmDelete": "Eliminar para siempre"
+  },
   "messages": {
     "title": "Sus mensajes",
     "noMessages": "Sin mensajes aún",
@@ -67,6 +100,34 @@
     "received": "Recibido",
     "contactGroup": "Contacte a este grupo directamente usando la información en su mensaje.",
     "decrypting": "Desencriptando mensajes..."
+  },
+  "list": {
+    "title": "Solicitudes de ayuda",
+    "requestCount": "solicitud(es) en su área",
+    "requestCount_one": "solicitud en su área",
+    "requestCount_other": "solicitudes en su área",
+    "allCategories": "Todas las categorías",
+    "noRequests": "No hay solicitudes de ayuda en su área de servicio",
+    "noRequestsDescription": "Regrese más tarde para nuevas solicitudes de personas que buscan ayuda.",
+    "privacyTitle": "Recordatorio de privacidad",
+    "privacy1": "Estas solicitudes son anónimas - no puede ver quién las hizo",
+    "privacy2": "Sus respuestas están encriptadas de extremo a extremo",
+    "privacy3": "No solicite información personal en sus respuestas"
+  },
+  "detail": {
+    "title": "Solicitud de ayuda",
+    "notFound": "Solicitud no encontrada o ya no está disponible.",
+    "backToList": "Volver a solicitudes de ayuda",
+    "category": "Categoría",
+    "region": "Región",
+    "createdAt": "Fecha de solicitud",
+    "sendReply": "Enviar respuesta encriptada",
+    "encryptionNotice": "Su mensaje será encriptado. Solo el solicitante puede leerlo usando su clave privada.",
+    "replyPlaceholder": "Incluya información de contacto de su grupo (correo electrónico o teléfono)...",
+    "replyHelper": "Incluya cómo pueden contactar directamente a su grupo.",
+    "replyWarning": "No solicite información personal. El solicitante lo contactará directamente usando la información que proporcione.",
+    "send": "Enviar respuesta encriptada",
+    "replySent": "Su respuesta encriptada ha sido enviada exitosamente."
   },
   "deleteMailbox": {
     "title": "Eliminar buzón",
@@ -110,6 +171,12 @@
     }
   },
   "errors": {
+    "regionRequired": "Por favor ingrese su área/región",
+    "createFailed": "Error al crear el buzón. Por favor intente de nuevo.",
+    "loadFailed": "Error al cargar el buzón. Por favor intente de nuevo.",
+    "deleteFailed": "Error al eliminar el buzón. Por favor intente de nuevo.",
+    "sendFailed": "Error al enviar la respuesta. Por favor intente de nuevo.",
+    "loadRequestsFailed": "Error al cargar las solicitudes de ayuda. Por favor intente de nuevo.",
     "failedToCreate": "Error al crear el buzón. Por favor intente de nuevo.",
     "failedToLoad": "Error al cargar el buzón. Por favor intente de nuevo.",
     "failedToDelete": "Error al eliminar el buzón. Por favor intente de nuevo.",
