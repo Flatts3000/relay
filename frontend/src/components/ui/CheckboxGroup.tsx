@@ -32,11 +32,7 @@ export function CheckboxGroup({
 
   return (
     <fieldset className="w-full">
-      {label && (
-        <legend className="block text-sm font-medium text-gray-700 mb-2">
-          {label}
-        </legend>
-      )}
+      {label && <legend className="block text-sm font-medium text-gray-700 mb-2">{label}</legend>}
       <div className="space-y-2">
         {options.map((option) => (
           <label
@@ -51,7 +47,7 @@ export function CheckboxGroup({
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 handleChange(option.value, e.target.checked)
               }
-              className="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="h-5 w-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
             />
             <span className="ml-3 text-gray-900">{option.label}</span>
           </label>

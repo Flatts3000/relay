@@ -100,7 +100,7 @@ export function HelpRequestDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -125,7 +125,7 @@ export function HelpRequestDetailPage() {
     <div className="max-w-2xl mx-auto">
       <button
         onClick={() => navigate('/help-requests')}
-        className="text-blue-600 hover:text-blue-800 mb-4 flex items-center gap-1"
+        className="text-primary-600 hover:text-primary-800 mb-4 flex items-center gap-1"
       >
         ← {t('help:detail.backToList')}
       </button>
@@ -151,7 +151,7 @@ export function HelpRequestDetailPage() {
             <label className="block text-sm font-medium text-gray-500 mb-1">
               {t('help:detail.category')}
             </label>
-            <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
               {t(`common:aidCategories.${request.helpCategory}`)}
             </span>
           </div>
@@ -190,7 +190,7 @@ export function HelpRequestDetailPage() {
             value={replyMessage}
             onChange={(e) => setReplyMessage(e.target.value)}
             placeholder={t('help:detail.replyPlaceholder')}
-            className="w-full px-4 py-3 min-h-[150px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 min-h-[150px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             maxLength={2000}
             required
           />

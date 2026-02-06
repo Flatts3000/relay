@@ -77,7 +77,7 @@ export function RequestVerificationPage() {
                 key={m.value}
                 className={`block p-4 border rounded-lg cursor-pointer transition-colors ${
                   method === m.value
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-primary-500 bg-primary-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
@@ -113,7 +113,7 @@ export function RequestVerificationPage() {
                 value={sponsorInfo}
                 onChange={(e) => setSponsorInfo(e.target.value)}
                 placeholder={t('verification:sponsorReference.sponsorInfoPlaceholder')}
-                className="w-full px-4 py-3 min-h-[120px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 min-h-[120px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
               <p className="text-sm text-gray-500 mt-1">
@@ -124,8 +124,8 @@ export function RequestVerificationPage() {
         )}
 
         {method === 'peer_attestation' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <p className="text-blue-800">{t('verification:peerAttestation.requiresTwo')}</p>
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+            <p className="text-primary-800">{t('verification:peerAttestation.requiresTwo')}</p>
           </div>
         )}
 

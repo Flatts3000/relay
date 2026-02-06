@@ -69,7 +69,7 @@ export function NewFundingRequestPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -131,7 +131,7 @@ export function NewFundingRequestPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as AidCategory)}
-              className="w-full px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               required
             >
               <option value="rent">{t('common:aidCategories.rent')}</option>
@@ -190,7 +190,7 @@ export function NewFundingRequestPage() {
               value={justification}
               onChange={(e) => setJustification(e.target.value)}
               placeholder={t('requests:form.justificationPlaceholder')}
-              className="w-full px-4 py-3 min-h-[120px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 min-h-[120px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               maxLength={2000}
             />
             <p className="text-sm text-gray-500 mt-1">{t('requests:form.justificationHelper')}</p>

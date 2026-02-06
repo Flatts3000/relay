@@ -14,10 +14,10 @@
     "lint:fix": "eslint src --ext ts --fix",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio",
+    "db:generate": "npx tsx ../node_modules/drizzle-kit/bin.cjs generate",
+    "db:migrate": "npx tsx ../node_modules/drizzle-kit/bin.cjs migrate",
+    "db:push": "npx tsx ../node_modules/drizzle-kit/bin.cjs push",
+    "db:studio": "npx tsx ../node_modules/drizzle-kit/bin.cjs studio",
     "db:seed": "tsx src/db/seed.ts"
   },
   "dependencies": {

@@ -125,7 +125,7 @@ export function ReportsDashboardPage() {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-4 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -136,7 +136,7 @@ export function ReportsDashboardPage() {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-4 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <Button type="button" variant="secondary" onClick={loadReports} disabled={isLoading}>
@@ -159,7 +159,7 @@ export function ReportsDashboardPage() {
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         </div>
       ) : (
         <>
@@ -217,7 +217,7 @@ export function ReportsDashboardPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t('reports:status.fundsSent')}</span>
-                    <span className="font-medium text-blue-600">
+                    <span className="font-medium text-primary-600">
                       {summaryReport.totals.fundsSentRequests}
                     </span>
                   </div>
@@ -249,7 +249,7 @@ export function ReportsDashboardPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">{t('reports:groups.withFunding')}</span>
-                    <span className="font-medium text-blue-600">
+                    <span className="font-medium text-primary-600">
                       {groupsReport.groupsWithFunding}
                     </span>
                   </div>

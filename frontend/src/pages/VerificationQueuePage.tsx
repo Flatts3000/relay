@@ -83,7 +83,7 @@ export function VerificationQueuePage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as VerificationRequestStatus | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('verification:status.pending')} & All</option>
             <option value="pending">{t('verification:status.pending')}</option>
@@ -93,7 +93,7 @@ export function VerificationQueuePage() {
           <select
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value as VerificationMethod | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">All Methods</option>
             <option value="hub_approval">{t('verification:methods.hubApproval')}</option>
@@ -106,7 +106,7 @@ export function VerificationQueuePage() {
       {/* Requests List */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         </div>
       ) : requests.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -118,7 +118,7 @@ export function VerificationQueuePage() {
             <Link
               key={request.id}
               to={`/verification/requests/${request.id}`}
-              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-blue-300 hover:shadow transition-all"
+              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 hover:shadow transition-all"
             >
               <div className="flex justify-between items-start">
                 <div>

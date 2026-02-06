@@ -20,3 +20,7 @@ export { HelpRequestsListPage } from './HelpRequestsListPage';
 export { HelpRequestDetailPage } from './HelpRequestDetailPage';
 // Hub admin reports
 export { ReportsDashboardPage } from './ReportsDashboardPage';
+// Legal
+export { LegalPage } from './LegalPage';
+// Design system
+export { DesignSystemPage } from './DesignSystemPage';

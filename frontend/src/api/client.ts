@@ -1,6 +1,6 @@
 import type { ApiError } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // Session token storage
 let sessionToken: string | null = null;
@@ -39,10 +39,7 @@ export class ApiRequestError extends Error {
 }
 
 // Base fetch function with auth handling
-async function apiFetch<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = getSessionToken();
 
   const headers: HeadersInit = {
@@ -68,11 +65,7 @@ async function apiFetch<T>(
   const data = await response.json();
 
   if (!response.ok) {
-    throw new ApiRequestError(
-      data.error || 'Request failed',
-      response.status,
-      data.details
-    );
+    throw new ApiRequestError(data.error || 'Request failed', response.status, data.details);
   }
 
   return data as T;

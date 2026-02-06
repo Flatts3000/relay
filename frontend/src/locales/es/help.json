@@ -3,6 +3,10 @@
   "subtitle": "Conéctese con grupos locales de ayuda mutua de forma anónima",
   "needHelp": "Necesito ayuda",
   "checkMessages": "Revisar mis mensajes",
+  "sharedComputerWarning": "¿Usando una computadora compartida? Use una ventana de navegación privada.",
+  "enterPassphrase": "Ingrese su frase secreta para acceder a su buzón.",
+  "passphrasePlaceholder": "Ingrese su frase secreta",
+  "accessMailbox": "Acceder al buzón",
   "howItWorks": {
     "title": "Cómo funciona",
     "step1": {
@@ -43,8 +47,8 @@
     "existingMailbox": "Ya tiene un buzón. ¿Desea verlo?",
     "viewExisting": "Ver mi buzón",
     "region": "Su área",
-    "regionPlaceholder": "Ciudad o condado (ej., Minneapolis, MN)",
-    "regionHelper": "Ingrese su ciudad o condado para conectarse con grupos locales",
+    "regionPlaceholder": "Empieza a escribir para buscar ciudades y condados...",
+    "regionHelper": "Seleccione su ciudad o condado para conectarse con grupos locales",
     "category": "Tipo de ayuda necesaria",
     "privacyWarning": "NO incluya información personal (nombre, dirección, número de teléfono) en este formulario. Los grupos lo contactarán a través de mensajes encriptados.",
     "submit": "Crear buzón"

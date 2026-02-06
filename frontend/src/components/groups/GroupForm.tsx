@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Input, CheckboxGroup, Alert } from '../ui';
+import { Button, Input, CheckboxGroup, Alert, RegionAutocomplete } from '../ui';
 import type { AidCategory, CreateGroupInput } from '../../api/types';
 
 interface GroupFormProps {
@@ -101,9 +101,8 @@ export function GroupForm({
     }
   };
 
-  const defaultSubmitLabel = mode === 'create'
-    ? t('groups:registerGroup')
-    : t('groups:saveChanges');
+  const defaultSubmitLabel =
+    mode === 'create' ? t('groups:registerGroup') : t('groups:saveChanges');
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -120,11 +119,10 @@ export function GroupForm({
         autoComplete="organization"
       />
 
-      <Input
+      <RegionAutocomplete
         label={t('groups:form.serviceArea')}
-        name="serviceArea"
         value={serviceArea}
-        onChange={(e) => setServiceArea(e.target.value)}
+        onChange={setServiceArea}
         error={errors.serviceArea}
         placeholder={t('groups:form.serviceAreaPlaceholder')}
         helperText={t('groups:form.serviceAreaHelper')}
@@ -156,12 +154,7 @@ export function GroupForm({
           {submitLabel || defaultSubmitLabel}
         </Button>
         {onCancel && (
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={onCancel}
-            className="flex-1"
-          >
+          <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
             {t('common:cancel')}
           </Button>
         )}

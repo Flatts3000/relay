@@ -21,6 +21,8 @@ import {
   HelpRequestsListPage,
   HelpRequestDetailPage,
   ReportsDashboardPage,
+  LegalPage,
+  DesignSystemPage,
 } from './pages';
 
 function NotFound() {
@@ -180,6 +182,12 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* Design system - development documentation */}
+      <Route path="/design-system" element={<DesignSystemPage />} />
+
+      {/* Legal - public, no authentication */}
+      <Route path="/legal" element={<LegalPage />} />
 
       {/* Anonymous help request routes - NO authentication */}
       <Route path="/help" element={<CreateMailboxPage />} />

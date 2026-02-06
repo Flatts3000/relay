@@ -84,7 +84,7 @@ export function VerificationRequestDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -94,7 +94,7 @@ export function VerificationRequestDetailPage() {
       <div className="max-w-2xl mx-auto">
         <Alert type="error">{error}</Alert>
         <div className="mt-4">
-          <Link to="/verification" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/verification" className="text-primary-600 hover:text-primary-700 font-medium">
             &larr; {t('verification:verificationQueue')}
           </Link>
         </div>
@@ -107,7 +107,7 @@ export function VerificationRequestDetailPage() {
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900">Request not found</h2>
         <div className="mt-4">
-          <Link to="/verification" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/verification" className="text-primary-600 hover:text-primary-700 font-medium">
             &larr; {t('verification:verificationQueue')}
           </Link>
         </div>
@@ -129,7 +129,7 @@ export function VerificationRequestDetailPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link to="/verification" className="text-blue-600 hover:text-blue-700 font-medium">
+        <Link to="/verification" className="text-primary-600 hover:text-primary-700 font-medium">
           &larr; {t('verification:verificationQueue')}
         </Link>
       </div>
@@ -160,7 +160,10 @@ export function VerificationRequestDetailPage() {
           <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-sm font-medium text-gray-500">Group Name</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              <Link to={`/groups/${request.groupId}`} className="text-blue-600 hover:text-blue-700">
+              <Link
+                to={`/groups/${request.groupId}`}
+                className="text-primary-600 hover:text-primary-700"
+              >
                 {request.groupName}
               </Link>
             </dd>
@@ -292,7 +295,7 @@ export function VerificationRequestDetailPage() {
                 value={denyReason}
                 onChange={(e) => setDenyReason(e.target.value)}
                 placeholder={t('verification:deny.reasonPlaceholder')}
-                className="w-full px-4 py-3 min-h-[100px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 min-h-[100px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>

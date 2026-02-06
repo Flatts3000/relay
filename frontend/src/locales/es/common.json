@@ -22,6 +22,7 @@
   "somethingWentWrong": "Algo salió mal",
   "tryAgain": "Intentar de nuevo",
   "noResults": "No se encontraron resultados",
+  "noRegionsFound": "No se encontraron ciudades o condados",
   "navigation": {
     "home": "Inicio",
     "groups": "Grupos",
@@ -44,6 +45,37 @@
     "other": "Otro"
   },
   "footer": {
-    "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos."
+    "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos.",
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  },
+  "legal": {
+    "title": "Legal",
+    "privacyTitle": "Política de Privacidad",
+    "privacyLastUpdated": "Última actualización: febrero 2026",
+    "privacyIntro": "Relay está diseñado para proteger su privacidad. Esta política explica qué recopilamos, qué no, y por qué.",
+    "privacyWhatWeCollect": "Qué Recopilamos",
+    "privacyWhatWeCollectDesc": "Para coordinadores de grupo: una dirección de correo electrónico para autenticación y un nombre de grupo para el directorio. Para personas que buscan ayuda: nada. Sin correo, sin teléfono, sin nombre, sin cuenta.",
+    "privacyWhatWeDontCollect": "Qué No Recopilamos",
+    "privacyWhatWeDontCollectDesc": "No recopilamos direcciones IP, huellas digitales del navegador, cookies ni datos analíticos en rutas anónimas. No rastreamos quién visita el sitio ni quién crea un buzón.",
+    "privacyEncryption": "Encriptación de Extremo a Extremo",
+    "privacyEncryptionDesc": "Los mensajes entre individuos y grupos están encriptados de extremo a extremo usando libsodium. Relay no puede leer estos mensajes. Su clave privada se deriva de su frase secreta en su dispositivo y nunca se transmite a nuestros servidores.",
+    "privacyDataRetention": "Retención de Datos",
+    "privacyDataRetentionDesc": "Los buzones anónimos se eliminan automáticamente después de 7 días de inactividad. No archivamos ni respaldamos datos de buzones individuales más allá de este período.",
+    "privacySubpoena": "En Caso de Citación Judicial",
+    "privacySubpoenaDesc": "Si se nos obliga por ley a producir datos, Relay solo puede proporcionar bloques encriptados que no puede descifrar. No tenemos mensajes en texto plano, ni identidades individuales, ni registros de navegación de usuarios anónimos.",
+    "termsTitle": "Términos de Servicio",
+    "termsLastUpdated": "Última actualización: febrero 2026",
+    "termsIntro": "Al usar Relay, usted acepta los siguientes términos.",
+    "termsWhatRelayIs": "Qué es Relay",
+    "termsWhatRelayIsDesc": "Relay es una herramienta de coordinación que conecta grupos de ayuda mutua con centros de fondos. No es una plataforma de beneficios, un sistema de gestión de casos, ni una fuente garantizada de financiamiento.",
+    "termsNoGuarantees": "Sin Garantías",
+    "termsNoGuaranteesDesc": "Relay no garantiza que los grupos respondan a las solicitudes de ayuda ni que se proporcione financiamiento. Los grupos operan independientemente y toman sus propias decisiones.",
+    "termsPassphraseResponsibility": "Responsabilidad de la Frase Secreta",
+    "termsPassphraseResponsibilityDesc": "Su frase secreta es la única forma de acceder a su buzón. Relay no puede recuperar ni restablecer frases secretas. Si pierde su frase secreta, su buzón y sus mensajes serán permanentemente inaccesibles.",
+    "termsGroupIndependence": "Independencia de los Grupos",
+    "termsGroupIndependenceDesc": "Los grupos de ayuda mutua listados en Relay son organizaciones independientes. Relay no controla, respalda ni asume responsabilidad por sus acciones, decisiones o distribución de fondos.",
+    "termsAcceptableUse": "Uso Aceptable",
+    "termsAcceptableUseDesc": "No abuse del sistema de buzón anónimo. No envíe solicitudes de ayuda fraudulentas, no envíe spam a los grupos con mensajes, ni use la plataforma para propósitos distintos a la coordinación de ayuda mutua."
   }
 }

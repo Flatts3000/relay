@@ -16,23 +16,14 @@ export function CreateGroupPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link
-          to="/groups"
-          className="text-blue-600 hover:text-blue-700 font-medium"
-        >
+        <Link to="/groups" className="text-primary-600 hover:text-primary-700 font-medium">
           &larr; {t('backToGroups')}
         </Link>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          {t('registerNewGroup')}
-        </h1>
-        <GroupForm
-          mode="create"
-          onSubmit={handleSubmit}
-          onCancel={() => navigate('/groups')}
-        />
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">{t('registerNewGroup')}</h1>
+        <GroupForm mode="create" onSubmit={handleSubmit} onCancel={() => navigate('/groups')} />
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export function HubGroupDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -45,10 +45,7 @@ export function HubGroupDetailPage() {
       <div className="max-w-2xl mx-auto">
         <Alert type="error">{error}</Alert>
         <div className="mt-4">
-          <Link
-            to="/groups"
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
+          <Link to="/groups" className="text-primary-600 hover:text-primary-700 font-medium">
             {t('groups:backToGroups')}
           </Link>
         </div>
@@ -61,10 +58,7 @@ export function HubGroupDetailPage() {
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900">{t('groups:groupNotFound')}</h2>
         <div className="mt-4">
-          <Link
-            to="/groups"
-            className="text-blue-600 hover:text-blue-700 font-medium"
-          >
+          <Link to="/groups" className="text-primary-600 hover:text-primary-700 font-medium">
             {t('groups:backToGroups')}
           </Link>
         </div>
@@ -75,10 +69,7 @@ export function HubGroupDetailPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link
-          to="/groups"
-          className="text-blue-600 hover:text-blue-700 font-medium"
-        >
+        <Link to="/groups" className="text-primary-600 hover:text-primary-700 font-medium">
           &larr; {t('groups:backToGroups')}
         </Link>
       </div>
@@ -91,8 +82,8 @@ export function HubGroupDetailPage() {
               group.verificationStatus === 'verified'
                 ? 'bg-green-100 text-green-800'
                 : group.verificationStatus === 'revoked'
-                ? 'bg-red-100 text-red-800'
-                : 'bg-yellow-100 text-yellow-800'
+                  ? 'bg-red-100 text-red-800'
+                  : 'bg-yellow-100 text-yellow-800'
             }`}
           >
             {t(`common:verificationStatus.${group.verificationStatus}`)}
@@ -108,14 +99,13 @@ export function HubGroupDetailPage() {
           </div>
 
           <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm font-medium text-gray-500">{t('groups:details.aidCategories')}</dt>
+            <dt className="text-sm font-medium text-gray-500">
+              {t('groups:details.aidCategories')}
+            </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               <div className="flex flex-wrap gap-2">
                 {group.aidCategories.map((category) => (
-                  <span
-                    key={category}
-                    className="px-2 py-1 bg-gray-100 rounded text-sm"
-                  >
+                  <span key={category} className="px-2 py-1 bg-gray-100 rounded text-sm">
                     {t(`common:aidCategories.${category}`)}
                   </span>
                 ))}
@@ -124,11 +114,13 @@ export function HubGroupDetailPage() {
           </div>
 
           <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-            <dt className="text-sm font-medium text-gray-500">{t('groups:details.contactEmail')}</dt>
+            <dt className="text-sm font-medium text-gray-500">
+              {t('groups:details.contactEmail')}
+            </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               <a
                 href={`mailto:${group.contactEmail}`}
-                className="text-blue-600 hover:text-blue-700"
+                className="text-primary-600 hover:text-primary-700"
               >
                 {group.contactEmail}
               </a>
@@ -162,12 +154,8 @@ export function HubGroupDetailPage() {
       {/* Placeholder for verification actions - to be implemented in Phase 3 */}
       {group.verificationStatus === 'pending' && (
         <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-yellow-800">
-            {t('groups:verificationPending')}
-          </h3>
-          <p className="mt-1 text-sm text-yellow-700">
-            {t('groups:verificationPendingNote')}
-          </p>
+          <h3 className="text-sm font-medium text-yellow-800">{t('groups:verificationPending')}</h3>
+          <p className="mt-1 text-sm text-yellow-700">{t('groups:verificationPendingNote')}</p>
         </div>
       )}
     </div>

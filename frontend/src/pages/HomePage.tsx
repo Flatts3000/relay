@@ -19,7 +19,15 @@ import {
   faBuildingColumns,
   faUsers,
 } from '@fortawesome/free-solid-svg-icons';
-import { LanguageSwitcher, Button, Input, Alert } from '../components/ui';
+import {
+  LanguageSwitcher,
+  Button,
+  Input,
+  Alert,
+  Badge,
+  Divider,
+  IconCircle,
+} from '../components/ui';
 import { HeroIllustration } from './HeroIllustration';
 
 const individualStepIcons = [faEnvelope, faLocationDot, faComments, faHandshake];
@@ -71,7 +79,7 @@ export function HomePage() {
       {/* Skip to content */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[60] focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
       >
         {t('home:skipToContent')}
       </a>
@@ -123,18 +131,18 @@ export function HomePage() {
 
       <main id="main-content">
         {/* Hero Section — Split Layout */}
-        <section className="py-20 sm:py-28 bg-gradient-to-b from-blue-50/40 to-white">
+        <section className="py-20 sm:py-28 bg-gradient-to-b from-primary-50/40 to-white">
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="flex-1 text-center md:text-left">
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-heading text-gray-900 mb-6 leading-tight">
                   {t('home:hero.title')}
                 </h1>
                 <p className="text-lg sm:text-xl text-gray-600 mb-10">{t('home:hero.subtitle')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                   <Link
                     to="/help"
-                    className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-lg"
+                    className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-lg"
                   >
                     {t('home:hero.individualCta')}
                   </Link>
@@ -155,29 +163,29 @@ export function HomePage() {
         </section>
 
         {/* Gradient separator */}
-        <div
-          className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"
-          aria-hidden="true"
-        />
+        <Divider gradient />
 
         {/* Individual Path Section */}
         <section
           id="individual"
-          className="py-16 sm:py-24 bg-blue-50 scroll-mt-20"
+          className="py-16 sm:py-24 bg-primary-50 scroll-mt-20"
           aria-labelledby="individual-title"
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
-              <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                <FontAwesomeIcon icon={faHandHoldingHeart} className="text-2xl text-blue-600" />
-              </div>
+              <IconCircle
+                icon={faHandHoldingHeart}
+                size="lg"
+                color="primary"
+                className="mx-auto mb-4"
+              />
               <h2
                 id="individual-title"
-                className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
+                className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-2"
               >
                 {t('home:paths.individual.title')}
               </h2>
-              <p className="text-lg text-blue-700 font-medium mb-4">
+              <p className="text-lg text-primary-700 font-medium mb-4">
                 {t('home:paths.individual.subtitle')}
               </p>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -191,7 +199,7 @@ export function HomePage() {
                 {(t('home:paths.individual.features', { returnObjects: true }) as string[]).map(
                   (feature, i) => (
                     <li key={i} className="flex items-start gap-2 text-gray-700">
-                      <span className="text-blue-500 flex-shrink-0 mt-0.5" aria-hidden="true">
+                      <span className="text-primary-500 flex-shrink-0 mt-0.5" aria-hidden="true">
                         <FontAwesomeIcon icon={faCheck} />
                       </span>
                       {feature}
@@ -211,14 +219,14 @@ export function HomePage() {
                   <div key={step} className="flex flex-col items-center">
                     {/* Vertical connector on mobile (between steps) */}
                     {idx > 0 && (
-                      <div className="w-0.5 h-6 bg-blue-200 sm:hidden mb-2" aria-hidden="true" />
+                      <div className="w-0.5 h-6 bg-primary-200 sm:hidden mb-2" aria-hidden="true" />
                     )}
                     <div className="text-center w-full relative">
                       <div className="relative inline-block mb-3">
-                        <div className="w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center shadow-md shadow-blue-200">
+                        <div className="w-14 h-14 bg-primary-600 text-white rounded-full flex items-center justify-center shadow-md shadow-primary-200">
                           <FontAwesomeIcon icon={individualStepIcons[idx]!} className="text-lg" />
                         </div>
-                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-blue-600 rounded-full text-xs font-bold flex items-center justify-center ring-2 ring-blue-600">
+                        <span className="absolute -top-1 -right-1 w-5 h-5 bg-white text-primary-600 rounded-full text-xs font-bold flex items-center justify-center ring-2 ring-primary-600">
                           {step}
                         </span>
                       </div>
@@ -231,7 +239,7 @@ export function HomePage() {
                       {/* Horizontal connector on lg (between steps) */}
                       {idx < 3 && (
                         <div
-                          className="hidden lg:block absolute top-10 -right-3 w-6 h-0.5 bg-blue-200"
+                          className="hidden lg:block absolute top-10 -right-3 w-6 h-0.5 bg-primary-200"
                           aria-hidden="true"
                         />
                       )}
@@ -242,9 +250,9 @@ export function HomePage() {
             </div>
 
             {/* Privacy guarantees */}
-            <div className="border-t border-blue-200 pt-8 max-w-2xl mx-auto mb-8">
+            <div className="border-t border-primary-200 pt-8 max-w-2xl mx-auto mb-8">
               <h3 className="font-semibold text-gray-900 mb-4 text-center flex items-center justify-center gap-2">
-                <FontAwesomeIcon icon={faLock} className="text-blue-500" />
+                <FontAwesomeIcon icon={faLock} className="text-primary-500" />
                 {t('home:paths.individual.privacy.title')}
               </h3>
               <ul className="space-y-2">
@@ -252,7 +260,7 @@ export function HomePage() {
                   t('home:paths.individual.privacy.items', { returnObjects: true }) as string[]
                 ).map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
-                    <span className="text-blue-500 flex-shrink-0 mt-0.5" aria-hidden="true">
+                    <span className="text-primary-500 flex-shrink-0 mt-0.5" aria-hidden="true">
                       <FontAwesomeIcon icon={faLock} />
                     </span>
                     {item}
@@ -265,7 +273,7 @@ export function HomePage() {
             <div className="text-center">
               <Link
                 to="/help"
-                className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors text-lg"
+                className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-lg"
               >
                 {t('home:paths.individual.cta')}
               </Link>
@@ -281,12 +289,10 @@ export function HomePage() {
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
-              <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                <FontAwesomeIcon icon={faBuilding} className="text-2xl text-gray-700" />
-              </div>
+              <IconCircle icon={faBuilding} size="lg" color="gray" className="mx-auto mb-4" />
               <h2
                 id="organizations-title"
-                className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2"
+                className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-2"
               >
                 {t('home:paths.org.title')}
               </h2>
@@ -298,16 +304,16 @@ export function HomePage() {
 
             {/* Two sub-cards: Hubs and Groups — differentiated */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
-              <div className="border-l-4 border-l-blue-400 pl-6">
+              <div className="border-l-4 border-l-primary-400 pl-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <FontAwesomeIcon icon={faBuildingColumns} className="text-blue-400" />
+                  <FontAwesomeIcon icon={faBuildingColumns} className="text-primary-400" />
                   {t('home:paths.org.forHubs.title')}
                 </h3>
                 <ul className="space-y-3">
                   {(t('home:paths.org.forHubs.items', { returnObjects: true }) as string[]).map(
                     (item, i) => (
                       <li key={i} className="text-gray-600 flex gap-2 text-sm">
-                        <span className="text-blue-400 flex-shrink-0" aria-hidden="true">
+                        <span className="text-primary-400 flex-shrink-0" aria-hidden="true">
                           <FontAwesomeIcon icon={faArrowRight} />
                         </span>
                         {item}
@@ -317,16 +323,16 @@ export function HomePage() {
                 </ul>
               </div>
 
-              <div className="border-l-4 border-l-emerald-400 pl-6">
+              <div className="border-l-4 border-l-accent-teal-500 pl-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <FontAwesomeIcon icon={faUsers} className="text-emerald-500" />
+                  <FontAwesomeIcon icon={faUsers} className="text-accent-teal-600" />
                   {t('home:paths.org.forGroups.title')}
                 </h3>
                 <ul className="space-y-3">
                   {(t('home:paths.org.forGroups.items', { returnObjects: true }) as string[]).map(
                     (item, i) => (
                       <li key={i} className="text-gray-600 flex gap-2 text-sm">
-                        <span className="text-emerald-500 flex-shrink-0" aria-hidden="true">
+                        <span className="text-accent-teal-600 flex-shrink-0" aria-hidden="true">
                           <FontAwesomeIcon icon={faArrowRight} />
                         </span>
                         {item}
@@ -392,9 +398,9 @@ export function HomePage() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-12">
               <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FontAwesomeIcon icon={faShieldHalved} className="text-3xl text-blue-400" />
+                <FontAwesomeIcon icon={faShieldHalved} className="text-3xl text-primary-400" />
               </div>
-              <h2 id="safety-title" className="text-2xl sm:text-3xl font-bold mb-2">
+              <h2 id="safety-title" className="text-2xl sm:text-3xl font-bold font-heading mb-2">
                 {t('home:safety.title')}
               </h2>
               <p className="text-gray-400">{t('home:safety.subtitle')}</p>
@@ -403,7 +409,7 @@ export function HomePage() {
             {/* Two columns: individuals and orgs */}
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
-                <h3 className="font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                <h3 className="font-semibold text-primary-400 mb-4 flex items-center gap-2">
                   <FontAwesomeIcon icon={faEyeSlash} />
                   {t('home:safety.forIndividuals.title')}
                 </h3>
@@ -411,7 +417,7 @@ export function HomePage() {
                   {(t('home:safety.forIndividuals.items', { returnObjects: true }) as string[]).map(
                     (item, i) => (
                       <li key={i} className="text-gray-300 flex gap-2 text-sm">
-                        <span className="text-blue-400 flex-shrink-0" aria-hidden="true">
+                        <span className="text-primary-400 flex-shrink-0" aria-hidden="true">
                           <FontAwesomeIcon icon={faCheck} />
                         </span>
                         {item}
@@ -422,7 +428,7 @@ export function HomePage() {
               </div>
 
               <div>
-                <h3 className="font-semibold text-green-400 mb-4 flex items-center gap-2">
+                <h3 className="font-semibold text-accent-teal-400 mb-4 flex items-center gap-2">
                   <FontAwesomeIcon icon={faLock} />
                   {t('home:safety.forOrgs.title')}
                 </h3>
@@ -430,7 +436,7 @@ export function HomePage() {
                   {(t('home:safety.forOrgs.items', { returnObjects: true }) as string[]).map(
                     (item, i) => (
                       <li key={i} className="text-gray-300 flex gap-2 text-sm">
-                        <span className="text-green-400 flex-shrink-0" aria-hidden="true">
+                        <span className="text-accent-teal-400 flex-shrink-0" aria-hidden="true">
                           <FontAwesomeIcon icon={faCheck} />
                         </span>
                         {item}
@@ -458,7 +464,10 @@ export function HomePage() {
                 ).map((tip, i) => (
                   <div key={i}>
                     <h4 className="font-semibold text-gray-100 mb-2 flex items-center gap-2">
-                      <FontAwesomeIcon icon={faLightbulb} className="text-yellow-400 text-sm" />
+                      <FontAwesomeIcon
+                        icon={faLightbulb}
+                        className="text-accent-amber-400 text-sm"
+                      />
                       {tip.title}
                     </h4>
                     <p className="text-gray-400 text-sm">{tip.description}</p>
@@ -475,7 +484,7 @@ export function HomePage() {
             <div className="grid md:grid-cols-2 gap-8">
               {/* What Is — green accent */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <h2 className="text-xl font-bold font-heading text-gray-900 mb-4 flex items-center gap-3">
                   <span
                     className="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center"
                     aria-hidden="true"
@@ -499,7 +508,7 @@ export function HomePage() {
 
               {/* What Is Not — neutral */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <h2 className="text-xl font-bold font-heading text-gray-900 mb-4 flex items-center gap-3">
                   <span
                     className="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center"
                     aria-hidden="true"
@@ -527,22 +536,22 @@ export function HomePage() {
         </section>
 
         {/* Gradient separator */}
-        <div
-          className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent"
-          aria-hidden="true"
-        />
+        <Divider gradient />
 
         {/* Pilot Status */}
         <section
           id="pilot"
-          className="py-12 sm:py-16 bg-yellow-50/50 scroll-mt-20"
+          className="py-12 sm:py-16 bg-accent-amber-50/50 scroll-mt-20"
           aria-labelledby="pilot-title"
         >
           <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-            <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium mb-4">
+            <Badge variant="warning" className="mb-4">
               {t('home:pilot.badge')}
-            </span>
-            <h2 id="pilot-title" className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+            </Badge>
+            <h2
+              id="pilot-title"
+              className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-4"
+            >
               {t('home:pilot.title')}
             </h2>
             <p className="text-gray-600 mb-8">{t('home:pilot.description')}</p>
@@ -578,10 +587,11 @@ export function HomePage() {
         >
           <div className="max-w-xl mx-auto px-4 sm:px-6">
             <div className="text-center mb-8">
-              <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FontAwesomeIcon icon={faEnvelope} className="text-xl text-blue-600" />
-              </div>
-              <h2 id="contact-title" className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              <IconCircle icon={faEnvelope} size="md" color="primary" className="mx-auto mb-4" />
+              <h2
+                id="contact-title"
+                className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-2"
+              >
                 {t('home:contact.title')}
               </h2>
               <p className="text-gray-600">{t('home:contact.description')}</p>
@@ -613,7 +623,7 @@ export function HomePage() {
                     placeholder={t('home:contact.messagePlaceholder')}
                     rows={4}
                     required
-                    className="w-full px-4 py-3 min-h-[120px] rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 min-h-[120px] rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
                 </div>
 

@@ -48,7 +48,7 @@ export function GroupProfilePage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -57,9 +57,7 @@ export function GroupProfilePage() {
     return (
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900">{t('groups:noGroupFound')}</h2>
-        <p className="mt-2 text-gray-600">
-          {t('groups:noGroupAssociated')}
-        </p>
+        <p className="mt-2 text-gray-600">{t('groups:noGroupAssociated')}</p>
       </div>
     );
   }
@@ -71,15 +69,23 @@ export function GroupProfilePage() {
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-primary-600 hover:text-primary-700 font-medium"
           >
             {t('groups:editProfile')}
           </button>
         )}
       </div>
 
-      {error && <Alert type="error" className="mb-6">{error}</Alert>}
-      {success && <Alert type="success" className="mb-6">{success}</Alert>}
+      {error && (
+        <Alert type="error" className="mb-6">
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert type="success" className="mb-6">
+          {success}
+        </Alert>
+      )}
 
       {isEditing ? (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -108,8 +114,8 @@ export function GroupProfilePage() {
                 group.verificationStatus === 'verified'
                   ? 'bg-green-100 text-green-800'
                   : group.verificationStatus === 'revoked'
-                  ? 'bg-red-100 text-red-800'
-                  : 'bg-yellow-100 text-yellow-800'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-yellow-100 text-yellow-800'
               }`}
             >
               {t(`common:verificationStatus.${group.verificationStatus}`)}
@@ -118,21 +124,22 @@ export function GroupProfilePage() {
 
           <dl className="divide-y divide-gray-200">
             <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm font-medium text-gray-500">{t('groups:details.serviceArea')}</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t('groups:details.serviceArea')}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {group.serviceArea}
               </dd>
             </div>
 
             <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm font-medium text-gray-500">{t('groups:details.aidCategories')}</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t('groups:details.aidCategories')}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <div className="flex flex-wrap gap-2">
                   {group.aidCategories.map((category) => (
-                    <span
-                      key={category}
-                      className="px-2 py-1 bg-gray-100 rounded text-sm"
-                    >
+                    <span key={category} className="px-2 py-1 bg-gray-100 rounded text-sm">
                       {t(`common:aidCategories.${category}`)}
                     </span>
                   ))}
@@ -141,14 +148,18 @@ export function GroupProfilePage() {
             </div>
 
             <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm font-medium text-gray-500">{t('groups:details.contactEmail')}</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t('groups:details.contactEmail')}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {group.contactEmail}
               </dd>
             </div>
 
             <div className="px-6 py-4 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-sm font-medium text-gray-500">{t('groups:details.registered')}</dt>
+              <dt className="text-sm font-medium text-gray-500">
+                {t('groups:details.registered')}
+              </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {new Date(group.createdAt).toLocaleDateString()}
               </dd>

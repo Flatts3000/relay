@@ -12,7 +12,7 @@ import type {
   TombstonesListResponse,
 } from './types';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('sessionToken');

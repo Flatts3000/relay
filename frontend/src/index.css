@@ -5,6 +5,7 @@
 /* Base styles */
 html {
   font-family:
+    'Inter',
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -16,7 +17,7 @@ html {
 
 /* Focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #1d5a9e;
   outline-offset: 2px;
 }
 

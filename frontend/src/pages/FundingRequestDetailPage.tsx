@@ -158,7 +158,7 @@ export function FundingRequestDetailPage() {
       case 'declined':
         return 'bg-red-100 text-red-800';
       case 'funds_sent':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary-100 text-primary-800';
       case 'acknowledged':
         return 'bg-gray-100 text-gray-800';
       default:
@@ -169,7 +169,7 @@ export function FundingRequestDetailPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
       </div>
     );
   }
@@ -179,7 +179,7 @@ export function FundingRequestDetailPage() {
       <div className="max-w-2xl mx-auto">
         <Alert type="error">{error}</Alert>
         <div className="mt-4">
-          <Link to="/requests" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/requests" className="text-primary-600 hover:text-primary-700 font-medium">
             &larr; Back to Requests
           </Link>
         </div>
@@ -192,7 +192,7 @@ export function FundingRequestDetailPage() {
       <div className="text-center py-12">
         <h2 className="text-xl font-semibold text-gray-900">Request not found</h2>
         <div className="mt-4">
-          <Link to="/requests" className="text-blue-600 hover:text-blue-700 font-medium">
+          <Link to="/requests" className="text-primary-600 hover:text-primary-700 font-medium">
             &larr; Back to Requests
           </Link>
         </div>
@@ -203,7 +203,7 @@ export function FundingRequestDetailPage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
-        <Link to="/requests" className="text-blue-600 hover:text-blue-700 font-medium">
+        <Link to="/requests" className="text-primary-600 hover:text-primary-700 font-medium">
           &larr; Back to Requests
         </Link>
       </div>
@@ -246,7 +246,7 @@ export function FundingRequestDetailPage() {
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 <Link
                   to={`/groups/${request.groupId}`}
-                  className="text-blue-600 hover:text-blue-700"
+                  className="text-primary-600 hover:text-primary-700"
                 >
                   {request.groupName}
                 </Link>
@@ -329,7 +329,7 @@ export function FundingRequestDetailPage() {
                 <div className="flex-shrink-0">
                   <div
                     className={`w-3 h-3 rounded-full mt-1.5 ${
-                      index === history.length - 1 ? 'bg-blue-500' : 'bg-gray-300'
+                      index === history.length - 1 ? 'bg-primary-500' : 'bg-gray-300'
                     }`}
                   />
                 </div>
@@ -410,7 +410,7 @@ export function FundingRequestDetailPage() {
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
                 placeholder={t('requests:decline.reasonPlaceholder')}
-                className="w-full px-4 py-3 min-h-[100px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 min-h-[100px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
@@ -453,7 +453,7 @@ export function FundingRequestDetailPage() {
                 value={clarifyMessage}
                 onChange={(e) => setClarifyMessage(e.target.value)}
                 placeholder={t('requests:clarify.messagePlaceholder')}
-                className="w-full px-4 py-3 min-h-[100px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 min-h-[100px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>

@@ -51,7 +51,7 @@ export function FundingRequestsListPage() {
       case 'declined':
         return 'bg-red-100 text-red-800';
       case 'funds_sent':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary-100 text-primary-800';
       case 'acknowledged':
         return 'bg-gray-100 text-gray-800';
       default:
@@ -76,7 +76,7 @@ export function FundingRequestsListPage() {
         {!isHubAdmin && (
           <Link
             to="/requests/new"
-            className="inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
+            className="inline-flex items-center justify-center px-4 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
           >
             {t('requests:newRequest')}
           </Link>
@@ -95,7 +95,7 @@ export function FundingRequestsListPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as RequestStatus | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('requests:filters.allStatuses')}</option>
             <option value="submitted">{t('requests:status.submitted')}</option>
@@ -107,7 +107,7 @@ export function FundingRequestsListPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as AidCategory | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('requests:filters.allCategories')}</option>
             <option value="rent">{t('common:aidCategories.rent')}</option>
@@ -118,7 +118,7 @@ export function FundingRequestsListPage() {
           <select
             value={urgencyFilter}
             onChange={(e) => setUrgencyFilter(e.target.value as Urgency | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('requests:filters.allUrgencies')}</option>
             <option value="normal">{t('requests:form.urgencyNormal')}</option>
@@ -127,7 +127,7 @@ export function FundingRequestsListPage() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="newest">{t('requests:filters.sortNewest')}</option>
             <option value="oldest">{t('requests:filters.sortOldest')}</option>
@@ -141,7 +141,7 @@ export function FundingRequestsListPage() {
       {/* Requests List */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         </div>
       ) : requests.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -156,7 +156,7 @@ export function FundingRequestsListPage() {
             <Link
               key={request.id}
               to={`/requests/${request.id}`}
-              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-blue-300 hover:shadow transition-all"
+              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 hover:shadow transition-all"
             >
               <div className="flex justify-between items-start">
                 <div>

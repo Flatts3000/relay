@@ -3,6 +3,10 @@
   "subtitle": "Connect with local mutual aid groups anonymously",
   "needHelp": "I Need Help",
   "checkMessages": "Check My Messages",
+  "sharedComputerWarning": "Using a shared computer? Use a private browsing window.",
+  "enterPassphrase": "Enter your passphrase to access your mailbox.",
+  "passphrasePlaceholder": "Enter your passphrase",
+  "accessMailbox": "Access Mailbox",
   "howItWorks": {
     "title": "How It Works",
     "step1": {
@@ -43,8 +47,8 @@
     "existingMailbox": "You already have a mailbox. Would you like to view it?",
     "viewExisting": "View My Mailbox",
     "region": "Your Area",
-    "regionPlaceholder": "City or county (e.g., Minneapolis, MN)",
-    "regionHelper": "Enter your city or county to connect with local groups",
+    "regionPlaceholder": "Start typing to search cities and counties...",
+    "regionHelper": "Select your city or county to connect with local groups",
     "category": "Type of Help Needed",
     "privacyWarning": "Do NOT include any personal details (name, address, phone number) in this form. Groups will contact you through encrypted messages.",
     "submit": "Create Mailbox"

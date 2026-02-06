@@ -22,6 +22,7 @@
   "somethingWentWrong": "Something went wrong",
   "tryAgain": "Try again",
   "noResults": "No results found",
+  "noRegionsFound": "No cities or counties found",
   "navigation": {
     "home": "Home",
     "groups": "Groups",
@@ -44,6 +45,37 @@
     "other": "Other"
   },
   "footer": {
-    "tagline": "Coordination platform connecting mutual aid groups with fund hubs."
+    "tagline": "Coordination platform connecting mutual aid groups with fund hubs.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "legal": {
+    "title": "Legal",
+    "privacyTitle": "Privacy Policy",
+    "privacyLastUpdated": "Last updated: February 2026",
+    "privacyIntro": "Relay is designed to protect your privacy. This policy explains what we collect, what we don't, and why.",
+    "privacyWhatWeCollect": "What We Collect",
+    "privacyWhatWeCollectDesc": "For group coordinators: an email address for authentication and a group name for directory listing. For individuals seeking help: nothing. No email, no phone, no name, no account.",
+    "privacyWhatWeDontCollect": "What We Don't Collect",
+    "privacyWhatWeDontCollectDesc": "We do not collect IP addresses, browser fingerprints, cookies, or analytics data on anonymous routes. We do not track who visits the site or who creates a mailbox.",
+    "privacyEncryption": "End-to-End Encryption",
+    "privacyEncryptionDesc": "Messages between individuals and groups are encrypted end-to-end using libsodium. Relay cannot read these messages. Your private key is derived from your passphrase on your device and is never transmitted to our servers.",
+    "privacyDataRetention": "Data Retention",
+    "privacyDataRetentionDesc": "Anonymous mailboxes are automatically deleted after 7 days of inactivity. We do not archive or back up individual mailbox data beyond this window.",
+    "privacySubpoena": "If Subpoenaed",
+    "privacySubpoenaDesc": "If compelled by law to produce data, Relay can only provide encrypted blobs it cannot decrypt. We have no plaintext messages, no individual identities, and no browsing records for anonymous users.",
+    "termsTitle": "Terms of Service",
+    "termsLastUpdated": "Last updated: February 2026",
+    "termsIntro": "By using Relay, you agree to the following terms.",
+    "termsWhatRelayIs": "What Relay Is",
+    "termsWhatRelayIsDesc": "Relay is a coordination tool connecting mutual aid groups with fund hubs. It is not a benefits platform, a case management system, or a guaranteed source of funding.",
+    "termsNoGuarantees": "No Guarantees",
+    "termsNoGuaranteesDesc": "Relay does not guarantee that groups will respond to help requests or that funding will be provided. Groups operate independently and make their own decisions.",
+    "termsPassphraseResponsibility": "Passphrase Responsibility",
+    "termsPassphraseResponsibilityDesc": "Your passphrase is the only way to access your mailbox. Relay cannot recover or reset passphrases. If you lose your passphrase, your mailbox and its messages are permanently inaccessible.",
+    "termsGroupIndependence": "Group Independence",
+    "termsGroupIndependenceDesc": "Mutual aid groups listed on Relay are independent organizations. Relay does not control, endorse, or assume responsibility for their actions, decisions, or fund distribution.",
+    "termsAcceptableUse": "Acceptable Use",
+    "termsAcceptableUseDesc": "Do not abuse the anonymous mailbox system. Do not submit fraudulent help requests, spam groups with messages, or use the platform for purposes other than mutual aid coordination."
   }
 }

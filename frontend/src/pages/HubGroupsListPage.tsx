@@ -52,13 +52,17 @@ export function HubGroupsListPage() {
         </div>
         <Link
           to="/groups/new"
-          className="inline-flex items-center justify-center px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
+          className="inline-flex items-center justify-center px-4 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors min-h-[44px]"
         >
           {t('groups:registerNewGroup')}
         </Link>
       </div>
 
-      {error && <Alert type="error" className="mb-6">{error}</Alert>}
+      {error && (
+        <Alert type="error" className="mb-6">
+          {error}
+        </Alert>
+      )}
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
@@ -73,7 +77,7 @@ export function HubGroupsListPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as VerificationStatus | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('groups:filters.allStatuses')}</option>
             <option value="pending">{t('common:verificationStatus.pending')}</option>
@@ -83,7 +87,7 @@ export function HubGroupsListPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value as AidCategory | '')}
-            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             <option value="">{t('groups:filters.allCategories')}</option>
             <option value="rent">{t('common:aidCategories.rent')}</option>
@@ -103,7 +107,7 @@ export function HubGroupsListPage() {
       {/* Groups List */}
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         </div>
       ) : groups.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -115,13 +119,11 @@ export function HubGroupsListPage() {
             <Link
               key={group.id}
               to={`/groups/${group.id}`}
-              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-blue-300 hover:shadow transition-all"
+              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 hover:shadow transition-all"
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {group.name}
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>
                   <p className="text-gray-600">{group.serviceArea}</p>
                 </div>
                 <span
@@ -129,8 +131,8 @@ export function HubGroupsListPage() {
                     group.verificationStatus === 'verified'
                       ? 'bg-green-100 text-green-800'
                       : group.verificationStatus === 'revoked'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
                   }`}
                 >
                   {t(`common:verificationStatus.${group.verificationStatus}`)}

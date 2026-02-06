@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { getMailbox, deleteMailbox } from '../api/mailbox';
-import { Alert, Button } from '../components/ui';
+import { Alert, Button, IconCircle } from '../components/ui';
+import { PublicHeader, PublicFooter } from '../components/layout';
 import { loadMailboxFromStorage, clearMailboxFromStorage, decryptMessage } from '../utils/crypto';
 import type { Mailbox, MailboxMessage } from '../api/types';
 
@@ -51,14 +53,6 @@ export function ViewMailboxPage() {
       // Decrypt messages if we have the private key
       if (canDecrypt && data.messages.length > 0) {
         const decrypted = data.messages.map((msg) => {
-          // For NaCl box, we need the sender's public key
-          // Groups use ephemeral keys, so we need a different approach
-          // For now, we'll store the group's ephemeral public key in the message
-          // This is a simplified version - in production, you'd include sender pubkey
-
-          // Try to decrypt using stored private key
-          // Note: This requires the sender to have included their ephemeral public key
-          // For demonstration, we'll try to decrypt with a placeholder
           const plaintext = tryDecryptMessage(msg, stored.keyPair.secretKey);
 
           return {
@@ -113,141 +107,158 @@ export function ViewMailboxPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50/40 to-white">
+        <PublicHeader />
+        <main className="flex-1 flex justify-center items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+        </main>
+        <PublicFooter />
       </div>
     );
   }
 
   if (!mailbox) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4">
-        <div className="max-w-lg mx-auto">
-          <Alert type="error">{error || t('help:view.notFound')}</Alert>
-          <Button
-            type="button"
-            variant="secondary"
-            className="mt-4"
-            onClick={() => navigate('/help')}
-          >
-            {t('help:view.backToHelp')}
-          </Button>
-        </div>
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50/40 to-white">
+        <PublicHeader />
+        <main className="flex-1 py-12 px-4">
+          <div className="max-w-lg mx-auto">
+            <Alert type="error">{error || t('help:view.notFound')}</Alert>
+            <Button
+              type="button"
+              variant="secondary"
+              className="mt-4"
+              onClick={() => navigate('/help')}
+            >
+              {t('help:view.backToHelp')}
+            </Button>
+          </div>
+        </main>
+        <PublicFooter />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t('help:view.title')}</h1>
-            <p className="text-gray-600">
-              {t(`common:aidCategories.${mailbox.helpCategory}`)} • {mailbox.region}
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50/40 to-white">
+      <PublicHeader />
+
+      <main className="flex-1 py-12 px-4">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex items-start gap-4">
+              <IconCircle icon={faEnvelope} size="md" color="primary" />
+              <div>
+                <h1 className="font-heading text-2xl font-bold text-gray-900">
+                  {t('help:view.title')}
+                </h1>
+                <p className="text-gray-600">
+                  {t(`common:aidCategories.${mailbox.helpCategory}`)} &middot; {mailbox.region}
+                </p>
+              </div>
+            </div>
+            <Button type="button" variant="secondary" onClick={loadMailbox}>
+              {t('help:view.refresh')}
+            </Button>
+          </div>
+
+          {error && (
+            <Alert type="error" className="mb-6">
+              {error}
+            </Alert>
+          )}
+
+          {!hasLocalKeys && (
+            <Alert type="warning" className="mb-6">
+              {t('help:view.noLocalKeys')}
+            </Alert>
+          )}
+
+          {/* Messages */}
+          <div className="space-y-4 mb-8">
+            {messages.length === 0 ? (
+              <div className="bg-gray-50 rounded-lg p-8 text-center">
+                <p className="text-gray-600">{t('help:view.noMessages')}</p>
+                <p className="text-sm text-gray-500 mt-2">{t('help:view.noMessagesDescription')}</p>
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <div key={msg.id} className="bg-gray-50 rounded-lg p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="font-medium text-gray-900">{msg.groupName}</span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(msg.createdAt).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                  {msg.decryptionFailed ? (
+                    <p className="text-gray-500 italic">{msg.plaintext}</p>
+                  ) : (
+                    <p className="text-gray-800 whitespace-pre-wrap">{msg.plaintext}</p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Mailbox info */}
+          <div className="border-t border-gray-200 pt-6 mb-6">
+            <p className="text-sm text-gray-600">
+              {t('help:view.createdAt', {
+                date: new Date(mailbox.createdAt).toLocaleDateString(),
+              })}
+            </p>
+            <p className="text-xs text-gray-500 mt-1 font-mono">
+              {t('help:view.mailboxId')}: {mailbox.id}
             </p>
           </div>
-          <Button type="button" variant="secondary" onClick={loadMailbox}>
-            {t('help:view.refresh')}
-          </Button>
-        </div>
 
-        {error && (
-          <Alert type="error" className="mb-6">
-            {error}
-          </Alert>
-        )}
-
-        {!hasLocalKeys && (
-          <Alert type="warning" className="mb-6">
-            {t('help:view.noLocalKeys')}
-          </Alert>
-        )}
-
-        {/* Messages */}
-        <div className="space-y-4 mb-8">
-          {messages.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <p className="text-gray-600">{t('help:view.noMessages')}</p>
-              <p className="text-sm text-gray-500 mt-2">{t('help:view.noMessagesDescription')}</p>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+          {/* Delete section */}
+          <div className="border-t border-gray-200 pt-6">
+            {!showDeleteConfirm ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="text-red-600 hover:text-red-700"
               >
-                <div className="flex justify-between items-start mb-3">
-                  <span className="font-medium text-gray-900">{msg.groupName}</span>
-                  <span className="text-sm text-gray-500">
-                    {new Date(msg.createdAt).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
+                {t('help:view.deleteMailbox')}
+              </Button>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-red-700">{t('help:view.deleteWarning')}</p>
+                <div className="flex gap-4">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                  >
+                    {t('common:cancel')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    isLoading={isDeleting}
+                  >
+                    {t('help:view.confirmDelete')}
+                  </Button>
                 </div>
-                {msg.decryptionFailed ? (
-                  <p className="text-gray-500 italic">{msg.plaintext}</p>
-                ) : (
-                  <p className="text-gray-800 whitespace-pre-wrap">{msg.plaintext}</p>
-                )}
               </div>
-            ))
-          )}
+            )}
+          </div>
         </div>
+      </main>
 
-        {/* Mailbox info */}
-        <div className="bg-gray-100 rounded-lg p-4 mb-6">
-          <p className="text-sm text-gray-600">
-            {t('help:view.createdAt', {
-              date: new Date(mailbox.createdAt).toLocaleDateString(),
-            })}
-          </p>
-          <p className="text-xs text-gray-500 mt-1 font-mono">
-            {t('help:view.mailboxId')}: {mailbox.id}
-          </p>
-        </div>
-
-        {/* Delete section */}
-        <div className="border-t border-gray-200 pt-6">
-          {!showDeleteConfirm ? (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="text-red-600"
-            >
-              {t('help:view.deleteMailbox')}
-            </Button>
-          ) : (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 mb-4">{t('help:view.deleteWarning')}</p>
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isDeleting}
-                >
-                  {t('common:cancel')}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  isLoading={isDeleting}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {t('help:view.confirmDelete')}
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+      <PublicFooter />
     </div>
   );
 }

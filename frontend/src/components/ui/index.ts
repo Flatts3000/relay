@@ -3,3 +3,8 @@ export { Input } from './Input';
 export { CheckboxGroup } from './CheckboxGroup';
 export { Alert } from './Alert';
 export { LanguageSwitcher } from './LanguageSwitcher';
+export { Badge } from './Badge';
+export { Divider } from './Divider';
+export { Container } from './Container';
+export { IconCircle } from './IconCircle';
+export { RegionAutocomplete } from './RegionAutocomplete';
