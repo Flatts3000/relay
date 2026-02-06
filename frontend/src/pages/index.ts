@@ -20,6 +20,8 @@ export { HelpRequestsListPage } from './HelpRequestsListPage';
 export { HelpRequestDetailPage } from './HelpRequestDetailPage';
 // Hub admin reports
 export { ReportsDashboardPage } from './ReportsDashboardPage';
+// Public group directory
+export { GroupDirectoryPage } from './GroupDirectoryPage';
 // Legal
 export { LegalPage } from './LegalPage';
 // Design system

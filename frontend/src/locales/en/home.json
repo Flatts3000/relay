@@ -1,16 +1,18 @@
 {
   "skipToContent": "Skip to main content",
   "nav": {
-    "forIndividuals": "Need Help",
-    "forOrganizations": "For Organizations",
+    "forIndividuals": "I Need Help",
+    "findGroup": "Find Local Help",
+    "forOrganizations": "For Organizers",
     "safety": "Safety",
     "contact": "Contact"
   },
   "hero": {
     "title": "Mutual aid, connected.",
-    "subtitle": "Whether you need help or you're part of a group providing it, Relay is built to protect your privacy.",
+    "subtitle": "Find help or find a local group — no accounts, no tracking, no personal info required.",
     "individualCta": "I Need Help",
-    "orgCta": "For Organizations"
+    "directoryCta": "Find Local Help",
+    "orgCta": "For Organizers"
   },
   "paths": {
     "individual": {
@@ -52,6 +54,18 @@
           "Everything auto-deletes after 7 days of inactivity"
         ]
       }
+    },
+    "directory": {
+      "title": "Find a Group",
+      "subtitle": "Browse verified mutual aid groups in your area",
+      "description": "Search the public directory of verified mutual aid groups. Find groups by region or type of help they provide—and contact them directly.",
+      "features": [
+        "Search by city or county",
+        "Filter by type of help (rent, food, utilities)",
+        "No account, no cookies, no tracking"
+      ],
+      "cta": "Browse the Directory",
+      "privacy": "The directory is public and doesn't track who visits. No login required."
     },
     "org": {
       "title": "For Organizations",

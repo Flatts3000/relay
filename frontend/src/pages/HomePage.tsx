@@ -18,6 +18,7 @@ import {
   faLightbulb,
   faBuildingColumns,
   faUsers,
+  faMagnifyingGlass,
 } from '@fortawesome/free-solid-svg-icons';
 import {
   LanguageSwitcher,
@@ -101,6 +102,13 @@ export function HomePage() {
               </button>
               <button
                 type="button"
+                onClick={() => scrollToSection('directory')}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                {t('home:nav.findGroup')}
+              </button>
+              <button
+                type="button"
                 onClick={() => scrollToSection('organizations')}
                 className="text-sm text-gray-600 hover:text-gray-900"
               >
@@ -139,17 +147,23 @@ export function HomePage() {
                   {t('home:hero.title')}
                 </h1>
                 <p className="text-lg sm:text-xl text-gray-600 mb-10">{t('home:hero.subtitle')}</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
                   <Link
                     to="/help"
-                    className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-lg"
+                    className="inline-flex items-center justify-center whitespace-nowrap px-6 py-3 min-h-[48px] bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     {t('home:hero.individualCta')}
+                  </Link>
+                  <Link
+                    to="/directory"
+                    className="inline-flex items-center justify-center whitespace-nowrap px-6 py-3 min-h-[48px] bg-white text-gray-700 font-semibold rounded-lg border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                  >
+                    {t('home:hero.directoryCta')}
                   </Link>
                   <button
                     type="button"
                     onClick={() => scrollToSection('organizations')}
-                    className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-white text-gray-700 font-semibold rounded-lg border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors text-lg"
+                    className="inline-flex items-center justify-center whitespace-nowrap px-6 py-3 min-h-[48px] bg-white text-gray-700 font-semibold rounded-lg border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
                   >
                     {t('home:hero.orgCta')}
                   </button>
@@ -276,6 +290,67 @@ export function HomePage() {
                 className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors text-lg"
               >
                 {t('home:paths.individual.cta')}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Directory Path Section */}
+        <section
+          id="directory"
+          className="py-16 sm:py-24 scroll-mt-20"
+          aria-labelledby="directory-title"
+        >
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="text-center mb-12">
+              <IconCircle
+                icon={faMagnifyingGlass}
+                size="lg"
+                color="gray"
+                className="mx-auto mb-4"
+              />
+              <h2
+                id="directory-title"
+                className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-2"
+              >
+                {t('home:paths.directory.title')}
+              </h2>
+              <p className="text-lg text-gray-500 font-medium mb-4">
+                {t('home:paths.directory.subtitle')}
+              </p>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                {t('home:paths.directory.description')}
+              </p>
+            </div>
+
+            {/* Feature bullets */}
+            <div className="max-w-2xl mx-auto mb-12">
+              <ul className="grid sm:grid-cols-2 gap-3">
+                {(t('home:paths.directory.features', { returnObjects: true }) as string[]).map(
+                  (feature, i) => (
+                    <li key={i} className="flex items-start gap-2 text-gray-700">
+                      <span className="text-gray-500 flex-shrink-0 mt-0.5" aria-hidden="true">
+                        <FontAwesomeIcon icon={faCheck} />
+                      </span>
+                      {feature}
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+
+            {/* Privacy note */}
+            <p className="text-center text-sm text-gray-500 mb-8">
+              {t('home:paths.directory.privacy')}
+            </p>
+
+            {/* CTA */}
+            <div className="text-center">
+              <Link
+                to="/directory"
+                className="inline-flex items-center justify-center px-8 py-4 min-h-[52px] bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors text-lg"
+              >
+                {t('home:paths.directory.cta')}
               </Link>
             </div>
           </div>

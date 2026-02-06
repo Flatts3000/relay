@@ -44,6 +44,11 @@
     "utilities": "Utilities",
     "other": "Other"
   },
+  "directory": {
+    "title": "Group Directory",
+    "description": "Find verified mutual aid groups in your area",
+    "comingSoon": "The directory is being built. Check back soon to browse verified mutual aid groups by region and type of help."
+  },
   "footer": {
     "tagline": "Coordination platform connecting mutual aid groups with fund hubs.",
     "privacy": "Privacy",

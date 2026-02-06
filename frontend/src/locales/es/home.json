@@ -2,15 +2,17 @@
   "skipToContent": "Ir al contenido principal",
   "nav": {
     "forIndividuals": "Necesito Ayuda",
-    "forOrganizations": "Para Organizaciones",
+    "findGroup": "Encontrar Ayuda Local",
+    "forOrganizations": "Para Organizadores",
     "safety": "Seguridad",
     "contact": "Contacto"
   },
   "hero": {
     "title": "Ayuda mutua, conectada.",
-    "subtitle": "Ya sea que necesites ayuda o formes parte de un grupo que la brinda, Relay está diseñado para proteger tu privacidad.",
+    "subtitle": "Encuentra ayuda o encuentra un grupo local — sin cuentas, sin rastreo, sin información personal requerida.",
     "individualCta": "Necesito Ayuda",
-    "orgCta": "Para Organizaciones"
+    "directoryCta": "Encontrar Ayuda Local",
+    "orgCta": "Para Organizadores"
   },
   "paths": {
     "individual": {
@@ -52,6 +54,18 @@
           "Todo se elimina automáticamente después de 7 días de inactividad"
         ]
       }
+    },
+    "directory": {
+      "title": "Buscar un Grupo",
+      "subtitle": "Explora grupos verificados de ayuda mutua en tu área",
+      "description": "Busca en el directorio público de grupos verificados de ayuda mutua. Encuentra grupos por región o tipo de ayuda que ofrecen—y contáctalos directamente.",
+      "features": [
+        "Busca por ciudad o condado",
+        "Filtra por tipo de ayuda (alquiler, comida, servicios)",
+        "Sin cuenta, sin cookies, sin rastreo"
+      ],
+      "cta": "Explorar el Directorio",
+      "privacy": "El directorio es público y no rastrea quién lo visita. No se requiere inicio de sesión."
     },
     "org": {
       "title": "Para Organizaciones",

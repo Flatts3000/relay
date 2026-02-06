@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Layout, ProtectedRoute } from './components/layout';
 import {
   HomePage,
+  GroupDirectoryPage,
   LoginPage,
   DashboardPage,
   GroupProfilePage,
@@ -43,6 +44,7 @@ export default function App() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/directory" element={<GroupDirectoryPage />} />
       <Route path="/login" element={<LoginPage />} />
 
       {/* Protected routes - any authenticated user */}

@@ -44,6 +44,11 @@
     "utilities": "Servicios públicos",
     "other": "Otro"
   },
+  "directory": {
+    "title": "Directorio de Grupos",
+    "description": "Encuentra grupos verificados de ayuda mutua en tu área",
+    "comingSoon": "El directorio está en construcción. Vuelve pronto para explorar grupos verificados de ayuda mutua por región y tipo de ayuda."
+  },
   "footer": {
     "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos.",
     "privacy": "Privacidad",

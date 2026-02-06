@@ -14,14 +14,15 @@ All bracketed citations (e.g. [1][2]) refer to the sources table in the research
 - Treat the homepage as a "launchpad" that orients users and points them deeper — concise cards or sections per audience, not everything on one page [4][5]
 - A successful example: God's Love We Deliver uses three distinct entry buttons ("Get Meals," "Donate," "Volunteer") so visitors aren't overwhelmed [2]
 
-**Decision:** Structure the page as a dual-funnel. Relay has two primary audiences with fundamentally different needs: individuals in crisis (who need anonymous help fast) and organizations (who need coordination tooling). Each gets equal weight and a dedicated section.
+**Decision:** Structure the page as a triple-funnel. Relay has three primary audiences with fundamentally different needs: individuals in crisis (who need anonymous help fast), community members (who want to discover local groups), and organizations (who need coordination tooling). Each gets a dedicated section.
 
 **What this means for the build:**
 
-- Hero presents two equal CTAs — "I Need Help" and "For Organizations" — that scroll to dedicated sections
+- Hero presents three CTAs — "I Need Help" (primary), "Find a Group" (secondary), and "For Organizations" (secondary)
 - Individual path (`#individual`) is a self-contained funnel: explanation, how-it-works, privacy guarantees, CTA to `/help`
+- Directory path (`#directory`) is a self-contained funnel: explanation, feature bullets, privacy note, CTA to `/directory`
 - Organization path (`#organizations`) is a self-contained funnel: explanation, hub/group sub-cards, how-it-works, CTA to contact
-- The individual path comes first on the page because a person in crisis is scanning faster and has less patience than an organization evaluating a tool
+- The individual path comes first because a person in crisis is scanning faster; the directory path comes second as a lighter-weight discovery action; the organization path comes last as it targets people evaluating a tool
 
 ---
 
@@ -98,12 +99,13 @@ All bracketed citations (e.g. [1][2]) refer to the sources table in the research
 - Match CTA language to user intent [1]
 - For crisis users, be clear, welcoming, stigma-free [8]
 
-**Decision:** Two CTAs in the hero (one per audience), one CTA per section. Low-pressure language that matches Relay's trust posture — no SaaS language ("Sign up", "Get started free", "Join the network").
+**Decision:** Three CTAs in the hero (one per audience), one CTA per section. Research says 1–3 CTAs is ideal — three is within the limit. Low-pressure language that matches Relay's trust posture — no SaaS language ("Sign up", "Get started free", "Join the network").
 
 **What this means for the build:**
 
-- Hero: "I Need Help" (primary/blue) + "For Organizations" (outline/secondary)
+- Hero: "I Need Help" (primary/blue) + "Find a Group" (outline/secondary) + "For Organizations" (outline/secondary)
 - Individual section: "Get Help Anonymously" — empathetic, action-oriented
+- Directory section: "Browse the Directory" — discovery-oriented, low-pressure
 - Organization section: "Get in Touch" — invitational, not transactional
 - CTAs are large (`min-h-[52px]`), high-contrast, and repeated where the user would naturally want to act
 
@@ -164,11 +166,11 @@ All bracketed citations (e.g. [1][2]) refer to the sources table in the research
 - Use simple anchored sections instead of a full nav bar [14]
 - Limit menu options to match audience pathways [2][3]
 
-**Decision:** Four nav items only, all anchor links to on-page sections. Nav items match the two audience funnels plus the two shared sections visitors are most likely to seek.
+**Decision:** Five nav items, all anchor links to on-page sections. Nav items match the three audience funnels plus the two shared sections visitors are most likely to seek.
 
 **What this means for the build:**
 
-- Desktop: Need Help | For Organizations | Safety | Contact + LanguageSwitcher
+- Desktop: Need Help | Find a Group | For Organizations | Safety | Contact + LanguageSwitcher
 - Mobile: LanguageSwitcher only — the page is designed to scroll naturally
 - No separate pages, no dropdowns, no hamburger menu
 
@@ -242,15 +244,38 @@ All bracketed citations (e.g. [1][2]) refer to the sources table in the research
 
 ## Current Page Structure
 
-1. **Header** — Logo + nav (Need Help | For Organizations | Safety | Contact) + LanguageSwitcher
-2. **Hero** — Dual CTAs scrolling to respective sections
+1. **Header** — Logo + nav (Need Help | Find a Group | For Organizations | Safety | Contact) + LanguageSwitcher
+2. **Hero** — Triple CTAs: "I Need Help" (primary), "Find a Group" (secondary), "For Organizations" (secondary)
 3. **Individual Path** (`#individual`) — Title, subtitle, features, 4-step how-it-works, privacy guarantees, CTA to `/help`
-4. **Organization Path** (`#organizations`) — Title, subtitle, hub/group sub-cards, 3-step how-it-works, CTA to contact
-5. **Safety by Design** (`#safety`) — Per-audience safety columns + organizer tips
-6. **What This Is / What This Is Not** — Two-card trust-building layout
-7. **Pilot Status** (`#pilot`) — Badge, scope, timeline
-8. **Contact Form** (`#contact`) — Formspree integration
-9. **Footer** — Tagline, privacy policy link, attribution
+4. **Directory Path** (`#directory`) — Title, subtitle, feature bullets, privacy note, CTA to `/directory`
+5. **Organization Path** (`#organizations`) — Title, subtitle, hub/group sub-cards, 3-step how-it-works, CTA to contact
+6. **Safety by Design** (`#safety`) — Per-audience safety columns + organizer tips
+7. **What This Is / What This Is Not** — Two-card trust-building layout
+8. **Pilot Status** (`#pilot`) — Badge, scope, timeline
+9. **Contact Form** (`#contact`) — Formspree integration
+10. **Footer** — Tagline, privacy policy link, attribution
+
+---
+
+## 12) Directory Path (Public Group Directory)
+
+**What research says:**
+
+- Organize content by user goal — the community member who wants to find a local group has a different need than the individual in crisis who needs an encrypted mailbox [1][2]
+- "A homepage should only feature 1–3 calls to action" [3] — three CTAs (help, directory, organizations) is within the research-backed limit
+- Directory pages should be accessible without authentication or tracking [10][18][19]
+
+**Decision:** The public group directory is a distinct path from the anonymous mailbox flow. Community members (the Tomás persona) want to browse and discover groups — they don't need encryption, passphrases, or mailboxes. These are different user goals that require different pages.
+
+**What this means for the build:**
+
+- Directory section (`#directory`) is placed between Individual Path and Organization Path — it's a lighter-weight action than anonymous help but more public-facing than the org coordination tooling
+- Visual style: white background (distinct from the blue `#individual` section) with gray accents (consistent with the professional tone of the org section)
+- Icon: `faMagnifyingGlass` in an `IconCircle` — signals discovery/search
+- Feature bullets emphasize browsability: search by region, filter by category, no tracking
+- Privacy note explicitly states the same no-tracking posture as anonymous routes: "No account, no cookies, no tracking"
+- CTA links to `/directory` — a dedicated public page (currently a placeholder; full FR-8 implementation is a separate task)
+- The directory route does NOT use the authenticated `/groups` route (which is the hub admin's group management view) — these are completely different features for different audiences
 
 ---
 
