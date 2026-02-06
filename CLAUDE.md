@@ -19,6 +19,7 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 ## Key Constraints (Non-Negotiable)
 
 ### No individual-level data
+
 - No lists of people seeking aid
 - No personally identifying recipient data
 - No sensitive data retention
@@ -28,6 +29,7 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 - Data minimization by default
 
 ### Anonymous help requests (E2E encrypted)
+
 - Individuals request help using only a passphrase (no email, phone, or account)
 - System generates passphrase client-side; individual writes it down
 - Groups see anonymous requests (category + region only) and send encrypted replies
@@ -38,6 +40,7 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 - If subpoenaed, Relay can only produce encrypted blobs it cannot decrypt
 
 ### Group-level operations
+
 - Trust and accountability for fund routing live at the group level
 - Distribution decisions remain local
 - Groups submit funding requests on behalf of their work, not individuals
@@ -45,6 +48,7 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 - Individuals contact groups directly outside Relay after receiving encrypted responses
 
 ### Lightweight verification
+
 - Verification must not be onerous, invasive, or exclusionary
 - Accepted methods: hub-admin approval, peer attestation, sponsor reference
 - No IDs, rosters, or sensitive documents required
@@ -91,18 +95,18 @@ This is an open source project. Data integrity and security are paramount.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React + Vite + TypeScript |
-| Styling | Tailwind CSS |
-| Backend | Node.js + Express + TypeScript |
-| Database | PostgreSQL (AWS RDS) |
-| Compute | AWS Fargate |
-| Infrastructure | Terraform |
-| CI/CD | GitHub Actions |
-| Containers | Docker |
-| i18n | react-i18next (English, Spanish) |
-| E2E Encryption | libsodium (TweetNaCl.js) |
+| Layer          | Technology                       |
+| -------------- | -------------------------------- |
+| Frontend       | React + Vite + TypeScript        |
+| Styling        | Tailwind CSS                     |
+| Backend        | Node.js + Express + TypeScript   |
+| Database       | PostgreSQL (AWS RDS)             |
+| Compute        | AWS Fargate                      |
+| Infrastructure | Terraform                        |
+| CI/CD          | GitHub Actions                   |
+| Containers     | Docker                           |
+| i18n           | react-i18next (English, Spanish) |
+| E2E Encryption | libsodium (TweetNaCl.js)         |
 
 ## Repository Structure
 
@@ -163,15 +167,27 @@ cd infra && terraform apply
 
 ## Features to Build (Pilot Scope)
 
-### 1. Group Registry (Private, Invite-Only)
+### 1. Group Registry
+
 - Group name (can be pseudonymous)
 - Service area (city/region)
 - Aid categories (rent, food, utilities)
 - Contact method (role-based email)
 - Verification status
 
-### 2. Funding Request Workflow
+### 2. Public Group Directory
+
+- Verified groups are listed in a public, searchable directory
+- Browsable by anyone without authentication or account creation
+- Searchable/filterable by region (city/county) and aid category
+- Shows only what groups opt to make public: name, service area, aid categories, contact method
+- No tracking, analytics, or cookies on directory pages
+- Bilingual (English/Spanish)
+
+### 3. Funding Request Workflow
+
 Request fields:
+
 - Amount requested
 - Category (rent/food/utilities/etc.)
 - Urgency (normal/urgent)
@@ -180,20 +196,24 @@ Request fields:
 
 Hub actions: approve, decline, or ask clarifying questions
 
-### 3. Payout Status Tracking
+### 4. Payout Status Tracking
+
 States only: submitted → approved → funds sent → acknowledged
 
 No receipts, narratives, or recipient data required.
 
-### 4. Aggregate Reporting
+### 5. Aggregate Reporting
+
 - Total funds by category
 - Number of groups supported
 - Time-to-funding averages
 
 No per-person or per-household reporting.
 
-### 5. Anonymous Help Requests (E2E Encrypted)
+### 6. Anonymous Help Requests (E2E Encrypted)
+
 Individual flow:
+
 1. Select "I need help" → system generates passphrase
 2. Specify help type (rent, food, utilities) and region
 3. Write down passphrase (only way to access responses)
@@ -201,11 +221,13 @@ Individual flow:
 5. Contact group directly using info they provided
 
 Group flow:
+
 1. See anonymous requests matching their service area (category + region only)
 2. Send encrypted reply with contact info and how they can help
 3. Cannot see other groups' replies or any identifying info
 
 Privacy guarantees:
+
 - No email, phone, or account required from individuals
 - Messages E2E encrypted (libsodium); server cannot read
 - Passphrase derives private key client-side; never transmitted
@@ -239,16 +261,18 @@ If any become necessary, the pilot pauses for reevaluation.
 
 ## Actors
 
-| Role | Description |
-|------|-------------|
-| **Hub** | Raises pooled money, needs confidence in downstream distribution |
-| **Local Group** | Informal/semi-formal, deep local knowledge, needs fast fund access; responds to anonymous help requests |
+| Role                    | Description                                                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hub**                 | Raises pooled money, needs confidence in downstream distribution                                                                              |
+| **Local Group**         | Informal/semi-formal, deep local knowledge, needs fast fund access; responds to anonymous help requests                                       |
+| **Community Member**    | Heard about a group or wants to find local resources; browses the public group directory without authentication or tracking                   |
 | **Individual Resident** | Person in crisis; creates anonymous mailbox with passphrase, receives encrypted responses from groups, contacts groups directly outside Relay |
-| **Verifier** | Existing org, peer group, or intermediary providing attestation |
+| **Verifier**            | Existing org, peer group, or intermediary providing attestation                                                                               |
 
 ## Success Criteria
 
 - Groups connect without relying on personal introductions
+- Community members can find local groups by region and category without creating an account
 - Individuals can request help without providing identifying information
 - Groups can respond to individuals in need without knowing who they are
 - Hub reviews and routes funds with less back-and-forth
@@ -260,6 +284,7 @@ If any become necessary, the pilot pauses for reevaluation.
 ## Documentation
 
 - `/docs/product_requirements_document.md` - Full PRD with functional/non-functional requirements
+- `/docs/user_personas.md` - User personas and design implications
 - `/docs/prd_to_mvp_plan.md` - Implementation plan with phases and checkpoints
 - `/docs/problem_brief.md` - Core problem and constraints
 - `/docs/pilot_proposal.md` - Pilot scope and success criteria

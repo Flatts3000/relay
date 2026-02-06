@@ -5,6 +5,7 @@
 ## Purpose
 
 The goal of this pilot is to test a safer, faster way for:
+
 1. Local mutual aid groups to connect with centralized fund hubs
 2. Individual residents in crisis to connect with local groups who can help
 
@@ -46,6 +47,7 @@ This pilot tests whether a minimal coordination layer can reduce friction while 
 - 1 central fund hub (e.g., a statewide mutual aid fund)
 - 3–5 local mutual aid groups
 - Individual residents in those groups' service areas (anonymous, no registration)
+- Community members browsing the public group directory (no registration, no tracking)
 - 1 pilot facilitator / builder (me)
 
 Participation is opt-in and can be ended at any time by any party.
@@ -118,7 +120,27 @@ The pilot produces aggregate-only summaries, such as:
 
 No per-person or per-household reporting.
 
-### 6. Anonymous Help Requests (Individual-to-Group)
+### 6. Public Group Directory
+
+Verified groups are listed in a searchable, public directory — browsable by anyone without authentication, account creation, or tracking.
+
+**What the directory shows:**
+
+- Group name (may be pseudonymous)
+- Service area
+- Aid categories (rent, food, utilities, etc.)
+- Contact method
+
+**What the directory does NOT do:**
+
+- Require login or account creation to browse
+- Set cookies or track visitors
+- Log IP addresses or search queries
+- Show unverified groups
+
+This allows community members who heard about a group through word of mouth — or who simply want to know what's available in their area — to find and contact groups directly, without entering any information into the system.
+
+### 7. Anonymous Help Requests (Individual-to-Group)
 
 Individuals in crisis can request help without providing identifying information.
 
@@ -191,6 +213,7 @@ This pilot is successful if:
 - A group can get connected to hubs without relying on personal introductions
 - An individual can request help without providing identifying information
 - Groups can respond to individuals in need without knowing who they are
+- Community members can find local groups by region and category without creating an account or being tracked
 - The hub can review and route funds with less back-and-forth
 - Funds move faster than before
 - Participants say this feels safer than existing ad hoc tools

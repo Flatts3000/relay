@@ -75,6 +75,7 @@ These constraints are essential and must shape any solution:
 ### Discovery Failure (Individuals → Groups)
 
 - Individuals in crisis don't know what mutual aid groups serve their area
+- Community members who heard about a group through word of mouth have no central place to find it
 - Existing directories are fragmented, outdated, or require accounts
 - People avoid searching due to fear of creating digital trails
 - Current options require knowing someone who knows someone
@@ -117,6 +118,13 @@ Any solution that works only for food or supplies but fails for rent is insuffic
 - Specifies what help they need and their region
 - Receives encrypted messages from groups who can help
 - Relay cannot identify who they are or read their messages
+
+### Community Member (public visitor)
+
+- Not necessarily in crisis — may be looking ahead, or heard about a group through word of mouth
+- Wants to find and contact a local group directly, without creating an account or providing personal information
+- Uses the public group directory to search by region or aid category
+- No tracking, cookies, or analytics on their browsing activity
 
 ### Verifier / Sponsor (implicit role)
 
