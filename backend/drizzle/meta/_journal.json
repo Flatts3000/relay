@@ -15,6 +15,13 @@
       "when": 1770338719736,
       "tag": "0001_medical_terror",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770343442678,
+      "tag": "0002_hesitant_stingray",
+      "breakpoints": true
     }
   ]
 }

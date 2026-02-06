@@ -9,6 +9,7 @@
   "delete": "Delete",
   "back": "Back",
   "submit": "Submit",
+  "continue": "Continue",
   "search": "Search",
   "filter": "Filter",
   "all": "All",
@@ -52,7 +53,30 @@
   "footer": {
     "tagline": "Coordination platform connecting mutual aid groups with fund hubs.",
     "privacy": "Privacy",
+    "security": "Security",
     "terms": "Terms"
+  },
+  "security": {
+    "title": "Security Practices",
+    "intro": "Relay is built for people in vulnerable situations. Every design decision starts with the question: how do we protect the people who use this? This page describes our technical controls in detail so that stakeholders, partners, and security reviewers can evaluate our claims.",
+    "approachTitle": "Our Approach",
+    "approachDesc": "Relay follows four principles: data minimization (collect only what is strictly necessary), assume-breach (design so that a full server compromise reveals as little as possible about individuals), group-first/individual-opaque (trust and accountability live at the group level while individuals remain invisible to the system), and ephemeral by default (data that does not need to persist is automatically deleted). These principles guide every technical and product decision.",
+    "encryptionTitle": "End-to-End Encryption",
+    "encryptionDesc": "When an individual creates a mailbox, the system generates a random passphrase client-side using cryptographic randomness. A key pair is derived from that passphrase using PBKDF2 (SHA-256, 100,000 iterations), and messages are encrypted and decrypted locally using NaCl authenticated encryption (TweetNaCl.js). The server stores only encrypted ciphertext and a hashed public key — never the private key, never the passphrase. There is no key escrow and no recovery mechanism. Relay cannot decrypt mailbox contents under any circumstances. Rate limits on mailbox access provide an additional layer of defense against brute-force attempts.",
+    "anonymousAccessTitle": "Anonymous Access & Logging Policy",
+    "anonymousAccessDesc": "Individuals seeking help never create an account. No email, phone number, or name is collected. At the application level, anonymous routes are explicitly excluded from request logging and audit logging. Rate limiting on anonymous routes uses hashed identifiers with a rotating salt that is discarded every five minutes — raw IP addresses are never stored in application logs. No cookies are set and no analytics or tracking scripts are loaded on anonymous pages. At the infrastructure level, standard network-layer logs (VPC flow logs, load balancer health checks) may exist for operational purposes, but these are not correlated with application activity and contain no application data.",
+    "infrastructureTitle": "Infrastructure & Hardening",
+    "infrastructureDesc": "All traffic is encrypted in transit with TLS 1.3. Data at rest is encrypted with AES-256 via AWS KMS. The database runs in a VPC with private subnets and is not publicly accessible. A Web Application Firewall (WAF) with managed rule sets filters common attacks including SQL injection. Containers run on AWS Fargate with least-privilege IAM roles and no long-lived credentials. Security headers include a strict Content Security Policy that blocks external scripts and framing, HSTS with preload, and strict cross-origin resource controls. Request bodies are size-limited to prevent abuse.",
+    "authTitle": "Authentication & Sessions",
+    "authDesc": "Groups and hubs authenticate via magic-link email — no passwords are stored. Magic links are single-use tokens that expire after 15 minutes. Sessions use cryptographically generated Bearer tokens with a short sliding expiration window, and authentication is entirely token-based with no cookies. Only group coordinators and hub admins have accounts; individuals interact with the system solely through passphrase-derived encryption with no session or account of any kind.",
+    "inputValidationTitle": "Input Validation & Rate Limiting",
+    "inputValidationDesc": "Every API input is validated against a Zod schema before processing. All database queries use parameterized statements via Drizzle ORM, preventing SQL injection. Rate limits are applied in tiers: the strictest limits apply to mailbox creation and authentication attempts, moderate limits apply to anonymous routes, and standard limits apply to authenticated endpoints. Rate limiting on anonymous routes uses hashed identifiers so that raw IP addresses are never persisted.",
+    "dataRetentionTitle": "Data Retention",
+    "dataRetentionDesc": "Anonymous mailboxes are automatically deleted after 7 days of inactivity. When a mailbox is deleted, a tombstone record retains only coarse aggregate data — aid category, service region, whether any group responded, and deletion timestamp — for operational reporting. No message content, no passphrase material, and no public keys are retained. We acknowledge that even coarse metadata (category + region) can narrow possibilities in small populations; we are evaluating further coarsening of tombstone data as usage patterns become clearer.",
+    "subpoenaTitle": "If Subpoenaed",
+    "subpoenaDesc": "Relay is designed so that compliance with a legal order reveals minimal useful information about individuals. For active anonymous mailboxes, Relay can produce only encrypted ciphertext it cannot decrypt and a hashed public key. For deleted mailboxes, only tombstone metadata exists (aid category, region, response flag, deletion timestamp). There are no plaintext messages, no individual identities, and no browsing records for anonymous users. For authenticated accounts (groups and hubs), Relay holds email addresses, group profile data, and audit logs of administrative actions. We may be legally required to preserve records upon receiving a preservation order.",
+    "openSourceTitle": "Open Source & Vulnerability Disclosure",
+    "openSourceDesc": "Relay's source code is publicly available on GitHub. Anyone can audit the encryption implementation, verify the data-handling claims made on this page, and review infrastructure configurations. If you discover a security vulnerability, please report it through GitHub's private security advisory feature on our repository. We are committed to reviewing and addressing reported vulnerabilities promptly. Security-first development guardrails are enforced across the codebase."
   },
   "legal": {
     "title": "Legal",

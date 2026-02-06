@@ -54,6 +54,32 @@ export async function getMailbox(mailboxId: string): Promise<Mailbox> {
 }
 
 /**
+ * Look up a mailbox by its public key (derived from passphrase).
+ * Used when an individual enters their passphrase on a new device.
+ * CRITICAL: No authentication, no cookies, no tracking.
+ */
+export async function lookupMailboxByPublicKey(publicKey: string): Promise<{ id: string } | null> {
+  const response = await fetch(
+    `${API_BASE}/api/mailbox/lookup?publicKey=${encodeURIComponent(publicKey)}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'omit',
+    }
+  );
+
+  if (response.status === 404) return null;
+
+  if (!response.ok) {
+    throw new Error('Failed to look up mailbox');
+  }
+
+  return response.json();
+}
+
+/**
  * Delete a mailbox (manual deletion by user).
  * CRITICAL: No authentication, no cookies, no tracking.
  * This is a destructive operation with no recovery.

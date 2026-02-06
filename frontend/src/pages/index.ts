@@ -22,7 +22,9 @@ export { HelpRequestDetailPage } from './HelpRequestDetailPage';
 export { ReportsDashboardPage } from './ReportsDashboardPage';
 // Public group directory
 export { GroupDirectoryPage } from './GroupDirectoryPage';
-// Legal
-export { LegalPage } from './LegalPage';
+// Public info pages
+export { PrivacyPage } from './PrivacyPage';
+export { TermsPage } from './TermsPage';
+export { SecurityPage } from './SecurityPage';
 // Design system
 export { DesignSystemPage } from './DesignSystemPage';

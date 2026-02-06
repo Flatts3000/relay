@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "mailboxes_public_key_idx" ON "mailboxes" USING btree ("public_key");

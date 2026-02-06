@@ -10,6 +10,7 @@
 
 import nacl from 'tweetnacl';
 import { encodeBase64, decodeBase64 } from 'tweetnacl-util';
+import { WORDLIST } from './wordlist';
 
 /**
  * Key pair for E2E encryption
@@ -36,6 +37,69 @@ export function generateKeyPair(): KeyPair {
     publicKey: encodeBase64(keyPair.publicKey),
     secretKey: encodeBase64(keyPair.secretKey),
   };
+}
+
+/**
+ * Derive a deterministic key pair from a passphrase using PBKDF2.
+ * This makes the passphrase the single source of truth: same passphrase always
+ * produces the same key pair, enabling cross-device mailbox access.
+ *
+ * Flow: passphrase → PBKDF2(SHA-256, 100k iterations) → 32-byte secret key → nacl.box.keyPair
+ *
+ * @param passphrase - Human-readable passphrase (e.g., "river-oak-calm-4821")
+ * @returns Deterministic key pair derived from the passphrase
+ */
+export async function deriveKeyPairFromPassphrase(passphrase: string): Promise<KeyPair> {
+  const encoder = new TextEncoder();
+
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(passphrase),
+    'PBKDF2',
+    false,
+    ['deriveBits']
+  );
+
+  const derivedBits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      salt: encoder.encode('relay-mailbox-v1'),
+      iterations: 100000,
+      hash: 'SHA-256',
+    },
+    keyMaterial,
+    256 // 32 bytes
+  );
+
+  const secretKey = new Uint8Array(derivedBits);
+  const keyPair = nacl.box.keyPair.fromSecretKey(secretKey);
+
+  return {
+    publicKey: encodeBase64(keyPair.publicKey),
+    secretKey: encodeBase64(keyPair.secretKey),
+  };
+}
+
+/**
+ * Generate a human-readable passphrase in the format "word-word-word-NNNN".
+ * Uses crypto.getRandomValues() for secure randomness.
+ * 3 words from a 256-word list (8 bits each) + 4-digit code (~13.3 bits) = ~37 bits entropy.
+ */
+export function generatePassphrase(): string {
+  const randomBytes = new Uint8Array(3);
+  crypto.getRandomValues(randomBytes);
+
+  // 3 words: use each byte as an index into the 256-word list
+  const word0 = WORDLIST[randomBytes[0] as number];
+  const word1 = WORDLIST[randomBytes[1] as number];
+  const word2 = WORDLIST[randomBytes[2] as number];
+
+  // 4-digit code from separate random source
+  const codeBytes = new Uint16Array(1);
+  crypto.getRandomValues(codeBytes);
+  const code = ((codeBytes[0] as number) % 10000).toString().padStart(4, '0');
+
+  return `${word0}-${word1}-${word2}-${code}`;
 }
 
 /**
@@ -123,6 +187,7 @@ export interface StoredMailboxData {
   id: string;
   keyPair: KeyPair;
   createdAt: string;
+  passphrase?: string;
 }
 
 /**

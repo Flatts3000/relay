@@ -20,6 +20,7 @@ import {
   faUsers,
   faMagnifyingGlass,
 } from '@fortawesome/free-solid-svg-icons';
+import { PublicFooter } from '../components/layout';
 import {
   LanguageSwitcher,
   Button,
@@ -716,33 +717,7 @@ export function HomePage() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
-            <div className="flex items-center gap-2 text-gray-600">
-              <img src="/logo.png" alt={t('common:appName')} className="h-5" />
-              <span aria-hidden="true">—</span>
-              <span>{t('home:footer.tagline')}</span>
-            </div>
-            <div className="flex items-center gap-4 text-gray-500">
-              <span className="text-gray-400">{t('home:footer.privacy')}</span>
-              <span className="w-1 h-1 rounded-full bg-gray-300" aria-hidden="true" />
-              <span>
-                {t('home:footer.builtBy')}{' '}
-                <a
-                  href="https://mythicworks.net"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-gray-900"
-                >
-                  {t('home:footer.builtByName')}
-                </a>
-              </span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter />
     </div>
   );
 }

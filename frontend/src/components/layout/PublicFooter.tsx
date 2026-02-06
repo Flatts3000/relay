@@ -14,14 +14,21 @@ export function PublicFooter() {
             <span>{t('home:footer.tagline')}</span>
           </div>
           <p className="text-gray-500">
-            <Link to="/legal#privacy" className="hover:text-gray-900">
+            <Link to="/privacy" className="hover:text-gray-900">
               {t('common:footer.privacy')}
             </Link>
             <span className="text-gray-300" aria-hidden="true">
               {' '}
               &middot;{' '}
             </span>
-            <Link to="/legal#terms" className="hover:text-gray-900">
+            <Link to="/security" className="hover:text-gray-900">
+              {t('common:footer.security')}
+            </Link>
+            <span className="text-gray-300" aria-hidden="true">
+              {' '}
+              &middot;{' '}
+            </span>
+            <Link to="/terms" className="hover:text-gray-900">
               {t('common:footer.terms')}
             </Link>
             <span className="text-gray-300" aria-hidden="true">

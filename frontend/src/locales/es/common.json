@@ -9,6 +9,7 @@
   "delete": "Eliminar",
   "back": "Volver",
   "submit": "Enviar",
+  "continue": "Continuar",
   "search": "Buscar",
   "filter": "Filtrar",
   "all": "Todos",
@@ -52,7 +53,30 @@
   "footer": {
     "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos.",
     "privacy": "Privacidad",
+    "security": "Seguridad",
     "terms": "Términos"
+  },
+  "security": {
+    "title": "Prácticas de Seguridad",
+    "intro": "Relay está diseñado para personas en situaciones vulnerables. Cada decisión de diseño comienza con la pregunta: ¿cómo protegemos a las personas que usan esto? Esta página describe nuestros controles técnicos en detalle para que las partes interesadas, socios y revisores de seguridad puedan evaluar nuestras afirmaciones.",
+    "approachTitle": "Nuestro Enfoque",
+    "approachDesc": "Relay sigue cuatro principios: minimización de datos (recopilar solo lo estrictamente necesario), asumir brecha (diseñar para que una vulneración completa del servidor revele lo menos posible sobre los individuos), grupo primero / individuo opaco (la confianza y la responsabilidad residen a nivel de grupo mientras los individuos permanecen invisibles para el sistema), y efímero por defecto (los datos que no necesitan persistir se eliminan automáticamente). Estos principios guían cada decisión técnica y de producto.",
+    "encryptionTitle": "Encriptación de Extremo a Extremo",
+    "encryptionDesc": "Cuando un individuo crea un buzón, el sistema genera una frase secreta aleatoria en el dispositivo del usuario utilizando aleatoriedad criptográfica. Un par de claves se deriva de esa frase usando PBKDF2 (SHA-256, 100.000 iteraciones), y los mensajes se encriptan y desencriptan localmente usando encriptación autenticada NaCl (TweetNaCl.js). El servidor almacena solo texto cifrado y una clave pública hasheada — nunca la clave privada, nunca la frase secreta. No hay custodia de claves ni mecanismo de recuperación. Relay no puede descifrar el contenido de los buzones bajo ninguna circunstancia. Los límites de tasa en el acceso a buzones proporcionan una capa adicional de defensa contra intentos de fuerza bruta.",
+    "anonymousAccessTitle": "Acceso Anónimo y Política de Registros",
+    "anonymousAccessDesc": "Las personas que buscan ayuda nunca crean una cuenta. No se recopila correo electrónico, número de teléfono ni nombre. A nivel de aplicación, las rutas anónimas están explícitamente excluidas del registro de solicitudes y del registro de auditoría. Los límites de tasa en rutas anónimas usan identificadores hasheados con una sal rotativa que se descarta cada cinco minutos — las direcciones IP sin procesar nunca se almacenan en los registros de la aplicación. No se establecen cookies y no se cargan scripts de análisis o rastreo en las páginas anónimas. A nivel de infraestructura, los registros estándar de la capa de red (registros de flujo VPC, verificaciones de estado del balanceador de carga) pueden existir por razones operativas, pero no se correlacionan con la actividad de la aplicación y no contienen datos de aplicación.",
+    "infrastructureTitle": "Infraestructura y Endurecimiento",
+    "infrastructureDesc": "Todo el tráfico se encripta en tránsito con TLS 1.3. Los datos en reposo se encriptan con AES-256 a través de AWS KMS. La base de datos se ejecuta en una VPC con subredes privadas y no es accesible públicamente. Un firewall de aplicaciones web (WAF) con conjuntos de reglas administradas filtra ataques comunes incluyendo inyección SQL. Los contenedores se ejecutan en AWS Fargate con roles IAM de privilegio mínimo y sin credenciales de larga duración. Las cabeceras de seguridad incluyen una Política de Seguridad de Contenido estricta que bloquea scripts externos y enmarcado, HSTS con precarga, y controles estrictos de recursos de origen cruzado. Los cuerpos de solicitud tienen límite de tamaño para prevenir abuso.",
+    "authTitle": "Autenticación y Sesiones",
+    "authDesc": "Los grupos y hubs se autentican mediante enlace mágico por correo electrónico — no se almacenan contraseñas. Los enlaces mágicos son tokens de uso único que expiran después de 15 minutos. Las sesiones usan tokens Bearer generados criptográficamente con una ventana de expiración deslizante corta, y la autenticación es completamente basada en tokens sin cookies. Solo los coordinadores de grupo y administradores de hub tienen cuentas; los individuos interactúan con el sistema únicamente a través de encriptación derivada de la frase secreta, sin sesión ni cuenta de ningún tipo.",
+    "inputValidationTitle": "Validación de Entrada y Límites de Tasa",
+    "inputValidationDesc": "Cada entrada de API se valida contra un esquema Zod antes de procesarse. Todas las consultas a la base de datos usan sentencias parametrizadas a través de Drizzle ORM, previniendo inyección SQL. Los límites de tasa se aplican por niveles: los límites más estrictos se aplican a la creación de buzones e intentos de autenticación, límites moderados a las rutas anónimas, y límites estándar a los endpoints autenticados. Los límites de tasa en rutas anónimas usan identificadores hasheados para que las direcciones IP sin procesar nunca se persistan.",
+    "dataRetentionTitle": "Retención de Datos",
+    "dataRetentionDesc": "Los buzones anónimos se eliminan automáticamente después de 7 días de inactividad. Cuando se elimina un buzón, un registro de baja retiene solo datos agregados aproximados — categoría de ayuda, región de servicio, si algún grupo respondió y marca de tiempo de eliminación — para informes operativos. No se retienen contenidos de mensajes, material de frase secreta ni claves públicas. Reconocemos que incluso metadatos aproximados (categoría + región) pueden reducir posibilidades en poblaciones pequeñas; estamos evaluando un mayor nivel de aproximación de los datos de baja a medida que los patrones de uso se aclaren.",
+    "subpoenaTitle": "En Caso de Citación Judicial",
+    "subpoenaDesc": "Relay está diseñado para que el cumplimiento de una orden legal revele información mínima útil sobre individuos. Para buzones anónimos activos, Relay solo puede producir texto cifrado que no puede descifrar y una clave pública hasheada. Para buzones eliminados, solo existen metadatos de baja (categoría de ayuda, región, indicador de respuesta, marca de tiempo de eliminación). No hay mensajes en texto plano, ni identidades individuales, ni registros de navegación de usuarios anónimos. Para cuentas autenticadas (grupos y hubs), Relay posee direcciones de correo electrónico, datos de perfil de grupo y registros de auditoría de acciones administrativas. Podemos estar legalmente obligados a preservar registros al recibir una orden de preservación.",
+    "openSourceTitle": "Código Abierto y Divulgación de Vulnerabilidades",
+    "openSourceDesc": "El código fuente de Relay está disponible públicamente en GitHub. Cualquiera puede auditar la implementación de encriptación, verificar las afirmaciones de manejo de datos hechas en esta página y revisar las configuraciones de infraestructura. Si descubre una vulnerabilidad de seguridad, por favor repórtela a través de la función de aviso de seguridad privado de GitHub en nuestro repositorio. Estamos comprometidos a revisar y abordar las vulnerabilidades reportadas de manera oportuna. Las directrices de desarrollo con seguridad primero se aplican en todo el código."
   },
   "legal": {
     "title": "Legal",

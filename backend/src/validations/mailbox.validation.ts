@@ -35,6 +35,25 @@ export const mailboxIdParamSchema = z.object({
   id: z.string().uuid('Invalid mailbox ID format'),
 });
 
+// Lookup by public key schema (query parameter validation)
+export const lookupByPublicKeySchema = z.object({
+  publicKey: z
+    .string()
+    .min(1, 'Public key is required')
+    .refine(
+      (val) => {
+        try {
+          return Buffer.from(val, 'base64').length === 32;
+        } catch {
+          return false;
+        }
+      },
+      { message: 'Invalid public key format (must be 32-byte base64-encoded)' }
+    ),
+});
+
+export type LookupByPublicKeyQuery = z.infer<typeof lookupByPublicKeySchema>;
+
 // Send reply schema
 export const sendReplySchema = z.object({
   ciphertext: z

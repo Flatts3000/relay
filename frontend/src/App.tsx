@@ -22,7 +22,9 @@ import {
   HelpRequestsListPage,
   HelpRequestDetailPage,
   ReportsDashboardPage,
-  LegalPage,
+  PrivacyPage,
+  TermsPage,
+  SecurityPage,
   DesignSystemPage,
 } from './pages';
 
@@ -188,8 +190,10 @@ export default function App() {
       {/* Design system - development documentation */}
       <Route path="/design-system" element={<DesignSystemPage />} />
 
-      {/* Legal - public, no authentication */}
-      <Route path="/legal" element={<LegalPage />} />
+      {/* Public info pages - no authentication */}
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/security" element={<SecurityPage />} />
 
       {/* Anonymous help request routes - NO authentication */}
       <Route path="/help" element={<CreateMailboxPage />} />

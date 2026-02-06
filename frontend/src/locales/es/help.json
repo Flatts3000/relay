@@ -51,7 +51,9 @@
     "regionHelper": "Seleccione su ciudad o condado para conectarse con grupos locales",
     "category": "Tipo de ayuda necesaria",
     "privacyWarning": "NO incluya información personal (nombre, dirección, número de teléfono) en este formulario. Los grupos lo contactarán a través de mensajes encriptados.",
-    "submit": "Crear buzón"
+    "submit": "Crear buzón",
+    "rememberDevice": "Recordar este dispositivo",
+    "rememberDeviceHelper": "Guarde sus claves en este dispositivo para acceder a su buzón sin la frase secreta. Solo use esto en un dispositivo privado."
   },
   "createMailbox": {
     "title": "Crear buzón anónimo",
@@ -175,6 +177,8 @@
     }
   },
   "errors": {
+    "mailboxNotFound": "Buzón no encontrado. Puede haber sido eliminado después de 7 días de inactividad.",
+    "lookupFailed": "Error al buscar el buzón. Por favor intente de nuevo.",
     "regionRequired": "Por favor ingrese su área/región",
     "createFailed": "Error al crear el buzón. Por favor intente de nuevo.",
     "loadFailed": "Error al cargar el buzón. Por favor intente de nuevo.",

@@ -1,7 +1,16 @@
 import { Router } from 'express';
 import { anonymousRateLimiter, mailboxCreationRateLimiter } from '../middleware/rate-limit.js';
-import { createMailboxSchema, mailboxIdParamSchema } from '../validations/mailbox.validation.js';
-import { createMailbox, getMailbox, deleteMailbox } from '../services/mailbox.service.js';
+import {
+  createMailboxSchema,
+  mailboxIdParamSchema,
+  lookupByPublicKeySchema,
+} from '../validations/mailbox.validation.js';
+import {
+  createMailbox,
+  getMailbox,
+  getMailboxByPublicKey,
+  deleteMailbox,
+} from '../services/mailbox.service.js';
 
 export const mailboxRouter = Router();
 
@@ -48,6 +57,42 @@ mailboxRouter.post('/', mailboxCreationRateLimiter, async (req, res) => {
 
   const result = await createMailbox(parsed.data);
   res.status(201).json(result);
+});
+
+/**
+ * GET /api/mailbox/lookup
+ * Look up a mailbox by its public key (derived from passphrase).
+ * Used when an individual enters their passphrase on a new device.
+ *
+ * Query params:
+ *   - publicKey: base64-encoded public key (32 bytes)
+ *
+ * Response:
+ *   - { id: string } if found
+ *   - 404 if not found
+ *
+ * CRITICAL: This route MUST come before /:id to avoid Express matching "lookup" as a UUID.
+ * CRITICAL: No cookies, no logging, no tracking.
+ */
+mailboxRouter.get('/lookup', async (req, res) => {
+  const parsed = lookupByPublicKeySchema.safeParse(req.query);
+
+  if (!parsed.success) {
+    res.status(400).json({
+      error: 'Validation failed',
+      details: parsed.error.issues.map((i) => i.message),
+    });
+    return;
+  }
+
+  const result = await getMailboxByPublicKey(parsed.data.publicKey);
+
+  if (!result) {
+    res.status(404).json({ error: 'Mailbox not found' });
+    return;
+  }
+
+  res.json(result);
 });
 
 /**

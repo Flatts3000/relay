@@ -13,6 +13,22 @@ import type {
 } from '../validations/mailbox.validation.js';
 
 /**
+ * Look up a mailbox by its public key (derived from passphrase).
+ * Used when an individual enters their passphrase on a new device.
+ * CRITICAL: No logging, no IP retention, no tracking.
+ */
+export async function getMailboxByPublicKey(publicKey: string): Promise<{ id: string } | null> {
+  const publicKeyBuffer = Buffer.from(publicKey, 'base64');
+
+  const [mailbox] = await db
+    .select({ id: mailboxes.id })
+    .from(mailboxes)
+    .where(and(eq(mailboxes.publicKey, publicKeyBuffer), isNull(mailboxes.deletedAt)));
+
+  return mailbox ?? null;
+}
+
+/**
  * Create a new anonymous mailbox
  * CRITICAL: No logging, no IP retention, no tracking
  */

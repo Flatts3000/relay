@@ -51,7 +51,9 @@
     "regionHelper": "Select your city or county to connect with local groups",
     "category": "Type of Help Needed",
     "privacyWarning": "Do NOT include any personal details (name, address, phone number) in this form. Groups will contact you through encrypted messages.",
-    "submit": "Create Mailbox"
+    "submit": "Create Mailbox",
+    "rememberDevice": "Remember this device",
+    "rememberDeviceHelper": "Save your keys on this device so you can access your mailbox without your passphrase. Only use this on a private device."
   },
   "createMailbox": {
     "title": "Create Anonymous Mailbox",
@@ -175,6 +177,8 @@
     }
   },
   "errors": {
+    "mailboxNotFound": "Mailbox not found. It may have been deleted after 7 days of inactivity.",
+    "lookupFailed": "Failed to look up mailbox. Please try again.",
     "regionRequired": "Please enter your area/region",
     "createFailed": "Failed to create mailbox. Please try again.",
     "loadFailed": "Failed to load mailbox. Please try again.",

@@ -7,6 +7,7 @@ import {
   customType,
   boolean,
   index,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { groups, aidCategoryEnum } from './groups.js';
 
@@ -44,6 +45,8 @@ export const mailboxes = pgTable(
     regionIdx: index('mailboxes_region_idx').on(table.region),
     helpCategoryIdx: index('mailboxes_help_category_idx').on(table.helpCategory),
     lastAccessedAtIdx: index('mailboxes_last_accessed_at_idx').on(table.lastAccessedAt),
+    // Unique index for passphrase-based lookup by derived public key
+    publicKeyIdx: uniqueIndex('mailboxes_public_key_idx').on(table.publicKey),
   })
 );
 

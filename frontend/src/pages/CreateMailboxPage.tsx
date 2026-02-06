@@ -2,16 +2,27 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faShieldHalved, faLock } from '@fortawesome/free-solid-svg-icons';
-import { createMailbox } from '../api/mailbox';
+import {
+  faShieldHalved,
+  faLock,
+  faCopy,
+  faCheck,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
+import { createMailbox, lookupMailboxByPublicKey } from '../api/mailbox';
 import { Alert, Button, IconCircle, RegionAutocomplete } from '../components/ui';
 import { PublicHeader, PublicFooter } from '../components/layout';
-import { generateKeyPair, saveMailboxToStorage, loadMailboxFromStorage } from '../utils/crypto';
+import {
+  deriveKeyPairFromPassphrase,
+  generatePassphrase,
+  saveMailboxToStorage,
+  loadMailboxFromStorage,
+} from '../utils/crypto';
 import type { AidCategory } from '../api/types';
 
 const AID_CATEGORIES: AidCategory[] = ['rent', 'food', 'utilities', 'other'];
 
-type HelpMode = 'choose' | 'create' | 'check';
+type HelpMode = 'choose' | 'create' | 'check' | 'passphrase';
 
 /**
  * Anonymous mailbox creation page.
@@ -27,7 +38,14 @@ export function CreateMailboxPage() {
   const [error, setError] = useState('');
   const [existingMailbox, setExistingMailbox] = useState<string | null>(null);
   const [mode, setMode] = useState<HelpMode>('choose');
-  const [passphrase, setPassphrase] = useState('');
+  const [checkPassphrase, setCheckPassphrase] = useState('');
+
+  // Passphrase display step state
+  const [generatedPassphrase, setGeneratedPassphrase] = useState('');
+  const [mailboxId, setMailboxId] = useState('');
+  const [passphraseConfirmed, setPassphraseConfirmed] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(false);
 
   // Time gate: record mount time for bot protection
   const mountTime = useRef(Date.now());
@@ -59,25 +77,33 @@ export function CreateMailboxPage() {
     setError('');
 
     try {
-      // Generate new key pair
-      const keyPair = generateKeyPair();
+      // Generate passphrase and derive key pair from it
+      const newPassphrase = generatePassphrase();
+      const keyPair = await deriveKeyPairFromPassphrase(newPassphrase);
 
-      // Create mailbox on server
+      // Create mailbox on server with derived public key
       const result = await createMailbox({
         publicKey: keyPair.publicKey,
         helpCategory: category,
         region: region.trim(),
       });
 
-      // Save mailbox data locally
-      saveMailboxToStorage({
-        id: result.id,
-        keyPair,
-        createdAt: new Date().toISOString(),
-      });
+      // Store mailbox ID and passphrase for the confirmation step
+      setMailboxId(result.id);
+      setGeneratedPassphrase(newPassphrase);
 
-      // Navigate to mailbox view
-      navigate(`/help/mailbox/${result.id}`);
+      // Save to localStorage only if user opted in (with passphrase included)
+      if (rememberDevice) {
+        saveMailboxToStorage({
+          id: result.id,
+          keyPair,
+          createdAt: new Date().toISOString(),
+          passphrase: newPassphrase,
+        });
+      }
+
+      // Show passphrase step instead of navigating immediately
+      setMode('passphrase');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('help:errors.createFailed'));
     } finally {
@@ -85,14 +111,56 @@ export function CreateMailboxPage() {
     }
   };
 
-  const handleCheckMessages = (e: React.FormEvent) => {
+  const handleCheckMessages = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!passphrase.trim()) return;
-    // Navigate to mailbox view with passphrase-derived ID
-    // For now, navigate using the stored mailbox if available
-    if (existingMailbox) {
-      navigate(`/help/mailbox/${existingMailbox}`);
+    if (!checkPassphrase.trim()) return;
+
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      // Derive key pair from the entered passphrase
+      const keyPair = await deriveKeyPairFromPassphrase(checkPassphrase.trim());
+
+      // Look up mailbox by derived public key
+      const result = await lookupMailboxByPublicKey(keyPair.publicKey);
+
+      if (!result) {
+        setError(t('help:errors.mailboxNotFound'));
+        return;
+      }
+
+      // Save to localStorage so ViewMailboxPage can decrypt messages
+      saveMailboxToStorage({
+        id: result.id,
+        keyPair,
+        createdAt: new Date().toISOString(),
+        passphrase: checkPassphrase.trim(),
+      });
+
+      navigate(`/help/mailbox/${result.id}`);
+    } catch {
+      setError(t('help:errors.lookupFailed'));
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleCopyPassphrase = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedPassphrase);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback: select text for manual copy
+    }
+  };
+
+  const handlePassphraseConfirm = () => {
+    if (rememberDevice) {
+      // localStorage was already saved during creation
+    }
+    navigate(`/help/mailbox/${mailboxId}`);
   };
 
   return (
@@ -221,6 +289,24 @@ export function CreateMailboxPage() {
 
                   {/* Privacy warning — inline, not boxed */}
                   <p className="text-sm text-amber-700">{t('help:create.privacyWarning')}</p>
+
+                  {/* Remember this device */}
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberDevice}
+                      onChange={(e) => setRememberDevice(e.target.checked)}
+                      className="mt-0.5 h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">
+                        {t('help:create.rememberDevice')}
+                      </span>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {t('help:create.rememberDeviceHelper')}
+                      </p>
+                    </div>
+                  </label>
                 </div>
 
                 <div className="mt-6">
@@ -235,6 +321,68 @@ export function CreateMailboxPage() {
                 </div>
               </form>
             </>
+          )}
+
+          {/* Passphrase display step */}
+          {mode === 'passphrase' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">
+                  {t('help:passphrase.title')}
+                </h2>
+                <p className="text-gray-600">{t('help:passphrase.description')}</p>
+              </div>
+
+              {/* Passphrase display */}
+              <div className="bg-gray-50 rounded-lg p-6 text-center">
+                <p className="text-xs uppercase tracking-wide text-gray-500 mb-3">
+                  {t('help:passphrase.writeItDown')}
+                </p>
+                <p className="font-mono text-2xl font-bold text-gray-900 tracking-wide select-all break-all">
+                  {generatedPassphrase}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCopyPassphrase}
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-700 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors"
+                >
+                  <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
+                  {copied ? t('help:passphrase.copied') : t('help:passphrase.copy')}
+                </button>
+              </div>
+
+              {/* Warning */}
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <FontAwesomeIcon
+                  icon={faTriangleExclamation}
+                  className="text-amber-500 mt-0.5 flex-shrink-0"
+                />
+                <p className="text-sm text-amber-800">{t('help:passphrase.warning')}</p>
+              </div>
+
+              {/* Confirmation checkbox */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={passphraseConfirmed}
+                  onChange={(e) => setPassphraseConfirmed(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {t('help:passphrase.confirm')}
+                </span>
+              </label>
+
+              {/* Continue button */}
+              <Button
+                type="button"
+                disabled={!passphraseConfirmed}
+                onClick={handlePassphraseConfirm}
+                className="w-full"
+              >
+                {t('common:continue', 'Continue')}
+              </Button>
+            </div>
           )}
 
           {/* Check messages flow */}
@@ -253,19 +401,29 @@ export function CreateMailboxPage() {
                 </div>
               ) : (
                 <form onSubmit={handleCheckMessages}>
+                  {error && (
+                    <Alert type="error" className="mb-4">
+                      {error}
+                    </Alert>
+                  )}
                   <div className="bg-gray-50 rounded-lg p-6 space-y-4">
                     <p className="text-sm text-gray-600">{t('help:enterPassphrase')}</p>
                     <input
                       type="text"
-                      value={passphrase}
-                      onChange={(e) => setPassphrase(e.target.value)}
+                      value={checkPassphrase}
+                      onChange={(e) => setCheckPassphrase(e.target.value)}
                       placeholder={t('help:passphrasePlaceholder')}
                       className="w-full px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono"
                       autoComplete="off"
                     />
                   </div>
                   <div className="mt-6">
-                    <Button type="submit" disabled={!passphrase.trim()} className="w-full">
+                    <Button
+                      type="submit"
+                      disabled={!checkPassphrase.trim() || isSubmitting}
+                      isLoading={isSubmitting}
+                      className="w-full"
+                    >
                       {t('help:accessMailbox')}
                     </Button>
                   </div>
