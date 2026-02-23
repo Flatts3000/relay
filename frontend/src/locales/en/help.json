@@ -195,5 +195,77 @@
     "passphraseVisible": "Passphrase is visible",
     "passphraseHidden": "Passphrase is hidden",
     "toggleVisibility": "Toggle passphrase visibility"
+  },
+  "broadcast": {
+    "title": "Request Help Anonymously",
+    "description": "Send an encrypted request to local mutual aid groups. No account needed.",
+    "regionLabel": "Your Area",
+    "categoriesLabel": "Types of Help Needed",
+    "messageLabel": "Your Message",
+    "messagePlaceholder": "Describe what you need help with...",
+    "contactLabel": "How to Reach You",
+    "contactPlaceholder": "Phone, email, or other way to reach you",
+    "contactHelper": "This will be encrypted — only matching groups can see it.",
+    "privacyWarning": "Your contact info is encrypted end-to-end. Relay cannot read it. Only verified groups in your area will receive it.",
+    "submit": "Send Encrypted Request",
+    "privacy1": "No account or email required",
+    "privacy2": "We don't track your visits or IP address",
+    "privacy3": "Your message is encrypted end-to-end",
+    "privacy4": "Requests auto-delete after 7 days",
+    "receipt": {
+      "title": "Your Request Has Been Sent",
+      "explanation": "When a group contacts you and says this word, you'll know it came through Relay.",
+      "safeWordLabel": "Your safe word",
+      "broadcastIdLabel": "Request ID",
+      "done": "Done",
+      "copied": "Copied to clipboard",
+      "copy": "Copy"
+    },
+    "errors": {
+      "categoryRequired": "Please select at least one category",
+      "messageRequired": "Please enter a message",
+      "contactRequired": "Please enter your contact information",
+      "noGroups": "No groups found in your area for the selected categories. Try broadening your selection.",
+      "submitFailed": "Failed to send request. Please try again."
+    }
+  },
+  "broadcastCategories": {
+    "food": "Food",
+    "shelter_housing": "Shelter / Housing",
+    "transportation": "Transportation",
+    "medical": "Medical",
+    "safety_escort": "Safety / Escort",
+    "childcare": "Childcare",
+    "legal": "Legal",
+    "supplies": "Supplies",
+    "other": "Other"
+  },
+  "inbox": {
+    "title": "Help Request Inbox",
+    "description": "Encrypted help requests from people in your area",
+    "noInvites": "No pending help requests",
+    "noInvitesDescription": "New requests from people in your area will appear here.",
+    "region": "Region",
+    "categories": "Categories",
+    "received": "Received",
+    "expires": "Expires",
+    "viewRequest": "View Request",
+    "unlock": {
+      "title": "Unlock Group Key",
+      "description": "Enter your group's private key to decrypt this request.",
+      "placeholder": "Paste your group's private key (base64)",
+      "submit": "Decrypt",
+      "error": "Failed to decrypt. Check your key and try again."
+    },
+    "decrypted": {
+      "title": "Decrypted Help Request",
+      "message": "Message",
+      "contactInfo": "Contact Information",
+      "safeWord": "Safe Word",
+      "safeWordExplanation": "Use this word when you contact this person so they know you came through Relay.",
+      "countdown": "Auto-deletes in {{time}}",
+      "saved": "I've saved this information",
+      "decryptionFailed": "Unable to decrypt this request. The key may be incorrect."
+    }
   }
 }

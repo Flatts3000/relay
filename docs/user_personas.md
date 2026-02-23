@@ -22,7 +22,7 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 
 - That entering information online creates a trail ICE or landlords could access
 - That she'll need to make an account, provide an email, or show ID
-- That she won't understand the passphrase system or will lose the paper she writes it on
+- That she won't understand how the system works or how to trust the person who calls her back
 - That no one will respond
 
 **Tech profile:**
@@ -34,15 +34,17 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 
 **How she uses Relay:**
 
-1. Visits the site from her phone, taps "I need help"
-2. Sees a passphrase generated for her, writes it on a piece of paper
-3. Selects "Rent" and picks "Hennepin County, MN" from the autocomplete
-4. Comes back two days later, enters her passphrase, finds an encrypted message from a local group with a phone number to call
-5. Calls the group directly. Relay is no longer involved.
+1. Visits the site from her phone, taps "Request help"
+2. Picks "Rent" and selects "Hennepin County, MN"
+3. Writes a short message: "Behind on rent, need help this month" and adds her phone number
+4. Sees a receipt screen with a safe-word: "blue-river-mountain"
+5. Two days later, a local group calls her and says the safe-word — she knows it's legit
+6. She talks to them directly. Relay is no longer involved.
 
 **What success looks like for Maria:**
 
-- She never had to give her name, email, or phone number to the website
+- She never had to give her name, email, or phone number to the website itself
+- Her contact info was encrypted — only reviewed groups could read it
 - She found help within days, not weeks
 - If someone subpoenaed Relay, there would be nothing connecting her to the request
 
@@ -51,7 +53,10 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 - Mobile-first, large tap targets, minimal text
 - Bilingual (English/Spanish) at every step
 - No accounts, no cookies, no tracking on anonymous routes
-- Passphrase UX must be dead simple — clear instructions, copy button, strong visual emphasis on "write this down"
+- No passphrase UX needed; no "write this down" flow
+- Safe-word display must be prominent and clear: "When someone contacts you and says this word, you'll know it came from Relay"
+- Contact info entry must be simple and reassuring: "Only reviewed groups can read this"
+- Shared device warning: "Clear your browser after submitting if on a shared or public computer"
 - The autocomplete for region must work on slow connections (static dataset, no API calls)
 
 ---
@@ -87,10 +92,10 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 
 1. Registers his group with a pseudonymous name, service area (North Minneapolis, MN), and a role-based email
 2. Gets verified through peer attestation (two other groups vouch for his)
-3. Sees anonymous help requests matching his area — "Rent, Hennepin County, MN"
-4. Sends an encrypted reply with his group's contact info
-5. Submits funding requests to the hub: "$2,400 for rent assistance, urgent, North Minneapolis"
-6. Checks dashboard to see if the request was approved
+3. Checks group inbox — sees an encrypted invite for "Rent, Hennepin County, MN"
+4. Decrypts the invite, sees the message, a phone number, and a safe-word
+5. Calls the person, says the safe-word to verify
+6. Submits funding requests to the hub: "$2,400 for rent assistance, urgent, North Minneapolis"
 
 **What success looks like for DeShawn:**
 
@@ -101,9 +106,11 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 
 **Design implications:**
 
-- Dashboard should surface what matters: open help requests, pending funding requests, verification status
+- Dashboard should surface what matters: pending invites (not "open help requests"), funding requests, verification status
 - Funding request form must be fast — a few fields, not a grant application
-- Encrypted reply flow must be simple — he's not thinking about cryptography, he just wants to send his phone number
+- Decrypt flow must be simple — unlock group key, see the message
+- 10-minute confirmation window clearly communicated
+- No "encrypted reply" composition needed
 - Verification should feel like community trust, not bureaucratic approval
 
 ---
@@ -209,9 +216,9 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 
 ## 5. Tomás — Community Member Looking for a Group
 
-**Role:** Public visitor (no account, no passphrase)
+**Role:** Public visitor (no account)
 
-**Background:** Tomás is a 28-year-old renter in St. Paul. He's not in crisis right now, but things are tight and getting tighter. His coworker mentioned that there's a mutual aid group in his neighborhood that helps people with utilities and groceries — "something called Eastside Solidarity, I think." He wants to find them. He's also curious whether there are other groups nearby. He doesn't want to fill out a form or create an anonymous mailbox — he just wants to find the group and contact them directly.
+**Background:** Tomás is a 28-year-old renter in St. Paul. He's not in crisis right now, but things are tight and getting tighter. His coworker mentioned that there's a mutual aid group in his neighborhood that helps people with utilities and groceries — "something called Eastside Solidarity, I think." He wants to find them. He's also curious whether there are other groups nearby. He doesn't want to fill out a form or submit a help request — he just wants to find the group and contact them directly.
 
 **Goals:**
 
@@ -245,7 +252,7 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 **What success looks like for Tomás:**
 
 - He found the group in under a minute
-- He never created an account, entered an email, or clicked through a passphrase flow
+- He never created an account, entered an email, or submitted a help request
 - No cookies, no tracking, no record of his visit
 - He also discovered two other groups he didn't know about
 
@@ -256,7 +263,7 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 - Directory shows only what groups have opted to make public: name, service area, aid categories, contact method
 - Search/filter by region (using the same autocomplete dataset) and aid category
 - Must be fast on mobile, low bandwidth — static or pre-rendered where possible
-- Clear visual distinction between the directory (browse groups) and the help request flow (anonymous mailbox) — these are different paths for different needs
+- Clear visual distinction between the directory (browse groups) and the help request flow (anonymous broadcast) — these are different paths for different needs
 - Bilingual support
 
 ---
@@ -271,16 +278,16 @@ Relay serves four distinct actor types. Each has different goals, fears, technic
 - Track browsing patterns of anonymous users
 - Require individuals to verify their identity before receiving help
 
-This user does not exist in Relay. The system is designed so that even if someone with these goals gained access, the data simply isn't there. Messages are encrypted. Individuals are anonymous. Mailboxes are ephemeral. There is nothing to surveil.
+This user does not exist in Relay. The system is designed so that even if someone with these goals gained access, the data simply isn't there. Broadcast payloads are encrypted. Individuals are anonymous. Invites are ephemeral. There is nothing to surveil.
 
 ---
 
 ## Summary Table
 
-| Persona      | Role                 | Auth              | Primary Action                           | Biggest Fear                              |
-| ------------ | -------------------- | ----------------- | ---------------------------------------- | ----------------------------------------- |
-| Maria        | Individual in crisis | None (passphrase) | Request help anonymously                 | Creating a traceable record               |
-| Tomás        | Community member     | None              | Find and contact a local group           | Being tracked for browsing a directory    |
-| DeShawn      | Group Coordinator    | Email login       | Respond to requests, submit funding asks | Being treated like a grant applicant      |
-| Angela       | Hub Admin            | Email login       | Review groups, approve funding           | Seeing individual data she shouldn't have |
-| Pastor James | Verifier             | Minimal           | Vouch for a group                        | Legal exposure from attestation           |
+| Persona      | Role                 | Auth                       | Primary Action                           | Biggest Fear                              |
+| ------------ | -------------------- | -------------------------- | ---------------------------------------- | ----------------------------------------- |
+| Maria        | Individual in crisis | None (anonymous broadcast) | Request help anonymously                 | Creating a traceable record               |
+| Tomás        | Community member     | None                       | Find and contact a local group           | Being tracked for browsing a directory    |
+| DeShawn      | Group Coordinator    | Email login                | Respond to requests, submit funding asks | Being treated like a grant applicant      |
+| Angela       | Hub Admin            | Email login                | Review groups, approve funding           | Seeing individual data she shouldn't have |
+| Pastor James | Verifier             | Minimal                    | Vouch for a group                        | Legal exposure from attestation           |

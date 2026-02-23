@@ -70,7 +70,7 @@ Individual residents facing housing insecurity and other urgent needs lack a saf
 2. **Enable anonymous help requests** — Individuals can request help and receive responses from groups without providing identifying information
 3. **Establish trust** — Lightweight verification that doesn't require invasive documentation
 4. **Accelerate funding** — Reduce time from request to funds disbursed
-5. **Protect privacy** — Zero identifiable individual data; passphrase-only access; E2E encryption; subpoena-resistant design
+5. **Protect privacy** — Zero identifiable individual data; anonymous fire-and-forget broadcasts; E2E encryption; subpoena-resistant design
 
 ### Success Metrics
 
@@ -182,7 +182,7 @@ Individual residents facing housing insecurity and other urgent needs lack a saf
 - Doesn't know who to trust or where to start
 - Current options require knowing someone who knows someone
 
-**Key constraint:** Individuals access Relay using only a passphrase—no email, phone, or account. Messages from groups are end-to-end encrypted; Relay cannot read them. Mailboxes auto-delete after 7 days. If subpoenaed, Relay can only produce encrypted data it cannot decrypt.
+**Key constraint:** Individuals submit anonymous encrypted broadcasts—no email, phone, or account required. Contact info is included in the encrypted payload that only reviewed groups can decrypt. Per-group invites are deleted after confirmation or TTL expiry. If subpoenaed, Relay can only produce encrypted data it cannot decrypt.
 
 ---
 
@@ -409,110 +409,88 @@ The system shall provide secure, email-based authentication.
 
 ---
 
-### FR-7: Anonymous Help Requests
+### FR-7: Anonymous Help Requests (Encrypted Broadcast)
 
 **Priority:** P0 (Must Have)
 
-The system shall allow individuals in crisis to request help and receive responses from groups—without providing any identifying information.
+> _Migration note: This section describes the encrypted broadcast model, which replaces the earlier mailbox/passphrase approach. See `docs/encrypted_public_help_broadcast.md` for the full broadcast spec._
 
-**User flow:**
+The system shall allow individuals in crisis to broadcast encrypted help requests to matching groups—without providing any identifying information to Relay.
 
-1. Individual visits site and selects "I need help"
-2. System generates a random passphrase (e.g., "blue-river-mountain-4729")
-3. Individual specifies: type of help needed (rent, food, utilities), general region
-4. Individual writes down passphrase—this is their only way to access responses
-5. Relevant groups see the request (category + region only)
-6. Groups send encrypted messages with their contact info and how they can help
-7. Individual returns to site, enters passphrase, decrypts and reads messages
-8. Individual contacts group directly using the info provided
+**Individual flow:**
 
-**What the system stores:**
+1. Individual visits site and selects "Request help (anonymous)"
+2. Individual chooses a coarse region (dropdown or "near me")
+3. Individual chooses one or more aid categories (multi-select)
+4. Individual writes a message with at least one contact method (phone / email / freeform)
+5. Client encrypts payload with a random symmetric key, wraps key per recipient group's public key
+6. Receipt screen displays: broadcast ID + safe-word verification code (generated client-side, included in encrypted payload)
+7. Individual leaves. Fire-and-forget.
 
-| Data               | Stored | Notes                                       |
-| ------------------ | ------ | ------------------------------------------- |
-| Passphrase         | No     | Used to derive encryption key client-side   |
-| Mailbox ID         | Yes    | Random identifier, not linked to any person |
-| Help category      | Yes    | e.g., "rent", "food"                        |
-| Region             | Yes    | City/county level                           |
-| Encrypted messages | Yes    | Relay cannot decrypt                        |
-| Email/phone/name   | No     | Never collected                             |
-| IP address         | No     | Not logged for anonymous routes             |
+**Group flow:**
+
+1. Group operator unlocks group key material
+2. Client fetches pending invites for subscribed buckets
+3. Client unwraps symmetric key from invite, decrypts broadcast payload
+4. Group sees message, contact info, and safe-word
+5. Group confirms receipt — Relay deletes that invite (10-minute auto-delete window)
+6. Group contacts individual outside Relay using safe-word to verify
+
+**What the system stores (while invites are pending):**
+
+| Data                     | Stored | Notes                                                            |
+| ------------------------ | ------ | ---------------------------------------------------------------- |
+| Broadcast ID             | Yes    | Random identifier                                                |
+| Ciphertext payload       | Yes    | Shared encrypted blob; Relay cannot decrypt                      |
+| Broadcast header         | Yes    | Routing metadata: region, categories, timestamp, TTL             |
+| Per-group invites        | Yes    | Wrapped symmetric key per group; deleted after confirmation      |
+| Contact info (plaintext) | No     | Only inside encrypted payload                                    |
+| Safe-word (any form)     | No     | Only inside encrypted payload and on individual's receipt screen |
+| IP address               | No     | Not logged for anonymous routes                                  |
+
+**After all invites resolved (tombstone only):**
+
+- Broadcast ID, bucket, timestamp, which groups confirmed
 
 **Cryptographic design:**
 
-- Passphrase generates a keypair client-side (e.g., using libsodium)
-- Public key stored with mailbox; private key never leaves client
-- Groups encrypt messages with mailbox's public key
-- Only someone with the passphrase can derive the private key and decrypt
-- Relay stores only ciphertext it cannot read
+- Random symmetric content key encrypts payload (message + contact info + safe-word)
+- Per-group asymmetric wrapping: content key wrapped with each recipient group's public key
+- Groups unwrap with private key (never on Relay), decrypt shared ciphertext
+- TweetNaCl.js: `crypto_secretbox` (symmetric), `crypto_box` (wrapping), `crypto_box_keypair` (X25519)
 
-**Retention and deletion:**
+**Retention & deletion:**
 
-- Mailboxes delete after 7 days of inactivity (no access)
-- Activity (entering passphrase to check messages) resets the 7-day timer
-- Individual can manually delete earlier
-
-**Soft delete (tombstone retained for groups/hubs):**
-
-- Record that a request existed
-- Help category and region
-- That a group responded (yes/no)
-- Deletion type: manual or auto (inactivity)
-- Created and deleted timestamps
-
-**Hard delete (permanently removed, no recovery):**
-
-- Encrypted messages
-- Public key
-- Original mailbox ID
-- Any data that could identify or correlate to the individual
-
-This allows groups to see: "You responded to a rent request in Hennepin County. Mailbox deleted (inactivity) on [date]." — without retaining any sensitive content.
-
-**What groups see:**
-
-- Category of help needed
-- General region
-- "Reply" button to send encrypted message
-- Number of other groups who have replied (optional)
-
-**What groups do NOT see:**
-
-- Any identifying information
-- Other groups' message contents
-- Whether the individual has read their message
-
-**Explicitly prohibited:**
-
-- Email, phone, or any contact info collection from individuals
-- IP address logging on anonymous routes
-- Analytics or tracking of any kind
-- Server-side ability to read messages
-- Persistent cookies for anonymous users
+- Invite TTL: configurable (e.g., 7 days)
+- Confirmation-based deletion: group confirms → invite immediately deleted
+- 10-minute auto-delete after decryption
+- Ciphertext cleanup: all invites deleted → ciphertext deleted → tombstone created
 
 **Acceptance Criteria:**
 
-- [ ] Individual can create mailbox with only a passphrase (no email/phone)
-- [ ] Passphrase is generated client-side and displayed once
-- [ ] Passphrase display includes a copy-to-clipboard button and strong visual emphasis on writing it down (this is the only way to access responses)
-- [ ] Individual can specify help type and region
+- [ ] Individual can submit broadcast without email, phone, or account
+- [ ] Individual selects coarse region and one or more aid categories
+- [ ] Individual provides at least one contact method in message body
 - [ ] Region selection uses a constrained autocomplete (static dataset, no API calls) to ensure reliable group matching
-- [ ] Groups can view anonymous requests matching their service area
-- [ ] Groups can send encrypted replies
-- [ ] Encrypted reply flow is simple — group enters contact info and a message, encryption is invisible to the user
-- [ ] Individual can return from any device with passphrase and read messages
-- [ ] Messages are encrypted client-side before transmission
-- [ ] Server cannot decrypt stored messages
-- [ ] Mailboxes delete after 7 days of inactivity
-- [ ] On deletion: tombstone retained (category, region, response status, timestamps)
-- [ ] On deletion: messages, keys, and mailbox ID hard deleted with no recovery
-- [ ] Groups can see tombstones of deleted mailboxes they responded to
+- [ ] Client generates random symmetric key and encrypts payload
+- [ ] Client wraps symmetric key per recipient group's public key
+- [ ] Safe-word generated client-side and displayed on receipt screen only
+- [ ] Safe-word included in encrypted payload (Relay never stores it)
+- [ ] Broadcast ID displayed on receipt screen
+- [ ] Groups can view pending invites matching their subscribed buckets
+- [ ] Groups can decrypt invites using their private key (never on Relay)
+- [ ] Groups see message, contact info, and safe-word after decryption
+- [ ] 10-minute confirmation window starts on decryption; visible countdown in UI
+- [ ] Group can manually delete invite before 10 minutes
+- [ ] Invite auto-deleted after 10 minutes
+- [ ] Ciphertext deleted when all invites are resolved
+- [ ] Tombstone retained: broadcast ID, bucket, timestamp, confirming group IDs
 - [ ] No IP logging on anonymous routes
 - [ ] No cookies set for anonymous users
 - [ ] Works on slow/intermittent connections
-- [ ] All anonymous flow screens are fully bilingual (English/Spanish) with language switcher accessible
-- [ ] Mobile-first layout with minimum 44px tap targets and minimal text
-- [ ] Shared/borrowed device warning displayed (no data persisted after session)
+- [ ] All broadcast flow screens fully bilingual (English/Spanish) with language switcher accessible
+- [ ] Mobile-first layout with minimum 44px tap targets
+- [ ] Shared/borrowed device warning displayed
 
 ---
 
@@ -576,17 +554,17 @@ The system shall provide a public, searchable directory of verified mutual aid g
 
 **Priority:** P0 (Must Have)
 
-| Requirement              | Specification                                                                    |
-| ------------------------ | -------------------------------------------------------------------------------- |
-| Data encryption          | TLS 1.3 in transit; AES-256 at rest                                              |
-| E2E encryption           | Client-side encryption for anonymous mailbox messages (libsodium or similar)     |
-| Input validation         | All user inputs validated and sanitized                                          |
-| SQL injection prevention | Parameterized queries only                                                       |
-| XSS prevention           | Output encoding on all rendered content                                          |
-| Authentication           | Secure token-based, short-lived sessions (for groups/hubs only)                  |
-| Authorization            | Role-based access control enforced server-side                                   |
-| Audit logging            | Data access logged for authenticated routes only; no logging on anonymous routes |
-| Key management           | Private keys never transmitted to or stored on server                            |
+| Requirement              | Specification                                                                      |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| Data encryption          | TLS 1.3 in transit; AES-256 at rest                                                |
+| E2E encryption           | Client-side encryption for anonymous broadcast payloads (TweetNaCl.js / libsodium) |
+| Input validation         | All user inputs validated and sanitized                                            |
+| SQL injection prevention | Parameterized queries only                                                         |
+| XSS prevention           | Output encoding on all rendered content                                            |
+| Authentication           | Secure token-based, short-lived sessions (for groups/hubs only)                    |
+| Authorization            | Role-based access control enforced server-side                                     |
+| Audit logging            | Data access logged for authenticated routes only; no logging on anonymous routes   |
+| Key management           | Private keys never transmitted to or stored on server                              |
 
 ---
 
@@ -670,17 +648,17 @@ The system shall provide a public, searchable directory of verified mutual aid g
 
 **Priority:** P0 (Must Have)
 
-| Requirement                 | Specification                                                                  |
-| --------------------------- | ------------------------------------------------------------------------------ |
-| Data minimization           | Collect only what's explicitly needed; no email/phone from individuals         |
-| E2E encryption              | Individual-to-group messages encrypted client-side; server cannot read         |
-| Passphrase-only access      | Individuals access mailboxes with passphrase only; no account                  |
-| Retention limits            | Anonymous mailboxes auto-delete after 7 days of inactivity                     |
-| No IP logging               | Anonymous routes do not log IP addresses                                       |
-| No tracking                 | No analytics, cookies, or tracking for anonymous users                         |
-| Subpoena-resistant          | If legally compelled, Relay can only produce encrypted blobs it cannot decrypt |
-| No third-party data sharing | Data never shared outside pilot participants                                   |
-| No third-party scripts      | No external analytics, fonts, or CDNs that could track users                   |
+| Requirement                 | Specification                                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Data minimization           | Collect only what's explicitly needed; no email/phone from individuals                               |
+| E2E encryption              | Individual-to-group messages encrypted client-side; server cannot read                               |
+| Anonymous broadcasts        | Individuals submit encrypted broadcasts without accounts or persistent identity                      |
+| Retention limits            | Invites deleted after group confirmation or TTL expiry; ciphertext deleted when all invites resolved |
+| No IP logging               | Anonymous routes do not log IP addresses                                                             |
+| No tracking                 | No analytics, cookies, or tracking for anonymous users                                               |
+| Subpoena-resistant          | If legally compelled, Relay can only produce encrypted blobs it cannot decrypt                       |
+| No third-party data sharing | Data never shared outside pilot participants                                                         |
+| No third-party scripts      | No external analytics, fonts, or CDNs that could track users                                         |
 
 ---
 
@@ -758,7 +736,7 @@ The system shall provide a public, searchable directory of verified mutual aid g
 ### Operational Constraints
 
 - **Invite-only registration, public directory:** Group registration is invite-only and all participating groups are vetted; once verified, groups are listed in a public directory for community discovery
-- **Anonymous for individuals:** Passphrase-only access; no registration, email, or phone required
+- **Anonymous for individuals:** Anonymous encrypted broadcasts; no registration, email, or phone required
 - **Pilot scope:** 1 hub, 3-5 groups, 30-45 days
 - **Veto power:** Any participant can pause or end pilot
 - **No expansion by default:** Post-pilot decisions made collaboratively
@@ -767,8 +745,8 @@ The system shall provide a public, searchable directory of verified mutual aid g
 
 - **No individual PII:** No email, phone, name, or address collected from individuals
 - **E2E encryption:** Individual-to-group messages encrypted; server cannot read
-- **Passphrase-only:** Individuals access mailboxes with passphrase; nothing links to identity
-- **Auto-deletion:** Anonymous mailboxes purged after 7 days of inactivity
+- **Anonymous broadcasts:** Individuals submit encrypted help requests without accounts or persistent identity
+- **Invite-level deletion:** Invites deleted after group confirmation or TTL expiry; ciphertext deleted when all invites resolved
 - **No IP logging:** Anonymous routes do not log IP addresses
 - **Group-level funding:** No individual case tracking for fund requests
 - **Short retention:** Group funding request details not retained indefinitely
@@ -780,21 +758,21 @@ The system shall provide a public, searchable directory of verified mutual aid g
 
 The following are explicitly excluded from this product:
 
-| Feature                                    | Reason                                                                  |
-| ------------------------------------------ | ----------------------------------------------------------------------- |
-| Individual accounts/registration           | Privacy risk; passphrase-only access                                    |
-| Collection of email/phone from individuals | Privacy risk; creates traceable records                                 |
-| Server-readable messages                   | Privacy risk; all individual messages E2E encrypted                     |
-| Case management                            | Scope creep; different product                                          |
-| Long-term storage of individual requests   | Privacy risk; mailboxes auto-delete after 7 days                        |
-| Document uploads                           | Privacy risk; not needed for workflow                                   |
-| Donor-facing dashboards                    | Different audience; scope creep                                         |
-| Real-time chat                             | Scope creep; async encrypted mailbox approach instead                   |
-| Eligibility automation                     | Removes human judgment; scope creep                                     |
-| Native mobile apps                         | Pilot scope; reassess post-pilot                                        |
-| Push notifications                         | Privacy risk; individuals must return to check messages                 |
-| Analytics on individual usage              | Privacy risk; cannot track who views what                               |
-| Passphrase recovery                        | By design; Relay cannot recover access (would require storing identity) |
+| Feature                                        | Reason                                                                                         |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Individual accounts/registration               | Privacy risk; anonymous fire-and-forget broadcasts                                             |
+| Collection of individual contact info by Relay | Privacy risk; contact info is inside encrypted payload that Relay cannot read                  |
+| Server-readable messages                       | Privacy risk; all broadcast payloads E2E encrypted                                             |
+| Case management                                | Scope creep; different product                                                                 |
+| Long-term storage of broadcasts                | Privacy risk; invites deleted after confirmation; ciphertext deleted when all invites resolved |
+| Document uploads                               | Privacy risk; not needed for workflow                                                          |
+| Donor-facing dashboards                        | Different audience; scope creep                                                                |
+| Real-time chat                                 | Scope creep; encrypted broadcast with out-of-band contact instead                              |
+| Eligibility automation                         | Removes human judgment; scope creep                                                            |
+| Native mobile apps                             | Pilot scope; reassess post-pilot                                                               |
+| Push notifications                             | Privacy risk; broadcasts are fire-and-forget                                                   |
+| Analytics on individual usage                  | Privacy risk; cannot track who views what                                                      |
+| Returning to view past broadcasts              | Post-MVP; pending stakeholder confirmation                                                     |
 
 If any out-of-scope feature becomes necessary, the pilot pauses for reevaluation.
 
@@ -802,21 +780,21 @@ If any out-of-scope feature becomes necessary, the pilot pauses for reevaluation
 
 ## Risks and Mitigations
 
-| Risk                                           | Likelihood | Impact   | Mitigation                                                               |
-| ---------------------------------------------- | ---------- | -------- | ------------------------------------------------------------------------ |
-| Groups enter recipient PII in free-text fields | Medium     | High     | UX guidance; field labels; no "name" or "address" fields                 |
-| Verification process too slow                  | Medium     | Medium   | Multiple verification paths; hub admin can fast-track                    |
-| Low adoption during pilot                      | Medium     | Medium   | Direct outreach; personal onboarding support                             |
-| Data breach                                    | Low        | High     | E2E encryption means breached data is unreadable; minimal retention      |
-| Legal subpoena for records                     | Low        | High     | E2E encryption; Relay can only produce encrypted blobs it cannot decrypt |
-| Individual loses passphrase                    | High       | Medium   | Clear UX warning; encourage writing it down; no recovery by design       |
-| Cryptographic implementation flaws             | Low        | Critical | Use proven libraries (libsodium); security audit; no custom crypto       |
-| Hub or group withdraws mid-pilot               | Medium     | Low      | Graceful offboarding; data export; no lock-in                            |
-| Scope creep requests                           | High       | Medium   | Clear PRD; out-of-scope list; pause-and-evaluate policy                  |
-| Third-party tracking                           | Medium     | Critical | No analytics scripts; no third-party resources; CSP headers              |
-| Accidental logging of individual activity      | Medium     | High     | Code review; no logging on anonymous routes; audit log configuration     |
-| Groups abuse anonymous requests (spam)         | Low        | Medium   | Rate limiting by mailbox; groups can ignore; report mechanism            |
-| Individuals don't return to check messages     | Medium     | Medium   | Clear UX explaining async nature; encourage checking back                |
+| Risk                                                   | Likelihood | Impact   | Mitigation                                                                                      |
+| ------------------------------------------------------ | ---------- | -------- | ----------------------------------------------------------------------------------------------- |
+| Groups enter recipient PII in free-text fields         | Medium     | High     | UX guidance; field labels; no "name" or "address" fields                                        |
+| Verification process too slow                          | Medium     | Medium   | Multiple verification paths; hub admin can fast-track                                           |
+| Low adoption during pilot                              | Medium     | Medium   | Direct outreach; personal onboarding support                                                    |
+| Data breach                                            | Low        | High     | E2E encryption means breached data is unreadable; minimal retention                             |
+| Legal subpoena for records                             | Low        | High     | E2E encryption; Relay can only produce encrypted blobs it cannot decrypt                        |
+| Individual's contact info exposed via group compromise | Medium     | High     | Per-group invite model limits exposure; invites deleted after confirmation; vetting required    |
+| Cryptographic implementation flaws                     | Low        | Critical | Use proven libraries (libsodium); security audit; no custom crypto                              |
+| Hub or group withdraws mid-pilot                       | Medium     | Low      | Graceful offboarding; data export; no lock-in                                                   |
+| Scope creep requests                                   | High       | Medium   | Clear PRD; out-of-scope list; pause-and-evaluate policy                                         |
+| Third-party tracking                                   | Medium     | Critical | No analytics scripts; no third-party resources; CSP headers                                     |
+| Accidental logging of individual activity              | Medium     | High     | Code review; no logging on anonymous routes; audit log configuration                            |
+| Broadcast spam                                         | Low        | Medium   | Rate limiting (proof-of-work or privacy-preserving token); groups can mute/ignore               |
+| Rogue group insertion                                  | Low        | High     | Per-group invites prevent retroactive access; multi-party vetting; public directory audit trail |
 
 ---
 
@@ -850,11 +828,11 @@ Monorepo with the following structure:
 ### Key Architectural Decisions
 
 1. **No individual PII in schema** — Cannot be collected even accidentally; no email/phone fields for individuals
-2. **E2E encryption for individual messages** — Server stores only ciphertext it cannot decrypt
-3. **Passphrase-derived keys** — Private keys generated client-side from passphrase; never transmitted
+2. **E2E encryption for broadcast payloads** — Server stores only ciphertext it cannot decrypt
+3. **Per-group invite model** — Symmetric content key wrapped per recipient group's public key; groups unwrap with private key (never on Relay)
 4. **Role-based access control** — Enforced at API level, not just UI (for groups/hubs)
 5. **Audit logging for authenticated routes only** — No logging on anonymous routes
-6. **Tombstone + hard delete for individual data** — After 7 days of inactivity: soft delete retains category/region/timestamps for group visibility; hard delete permanently removes messages, keys, and mailbox ID
+6. **Tombstone + invite-level deletion** — After all invites confirmed or expired: ciphertext deleted, tombstone created with broadcast ID, bucket, timestamp, confirming group IDs
 7. **Soft delete for group/hub data** — Group profiles, funding requests, verification records use soft delete with `deleted_at` timestamp; no auto-deletion, manual only
 8. **Stateless sessions** — No persistent login; works on shared devices
 9. **No third-party scripts** — Self-hosted fonts; no external analytics or CDNs
@@ -878,13 +856,13 @@ Monorepo with the following structure:
 - [ ] Implement status tracking (FR-4)
 - [ ] Security review and hardening
 
-### Phase 3: Anonymous Help Requests & Public Directory (Pre-Pilot)
+### Phase 3: Anonymous Help Broadcasts & Public Directory (Pre-Pilot)
 
-- [ ] Implement client-side encryption (libsodium/TweetNaCl.js)
-- [ ] Build anonymous mailbox creation with passphrase generation
-- [ ] Build encrypted message sending for groups
-- [ ] Build message decryption for individuals
-- [ ] Implement auto-deletion after 7 days
+- [ ] Implement client-side encryption (TweetNaCl.js)
+- [ ] Build broadcast submission flow (symmetric encryption + per-group key wrapping)
+- [ ] Build group inbox with invite decryption
+- [ ] Implement invite lifecycle (confirmation-based deletion, 10-minute auto-delete, TTL expiry)
+- [ ] Implement ciphertext cleanup and tombstone creation
 - [ ] Verify no IP logging on anonymous routes
 - [ ] Security audit of cryptographic implementation
 - [ ] Build public group directory with search/filter (FR-8)
@@ -910,16 +888,18 @@ Monorepo with the following structure:
 
 ### Glossary
 
-| Term               | Definition                                                                                                             |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| **Hub**            | Central organization that raises and pools funds for distribution                                                      |
-| **Local Group**    | Informal or semi-formal mutual aid group that distributes aid directly                                                 |
-| **Verification**   | Process of establishing a group as "trusted enough" to receive funds                                                   |
-| **Attestation**    | Vouching for a group's legitimacy by peers or sponsors                                                                 |
-| **Recipient**      | Individual receiving aid from a local group (never tracked in Relay)                                                   |
-| **Mailbox**        | Anonymous, encrypted inbox for an individual; accessed only via passphrase                                             |
-| **Passphrase**     | Random words (e.g., "blue-river-mountain-4729") used to access a mailbox; not stored by Relay                          |
-| **E2E Encryption** | End-to-end encryption; messages encrypted on sender's device, decrypted only on recipient's device; server cannot read |
+| Term               | Definition                                                                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hub**            | Central organization that raises and pools funds for distribution                                                                             |
+| **Local Group**    | Informal or semi-formal mutual aid group that distributes aid directly                                                                        |
+| **Verification**   | Process of establishing a group as "trusted enough" to receive funds                                                                          |
+| **Attestation**    | Vouching for a group's legitimacy by peers or sponsors                                                                                        |
+| **Recipient**      | Individual receiving aid from a local group (never tracked in Relay)                                                                          |
+| **Broadcast**      | An encrypted help request from an individual, consisting of shared ciphertext and per-group invites                                           |
+| **Invite**         | A per-group encrypted package containing a wrapped copy of the broadcast's symmetric key                                                      |
+| **Bucket**         | A deterministic label representing a recipient set (region + category)                                                                        |
+| **Safe-word**      | A verification code generated client-side, shared between individual and recipient groups to verify out-of-band contact originated from Relay |
+| **E2E Encryption** | End-to-end encryption; messages encrypted on sender's device, decrypted only on recipient's device; server cannot read                        |
 
 ### Related Documents
 
@@ -936,3 +916,4 @@ Monorepo with the following structure:
 | 1.0     | February 2026 | —      | Initial PRD                                                                                                    |
 | 1.1     | February 2026 | —      | Added FR-7 Anonymous Help Requests with E2E encryption                                                         |
 | 1.2     | February 2026 | —      | Added Community Member persona, FR-8 Public Group Directory, strengthened acceptance criteria for all personas |
+| 1.3     | February 2026 | —      | Migrated FR-7 to encrypted broadcast model (replaces mailbox/passphrase); updated glossary, constraints, risks |

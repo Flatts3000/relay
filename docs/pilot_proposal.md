@@ -140,51 +140,52 @@ Verified groups are listed in a searchable, public directory — browsable by an
 
 This allows community members who heard about a group through word of mouth — or who simply want to know what's available in their area — to find and contact groups directly, without entering any information into the system.
 
-### 7. Anonymous Help Requests (Individual-to-Group)
+### 7. Anonymous Help Broadcasts (Individual-to-Group)
 
-Individuals in crisis can request help without providing identifying information.
+> _Migration note: This section describes the encrypted broadcast model, which replaces the earlier mailbox/passphrase approach. See `docs/encrypted_public_help_broadcast.md` for the full broadcast spec._
+
+Individuals in crisis can broadcast encrypted help requests to matching groups without providing identifying information to Relay.
 
 **How it works:**
 
-1. Individual visits the site and selects "I need help"
-2. System generates a passphrase (e.g., "blue-river-mountain-4729")
-3. Individual specifies: type of help needed, general area/region
-4. Individual writes down their passphrase—this is their only way to check for responses
-5. Groups serving that area see the request (category + region only, no identifying info)
-6. Groups send encrypted messages offering to help
-7. Individual returns to site, enters passphrase, reads messages
-8. Individual contacts the group directly using info provided in the message
+1. Individual visits the site and selects "Request help (anonymous)"
+2. Individual chooses a coarse region and one or more aid categories
+3. Individual writes a message with at least one contact method (phone / email / freeform)
+4. Client encrypts the message (including contact info and safe-word) with a random key, wraps that key per recipient group
+5. Individual sees a receipt screen with a broadcast ID and a safe-word verification code
+6. Groups matching the region and categories decrypt the invite and see the message, contact info, and safe-word
+7. A group contacts the individual outside Relay, using the safe-word to verify the contact originated from Relay
 
 **Privacy guarantees:**
 
-- No email, phone number, or account required
-- Messages are end-to-end encrypted—Relay cannot read them
-- Private key derived from passphrase; Relay never sees it
-- Mailboxes delete after 7 days of inactivity (checking messages resets the timer)
-- On deletion: tombstone retained (category, region, timestamps) for group visibility; messages and keys hard deleted
+- No email, phone number, or account required from individuals _to Relay_ (contact info is inside encrypted payload that Relay cannot read)
+- Broadcasts are end-to-end encrypted — Relay cannot read message content, contact info, or safe-word
+- Per-group invites deleted after group confirmation or TTL expiry
+- Ciphertext deleted when all invites are resolved; tombstone retained with routing metadata only
+- Safe-word verification code for out-of-band contact authentication
 - No IP address logging on anonymous routes
-- Works from any device with the passphrase
-- If subpoenaed, Relay can only produce: encrypted blobs it cannot decrypt, and that a request for "rent help in Hennepin County" existed
+- No cookies or tracking for anonymous users
+- If subpoenaed, Relay can only produce encrypted blobs it cannot decrypt, and routing metadata (that a request for "rent help in Hennepin County" existed)
 
-**What groups see:**
+**What groups see after decryption:**
 
-- Category of help needed (rent, food, utilities, etc.)
-- General region (city/county level)
-- A "Reply" button to send an encrypted message
+- Message text from the individual
+- Contact info (phone / email / freeform)
+- Safe-word verification code
 
 **What groups do NOT see:**
 
-- Any identifying information about the individual
-- Other groups' responses
+- Any identifying information about the individual beyond what the individual chose to include in their encrypted message
+- Other groups' invites or decryption status
 
 ## What Is Explicitly Out of Scope
 
 To avoid risk and scope creep, the following are not part of this pilot:
 
-- Individual accounts or registration (passphrase-only access)
-- Collection of email, phone, or other contact info from individuals
+- Individual accounts or registration (anonymous fire-and-forget broadcasts)
+- Collection of individual contact info by Relay (contact info is inside encrypted payload)
 - Case management
-- Long-term data storage of individual requests
+- Long-term storage of broadcasts (invites deleted after confirmation; ciphertext deleted when resolved)
 - Document uploads
 - Donor-facing dashboards
 - Relay-mediated chat (groups provide their own contact methods)
@@ -194,10 +195,10 @@ If any of these become necessary, the pilot pauses and is reevaluated.
 
 ## Data & Safety Guardrails
 
-- No collection of individual PII (no email, phone, name, address)
-- End-to-end encryption for individual-to-group messages
-- Passphrase-only access for individuals (nothing stored that identifies them)
-- Auto-deletion of anonymous mailboxes after 7 days of inactivity
+- No collection of individual PII by Relay (contact info is inside encrypted payload that Relay cannot read)
+- End-to-end encryption for broadcast payloads (message, contact info, safe-word)
+- Anonymous fire-and-forget broadcasts (no accounts, no persistent identity)
+- Per-group invites deleted after confirmation or TTL expiry; ciphertext deleted when all invites resolved
 - No IP logging on anonymous routes
 - Strong UX guidance discouraging sensitive data entry
 - Short data retention for group funding requests
@@ -212,7 +213,7 @@ This pilot is successful if:
 
 - A group can get connected to hubs without relying on personal introductions
 - An individual can request help without providing identifying information
-- Groups can respond to individuals in need without knowing who they are
+- Groups can receive anonymous help requests and contact individuals directly, verified by safe-word
 - Community members can find local groups by region and category without creating an account or being tracked
 - The hub can review and route funds with less back-and-forth
 - Funds move faster than before

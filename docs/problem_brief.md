@@ -44,10 +44,10 @@ These constraints are essential and must shape any solution:
 
 ### Anonymous resource discovery
 
-- Individuals can request help without providing identifying information
-- Access via passphrase only—no email, phone, or account required
-- Messages from groups are end-to-end encrypted; Relay cannot read them
-- Mailboxes auto-delete after 7 days of inactivity
+- Individuals can request help without providing identifying information to Relay
+- Anonymous encrypted broadcasts — no account, no persistent identity
+- Broadcasts are E2E encrypted; groups decrypt invites and contact individuals directly outside Relay
+- Invites deleted after confirmation; ciphertext deleted when all invites resolved
 - No tracking of IP addresses on sensitive routes
 - If subpoenaed, Relay has nothing useful to produce
 
@@ -60,9 +60,9 @@ These constraints are essential and must shape any solution:
 
 - Trust and accountability for fund routing live at the group level
 - Distribution decisions remain local
-- Individuals submit anonymous requests; groups reach out to help
-- Relay facilitates initial contact but cannot read message contents
-- No centralized list of individuals—only encrypted, ephemeral mailboxes
+- Individuals submit anonymous encrypted broadcasts; groups decrypt invites and contact them directly
+- Relay routes encrypted invites but cannot read message contents or contact info
+- No centralized list of individuals — only encrypted, ephemeral broadcasts and per-group invites
 
 ## Where the System Breaks Today
 
@@ -114,9 +114,9 @@ Any solution that works only for food or supplies but fails for rent is insuffic
 - Facing housing insecurity, food insecurity, or other urgent need
 - Needs to find local resources without creating a digital trail
 - May be undocumented or otherwise vulnerable to authorities
-- Creates an anonymous mailbox using only a passphrase (no email/phone)
+- Submits anonymous encrypted broadcast with contact info (no email/phone required by Relay)
 - Specifies what help they need and their region
-- Receives encrypted messages from groups who can help
+- Receives contact from groups outside Relay, verified by safe-word
 - Relay cannot identify who they are or read their messages
 
 ### Community Member (public visitor)

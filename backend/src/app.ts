@@ -14,6 +14,9 @@ import { verificationRouter } from './routes/verification.js';
 import { requestsRouter } from './routes/requests.js';
 import { reportsRouter } from './routes/reports.js';
 import { mailboxRouter } from './routes/mailbox.js';
+import { broadcastsRouter } from './routes/broadcasts.js';
+import { directoryRouter } from './routes/directory.js';
+import { invitesRouter } from './routes/invites.js';
 import { helpRequestsRouter } from './routes/help-requests.js';
 
 export const app = express();
@@ -74,6 +77,8 @@ app.use(requestLogger);
 // ANONYMOUS ROUTES - NO rate limiting, NO logging, NO audit
 // These routes have their own privacy-preserving rate limiting
 app.use('/api/mailbox', mailboxRouter);
+app.use('/api/broadcasts', broadcastsRouter);
+app.use('/api/directory', directoryRouter);
 
 // Rate limiting for authenticated routes (excludes anonymous routes above)
 app.use(authRateLimiter);
@@ -94,6 +99,7 @@ app.use('/api/verification', verificationRouter);
 app.use('/api/requests', requestsRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/help-requests', helpRequestsRouter);
+app.use('/api/invites', invitesRouter);
 
 // 404 handler
 app.use((_req, res) => {

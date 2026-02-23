@@ -212,33 +212,34 @@ funding_request_status_history
 ├── changed_at
 └── notes
 
-mailboxes
+broadcasts
 ├── id (UUID, random - NOT sequential)
-├── public_key (bytea)
-├── help_category (enum: rent, food, utilities, other)
+├── broadcast_id (short, displayable identifier)
+├── ciphertext_payload (bytea)
 ├── region
+├── categories (array)
+├── ttl_expires_at
 ├── created_at
-├── last_accessed_at
-├── deleted_at
-└── deletion_type (enum: manual, auto_inactivity, null)
 
-mailbox_messages
+broadcast_invites
 ├── id (UUID)
-├── mailbox_id (FK)
+├── broadcast_id (FK)
 ├── group_id (FK)
-├── ciphertext (bytea)
+├── wrapped_key (bytea)
+├── status (enum: pending, decrypted, deleted)
+├── is_dummy (boolean, default false)
+├── decrypted_at
+├── expires_at
 ├── created_at
 
-mailbox_tombstones
+broadcast_tombstones
 ├── id (UUID)
-├── original_mailbox_id (UUID, not FK - original is deleted)
-├── help_category
-├── region
-├── had_responses (boolean)
-├── responding_group_ids (array)
-├── deletion_type (enum: manual, auto_inactivity)
+├── original_broadcast_id (UUID)
+├── broadcast_id_display (short identifier)
+├── bucket (text)
+├── confirming_group_ids (array)
 ├── created_at
-├── deleted_at
+├── resolved_at
 
 audit_log (authenticated routes only)
 ├── id (UUID)
@@ -255,7 +256,7 @@ audit_log (authenticated routes only)
 - [ ] Add foreign key constraints
 - [ ] Add check constraints (e.g., amount > 0)
 - [ ] Add indexes for common queries
-- [ ] **Verify:** No PII fields for individuals (no name, address, phone, email in mailbox tables)
+- [ ] **Verify:** No PII fields for individuals (no name, address, phone, email in broadcast tables)
 
 ### 2.2 API Structure
 
@@ -267,8 +268,9 @@ audit_log (authenticated routes only)
   /api/verification/*   (verification workflow)
   /api/requests/*       (funding requests)
   /api/reports/*        (aggregate reporting)
-  /api/mailbox/*        (anonymous - NO AUTH)
-  /api/help-requests/*  (group-facing anonymous requests)
+  /api/broadcasts/*     (anonymous - NO AUTH for submission)
+  /api/invites/*        (group-facing broadcast invites)
+  /api/directory/*      (public directory)
   /health               (health check)
   ```
 - [ ] Error handling middleware (no stack traces in production)
@@ -285,7 +287,7 @@ audit_log (authenticated routes only)
 
 - [ ] Audit log middleware for authenticated routes
 - [ ] Log: user, action, resource, timestamp
-- [ ] **Critical:** No audit logging on `/api/mailbox/*` routes
+- [ ] **Critical:** No audit logging on `/api/broadcasts/*` submission routes
 - [ ] **Critical:** No IP logging on anonymous routes
 
 ### 2.5 Security Middleware
@@ -557,131 +559,100 @@ frontend/src/locales/
 
 ---
 
-## Phase 8: Anonymous Help Requests (FR-7)
+## Phase 8: Anonymous Help Broadcasts (FR-7)
 
-**Objective:** Individuals can request help and receive encrypted responses without any identifying information.
+**Objective:** Individuals can broadcast encrypted help requests to matching groups without any identifying information.
+
+> _This phase implements the encrypted public help broadcast system, replacing the earlier mailbox/passphrase design. See `docs/encrypted_public_help_broadcast.md` for the full spec._
 
 ### 8.1 Cryptographic Foundation
 
-- [ ] Integrate TweetNaCl.js (libsodium) in frontend
-- [ ] Passphrase generation (e.g., 4 random words + 4 digits)
-- [ ] Deterministic keypair derivation from passphrase
-- [ ] **Verify:** Same passphrase always produces same keypair
-- [ ] **Verify:** Private key never leaves client
-- [ ] **Verify:** No custom cryptography—use library primitives only
+- [ ] TweetNaCl.js integration (already in codebase)
+- [ ] Symmetric content key generation (`crypto_secretbox`)
+- [ ] Per-group key wrapping (`crypto_box` with group's X25519 public key)
+- [ ] Safe-word generation (client-side, random)
+- [ ] **Verify:** Content key is random per broadcast, never reused
+- [ ] **Verify:** Wrapped keys are individually encrypted per group
+- [ ] **Verify:** Safe-word exists only in encrypted payload and on receipt screen
+- [ ] **Verify:** No custom cryptography — use library primitives only
 
-### 8.2 Backend - Mailbox
+### 8.2 Backend - Broadcasts & Invites
 
-- [ ] `POST /api/mailbox` — create mailbox (public key, category, region)
-  - **No authentication required**
-  - **No IP logging**
-  - **No cookies**
-- [ ] `GET /api/mailbox/:id` — get mailbox + encrypted messages
-  - Updates `last_accessed_at`
-  - **No authentication required**
-  - **No IP logging**
-- [ ] `DELETE /api/mailbox/:id` — manual deletion
-  - Creates tombstone
-  - Hard deletes messages, keys, mailbox
-  - **No authentication required**
-- [ ] Mailbox ID is random UUID (not sequential)
+- [ ] `POST /api/broadcasts` — create broadcast (ciphertext, header, per-group invites)
+- [ ] `GET /api/invites` — group fetches pending invites for subscribed buckets
+- [ ] `GET /api/invites/:id` — get specific invite + shared ciphertext
+- [ ] `POST /api/invites/:id/confirm` — group confirms receipt (triggers deletion)
+- [ ] `DELETE /api/invites/:id` — group manually deletes invite
+- [ ] Broadcast ID generation (short, displayable)
+- [ ] Invite padding (pad to fixed bucket cap with dummy invites)
 
 ### 8.3 Backend - Anonymous Route Security
 
-- [ ] **Critical:** Disable all logging middleware on `/api/mailbox/*`
-- [ ] **Critical:** No IP address in request context
+- [ ] **Critical:** Disable all logging middleware on broadcast submission routes
+- [ ] **Critical:** No IP address in request context for anonymous routes
 - [ ] **Critical:** No cookies set on response
-- [ ] **Critical:** No session/auth checks
-- [ ] Rate limiting without user identifiers (by IP hash with short TTL, or proof-of-work)
+- [ ] **Critical:** No session/auth checks on broadcast submission
+- [ ] Rate limiting without user identifiers (proof-of-work or privacy-preserving token)
 
-### 8.4 Backend - Group-Facing Help Requests
+### 8.4 Backend - Invite Lifecycle & Cleanup
 
-- [ ] `GET /api/help-requests` — list open mailboxes (groups only)
-  - Filter by region matching group's service area
-  - Filter by category
-  - Returns: mailbox ID, category, region, created_at
-  - **Does NOT return:** public key (fetched separately)
-- [ ] `GET /api/help-requests/:mailboxId/public-key` — get public key for encryption
-- [ ] `POST /api/help-requests/:mailboxId/reply` — send encrypted message
-  - Requires group authentication
-  - Stores ciphertext only
+- [ ] Invite TTL enforcement (scheduled job)
+- [ ] Confirmation-based deletion (immediate on confirm)
+- [ ] 10-minute auto-delete after decryption
+- [ ] Ciphertext cleanup when all invites resolved
+- [ ] Tombstone creation (broadcast ID, bucket, timestamp, confirming groups)
+- [ ] Dummy invite cleanup at TTL expiry
 
-### 8.5 Backend - Auto-Deletion Job
+### 8.5 Backend - Directory
 
-- [ ] Scheduled job (daily) to find inactive mailboxes
-- [ ] Inactive = `last_accessed_at` > 7 days ago
-- [ ] For each inactive mailbox:
-  1. Create tombstone record
-  2. Hard delete messages
-  3. Hard delete mailbox (including public key)
-- [ ] **Verify:** Tombstone contains only: category, region, had_responses, responding_group_ids, timestamps
-- [ ] **Verify:** No recovery possible for deleted data
+- [ ] `GET /api/directory` — public directory of reviewed groups
+- [ ] Response: group_id, public_key, bucket_membership, optional contact page
+- [ ] Only reviewed groups included
+- [ ] Cacheable (public, no auth required)
+- [ ] Bucket resolution: region + category → bucket label → matching groups
 
 ### 8.6 Frontend - Individual Flow
 
-- [ ] "I need help" landing page
-- [ ] Passphrase generation (client-side)
-- [ ] Passphrase display with "write this down" warning
-- [ ] Copy passphrase button
-- [ ] Help category selector
-- [ ] Region input (city/county)
-- [ ] Submit: derive keypair, send public key + metadata to API
-- [ ] Confirmation page with passphrase reminder
-- [ ] "Check for messages" page
-- [ ] Passphrase input
-- [ ] Derive private key, fetch encrypted messages
-- [ ] Decrypt messages client-side
-- [ ] Display messages (group name, decrypted content)
-- [ ] "Delete my mailbox" button
-- [ ] 7-day inactivity warning in UI
+- [ ] "Request help" entry point on landing page
+- [ ] Region selector (coarse: city / county / metro; autocomplete from static dataset)
+- [ ] Category multi-select (from taxonomy)
+- [ ] Message form with required contact method (phone / email / freeform)
+- [ ] Content warnings: "Only recipient groups can read this" / shared device warning
+- [ ] Submit: generate content key → encrypt payload → fetch directory → wrap key per group → upload
+- [ ] Receipt screen: broadcast ID + safe-word + "A group will contact you" guidance
 - [ ] **Verify:** Works on slow/intermittent connections
-- [ ] **Verify:** No cookies, no localStorage (except language preference)
+- [ ] **Verify:** No cookies, no localStorage persisted after submission
+- [ ] **Verify:** All screens bilingual (English/Spanish)
 
-### 8.7 Frontend - Group Flow
+### 8.7 Frontend - Group Inbox
 
-- [ ] Help requests queue (matching service area)
-- [ ] Request cards: category, region, time posted
-- [ ] Filter by category
-- [ ] Reply form with message textarea
-- [ ] Client-side encryption before send
-- [ ] Confirmation of sent reply
-- [ ] Tombstone view: "You responded to [category] request in [region]. Deleted on [date]."
+- [ ] Pending invites list (matching subscribed buckets)
+- [ ] Invite card: bucket info, timestamp
+- [ ] Decrypt flow: unlock group key → unwrap content key → decrypt payload
+- [ ] Decrypted view: message, contact info, safe-word
+- [ ] 10-minute countdown timer (visible in UI)
+- [ ] Manual delete button
+- [ ] Confirm receipt action
+- [ ] Tombstone view: "Broadcast [ID] in [bucket]. Confirmed on [date]."
 
 ### 8.8 Privacy Verification
 
 - [ ] **Audit:** No cookies set for anonymous users
-- [ ] **Audit:** No server logs of mailbox API calls
-- [ ] **Audit:** No IP addresses logged anywhere for anonymous routes
-- [ ] **Audit:** Server cannot decrypt stored messages (test with manual inspection)
-- [ ] **Audit:** Passphrase never transmitted to server
-- [ ] **Audit:** Private key never transmitted to server
+- [ ] **Audit:** No server logs of broadcast submission
+- [ ] **Audit:** No IP addresses logged for anonymous routes
+- [ ] **Audit:** Server cannot decrypt stored ciphertext or invites
+- [ ] **Audit:** Safe-word never stored on server (not plaintext, not hashed)
+- [ ] **Audit:** Content key never stored on server unencrypted
+- [ ] **Audit:** Invites deleted after confirmation; ciphertext deleted after all invites resolved
 - [ ] **Audit:** Content Security Policy blocks external scripts
-- [ ] **Audit:** No third-party resources loaded (fonts, CDNs)
-- [ ] **Test:** Full flow works end-to-end
-- [ ] **Test:** Messages only decryptable with correct passphrase
-- [ ] **Test:** Wrong passphrase fails gracefully
-- [ ] **Test:** Auto-deletion works after 7 days
-- [ ] **Test:** Tombstones retained, messages gone
+- [ ] **Audit:** No third-party resources loaded
+- [ ] **Test:** Full broadcast → decrypt → confirm → delete flow end-to-end
+- [ ] **Test:** Groups added after broadcast cannot decrypt it (no invite exists)
+- [ ] **Test:** Tombstone retained, ciphertext and invites gone after resolution
+- [ ] **Test:** 10-minute auto-delete works
+- [ ] **Test:** Dummy invite padding works correctly
 
-### 8.9 Acceptance Criteria (FR-7)
-
-- [ ] Individual can create mailbox with only a passphrase (no email/phone)
-- [ ] Passphrase is generated client-side and displayed once
-- [ ] Individual can specify help type and region
-- [ ] Groups can view anonymous requests matching their service area
-- [ ] Groups can send encrypted replies
-- [ ] Individual can return from any device with passphrase and read messages
-- [ ] Messages are encrypted client-side before transmission
-- [ ] Server cannot decrypt stored messages
-- [ ] Mailboxes delete after 7 days of inactivity
-- [ ] On deletion: tombstone retained (category, region, response status, timestamps)
-- [ ] On deletion: messages, keys, and mailbox ID hard deleted with no recovery
-- [ ] Groups can see tombstones of deleted mailboxes they responded to
-- [ ] No IP logging on anonymous routes
-- [ ] No cookies set for anonymous users
-- [ ] Works on slow/intermittent connections
-
-**Checkpoint:** Full anonymous help request flow works; encryption verified; no tracking verified.
+**Checkpoint:** Full anonymous help broadcast flow works; encryption verified; no tracking verified.
 
 ---
 
@@ -732,7 +703,7 @@ frontend/src/locales/
 - [ ] CORS configuration review
 - [ ] Rate limiting verification
 - [ ] E2E encryption implementation review
-- [ ] **Verify:** Server cannot decrypt mailbox messages
+- [ ] **Verify:** Server cannot decrypt broadcast ciphertext or invites
 
 ### 10.2 Infrastructure Security Audit
 
@@ -755,7 +726,7 @@ frontend/src/locales/
 - [ ] **Verify:** No cookies on anonymous routes
 - [ ] **Verify:** No third-party scripts or resources
 - [ ] **Verify:** CSP headers configured correctly
-- [ ] **Verify:** No PII fields in mailbox-related tables
+- [ ] **Verify:** No PII fields in broadcast-related tables
 - [ ] **Verify:** Tombstones contain no identifying data
 - [ ] Review all log statements for PII leakage
 
@@ -840,40 +811,40 @@ frontend/src/locales/
 
 ## Success Checkpoints
 
-| Phase | Checkpoint |
-|-------|------------|
-| **Phase 0** | Dev environment works; CI runs on PR |
-| **Phase 1** | AWS infra deployed; all security controls verified |
-| **Phase 2** | Database schema complete; API structure in place |
-| **Phase 3** | i18n configured; language switching works |
-| **Phase 4** | Magic link auth works; sessions expire correctly |
-| **Phase 5** | Hub sees groups; groups edit profiles |
-| **Phase 6** | All verification methods work |
-| **Phase 7** | Full funding request lifecycle works |
-| **Phase 8** | Anonymous help requests work; E2E encryption verified; no tracking |
-| **Phase 9** | Aggregate reports display and export correctly |
-| **Phase 10** | All security/privacy/accessibility audits pass |
-| **Phase 11** | Live at relayfunds.org; pilot participants onboarded |
+| Phase        | Checkpoint                                                           |
+| ------------ | -------------------------------------------------------------------- |
+| **Phase 0**  | Dev environment works; CI runs on PR                                 |
+| **Phase 1**  | AWS infra deployed; all security controls verified                   |
+| **Phase 2**  | Database schema complete; API structure in place                     |
+| **Phase 3**  | i18n configured; language switching works                            |
+| **Phase 4**  | Magic link auth works; sessions expire correctly                     |
+| **Phase 5**  | Hub sees groups; groups edit profiles                                |
+| **Phase 6**  | All verification methods work                                        |
+| **Phase 7**  | Full funding request lifecycle works                                 |
+| **Phase 8**  | Anonymous help broadcasts work; E2E encryption verified; no tracking |
+| **Phase 9**  | Aggregate reports display and export correctly                       |
+| **Phase 10** | All security/privacy/accessibility audits pass                       |
+| **Phase 11** | Live at relayfunds.org; pilot participants onboarded                 |
 
 ---
 
 ## Risk Mitigation
 
-| Risk | Mitigation |
-|------|------------|
-| Scope creep | Strict PRD adherence; out-of-scope logged for post-pilot |
-| PII in free text | UX guidance; no "name"/"address" fields |
-| Auth complexity | Magic link only; no passwords, no OAuth |
-| Over-engineering | YAGNI—build only what's needed for pilot |
-| Cryptographic flaws | Use proven libraries only; no custom crypto; security audit |
-| Passphrase loss | Clear UX warning; no recovery by design |
-| Accidental tracking | Audit logging disabled on anonymous routes; no IP logging |
-| Third-party tracking | No external scripts/fonts/CDNs; CSP headers |
-| IAM over-permissioning | Least privilege; permission boundaries; audit |
-| Secrets exposure | Secrets Manager; no hardcoded credentials; rotation |
-| Database breach | Encryption at rest; private subnet; security group |
-| Misconfigured security groups | Terraform-managed; audit; no 0.0.0.0/0 except ALB 443 |
-| Missing audit trail | CloudTrail; VPC Flow Logs; log retention |
+| Risk                                       | Mitigation                                                                              |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Scope creep                                | Strict PRD adherence; out-of-scope logged for post-pilot                                |
+| PII in free text                           | UX guidance; no "name"/"address" fields                                                 |
+| Auth complexity                            | Magic link only; no passwords, no OAuth                                                 |
+| Over-engineering                           | YAGNI—build only what's needed for pilot                                                |
+| Cryptographic flaws                        | Use proven libraries only; no custom crypto; security audit                             |
+| Contact info exposure via group compromise | Per-group invites limit exposure; invites deleted after confirmation; mandatory vetting |
+| Accidental tracking                        | Audit logging disabled on anonymous routes; no IP logging                               |
+| Third-party tracking                       | No external scripts/fonts/CDNs; CSP headers                                             |
+| IAM over-permissioning                     | Least privilege; permission boundaries; audit                                           |
+| Secrets exposure                           | Secrets Manager; no hardcoded credentials; rotation                                     |
+| Database breach                            | Encryption at rest; private subnet; security group                                      |
+| Misconfigured security groups              | Terraform-managed; audit; no 0.0.0.0/0 except ALB 443                                   |
+| Missing audit trail                        | CloudTrail; VPC Flow Logs; log retention                                                |
 
 ---
 
@@ -881,11 +852,11 @@ frontend/src/locales/
 
 Per the PRD, these are explicitly excluded:
 
-- Individual accounts/registration (passphrase-only access)
-- Collection of email/phone from individuals
-- Server-readable messages (all E2E encrypted)
+- Individual accounts/registration (anonymous fire-and-forget broadcasts)
+- Collection of individual contact info by Relay (inside encrypted payload)
+- Server-readable messages (all broadcast payloads E2E encrypted)
 - Case management
-- Long-term storage of individual requests (7-day auto-delete)
+- Long-term storage of broadcasts (invites deleted after confirmation; ciphertext deleted when resolved)
 - Document uploads
 - Donor-facing dashboards
 - Real-time chat
@@ -893,7 +864,7 @@ Per the PRD, these are explicitly excluded:
 - Native mobile apps
 - Push notifications
 - Analytics on individual usage
-- Passphrase recovery
+- Returning to view past broadcasts (post-MVP)
 
 ---
 

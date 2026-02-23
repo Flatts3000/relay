@@ -4,7 +4,7 @@
 
 ## Current State
 
-The `/help` route renders `CreateMailboxPage.tsx` — a bare form page with no header, no logo, no footer, and no navigation. It drops the user into a gray `min-h-screen` with a form card and two colored alert boxes. There are no links to privacy, terms, or back to the home page.
+The `/help` route renders the broadcast submission page — a bare form page with no header, no logo, no footer, and no navigation. It drops the user into a gray `min-h-screen` with a form card and two colored alert boxes. There are no links to privacy, terms, or back to the home page.
 
 This is a problem because `/help` is now the **primary CTA destination** from the home page hero. It's the first page a person in crisis lands on, and it looks like a different application entirely.
 
@@ -35,7 +35,7 @@ This is a problem because `/help` is now the **primary CTA destination** from th
 - Language switcher so the user can switch to Spanish immediately
 - No nav links — the page is a single-purpose flow
 
-**Why no nav links:** The individual path is: arrive → create mailbox → get passphrase → leave. Adding nav links (For Organizations, Safety, Contact) would be noise. A "Back to home" logo click is sufficient.
+**Why no nav links:** The individual path is: arrive → submit broadcast → see receipt screen → leave. Adding nav links (For Organizations, Safety, Contact) would be noise. A "Back to home" logo click is sufficient.
 
 **Implementation:** Import and render `<PublicHeader />` — no custom markup needed.
 
@@ -60,9 +60,9 @@ This is a problem because `/help` is now the **primary CTA destination** from th
 
 **Privacy section contents (speculative):**
 
-- What Relay collects (nothing from individuals, group-level only for orgs)
-- What Relay cannot see (E2E encrypted messages)
-- Data retention (7-day auto-delete for mailboxes)
+- What Relay collects (routing metadata only; no individual PII)
+- What Relay cannot see (E2E encrypted broadcast payloads — message, contact info, safe-word)
+- Data retention (invites deleted after confirmation or TTL; ciphertext deleted when all invites resolved)
 - No cookies, no analytics, no IP logging on anonymous routes
 - Subpoena canary / statement: "If subpoenaed, Relay can only produce encrypted blobs it cannot decrypt"
 
@@ -70,9 +70,9 @@ This is a problem because `/help` is now the **primary CTA destination** from th
 
 - This is a coordination tool, not a benefits platform
 - No guarantees of response or funding
-- Passphrase is the user's sole responsibility — no recovery
+- Broadcasts are fire-and-forget — no returning to view past broadcasts (MVP)
 - Groups are independent; Relay doesn't control their actions
-- Acceptable use (no abuse of anonymous mailbox system)
+- Acceptable use (no abuse of anonymous broadcast system)
 
 **Note:** These are scaffolds. Actual legal language needs review. The important thing is the pages exist and are linked.
 
@@ -86,7 +86,7 @@ This is a problem because `/help` is now the **primary CTA destination** from th
 [Title]
 [Description]
 [Green privacy box — bg-green-50 border card]
-[Existing mailbox warning?]
+[Error?]
 [Error?]
 [Form card with fields + yellow warning card]
 [Submit button]
@@ -109,7 +109,7 @@ This is a problem because `/help` is now the **primary CTA destination** from th
 
 [Shared computer warning — text-sm text-gray-500]
 
-[Existing mailbox warning — <Alert type="warning"> if applicable]
+[Error — <Alert type="warning"> if applicable]
 
 [Form — single subtle container: bg-gray-50 rounded-lg p-6]
   Region: <Input /> component
@@ -171,31 +171,19 @@ Instead, use two lightweight, zero-privacy-cost techniques:
 
 Both are invisible to real users, require no third-party scripts, and stop the vast majority of automated submissions. Server-side rate limiting (already in place on the API) handles the rest.
 
-### 8. Returning User Entry Point
+### 8. Returning User Entry Point — OBSOLETE
 
-**Problem:** `/help` is creation-only. A person who created a mailbox days ago will naturally navigate back to `/help` — it's the link they remember. There's no "I already have a passphrase" path on the page. The translation keys already exist (`help:needHelp` and `help:checkMessages`) but the page doesn't use them.
+> _Migration note: The broadcast model is fire-and-forget — no "Check my messages" path needed. The two-button split ("I need help" / "Check my messages") is no longer part of the MVP design. Post-MVP may support returning to view past broadcasts (pending stakeholder confirmation). See `docs/encrypted_public_help_broadcast.md`._
 
-**Decision:** The `/help` page opens with two choices before showing any form:
-
-```
-[I need help]          [Check my messages]
-```
-
-- Both rendered as `<Button variant="secondary">` side-by-side, selected state uses `<Button variant="primary">`
-- "I need help" reveals the mailbox creation form (current behavior)
-- "Check my messages" prompts for a passphrase, then navigates to `/help/mailbox/:id`
-- One tap to choose, zero friction added for new users
-- If localStorage already has a mailbox, the "Check my messages" option can show a `<Badge variant="info">` indicator
-
-Implementation: a simple two-button split at the top of the page, with the selected flow rendering below. No routing change — both flows live on `/help`.
+The `/help` page is now a single-flow broadcast submission form. No passphrase entry, no returning user path, no two-button split.
 
 ### 9. Shared Computer Warning
 
-**Problem:** The target audience may be on a library or shelter computer. After mailbox creation, the private key lives in `localStorage`. Another person using the same browser could access their mailbox.
+**Problem:** The target audience may be on a library or shelter computer. In the broadcast model, the individual enters contact info that is encrypted before leaving the device — but the receipt screen displays the safe-word and broadcast ID, which could be visible to someone looking over a shoulder or using the same browser session.
 
 **Decision:** Add a single line of text near the form — not a modal, not a blocker, just awareness:
 
-> Using a shared computer? Use a private browsing window.
+> Using a shared computer? Your contact info is encrypted before leaving this device, but consider clearing your browser after submitting.
 
 - Placed below the privacy guarantees, before the form
 - Styled as subdued helper text (`text-sm text-gray-500`), not an alert box
@@ -205,18 +193,17 @@ Implementation: a simple two-button split at the top of the page, with the selec
 
 ## Files to Create/Modify
 
-| File                                              | Action            | Purpose                                                                                                                                                    |
-| ------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frontend/src/components/layout/PublicHeader.tsx` | **Already built** | Minimal header with logo + `<LanguageSwitcher />`                                                                                                          |
-| `frontend/src/components/layout/PublicFooter.tsx` | **Already built** | Footer with privacy/terms links + attribution                                                                                                              |
-| `frontend/src/pages/CreateMailboxPage.tsx`        | **Modify**        | Add `<PublicHeader />` / `<PublicFooter />`, de-card privacy/warning boxes, use `<IconCircle />`, `<Container narrow>`, `font-heading`, `primary-*` tokens |
-| `frontend/src/pages/ViewMailboxPage.tsx`          | **Modify**        | Add `<PublicHeader />` / `<PublicFooter />`, migrate to design system tokens                                                                               |
-| `frontend/src/pages/LegalPage.tsx`                | **Create**        | Privacy policy + terms of service, uses `<PublicHeader />` / `<PublicFooter />`, `<Container narrow>`, `font-heading`                                      |
-| `frontend/src/App.tsx`                            | **Modify**        | Add `/legal` route                                                                                                                                         |
-| `frontend/src/locales/en/common.json`             | **Already done**  | `footer.privacy` and `footer.terms` keys added during design system implementation                                                                         |
-| `frontend/src/locales/es/common.json`             | **Already done**  | Spanish translations added during design system implementation                                                                                             |
-| `frontend/src/locales/en/help.json`               | **Modify**        | Add returning user flow keys, shared computer warning text                                                                                                 |
-| `frontend/src/locales/es/help.json`               | **Modify**        | Spanish translations for new help keys                                                                                                                     |
+| File                                              | Action            | Purpose                                                                                                                                                                                           |
+| ------------------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frontend/src/components/layout/PublicHeader.tsx` | **Already built** | Minimal header with logo + `<LanguageSwitcher />`                                                                                                                                                 |
+| `frontend/src/components/layout/PublicFooter.tsx` | **Already built** | Footer with privacy/terms links + attribution                                                                                                                                                     |
+| `frontend/src/pages/CreateMailboxPage.tsx`        | **Modify/Rename** | Refactor to broadcast submission form; add `<PublicHeader />` / `<PublicFooter />`, de-card privacy/warning boxes, use `<IconCircle />`, `<Container narrow>`, `font-heading`, `primary-*` tokens |
+| `frontend/src/pages/LegalPage.tsx`                | **Create**        | Privacy policy + terms of service, uses `<PublicHeader />` / `<PublicFooter />`, `<Container narrow>`, `font-heading`                                                                             |
+| `frontend/src/App.tsx`                            | **Modify**        | Add `/legal` route                                                                                                                                                                                |
+| `frontend/src/locales/en/common.json`             | **Already done**  | `footer.privacy` and `footer.terms` keys added during design system implementation                                                                                                                |
+| `frontend/src/locales/es/common.json`             | **Already done**  | Spanish translations added during design system implementation                                                                                                                                    |
+| `frontend/src/locales/en/help.json`               | **Modify**        | Add returning user flow keys, shared computer warning text                                                                                                                                        |
+| `frontend/src/locales/es/help.json`               | **Modify**        | Spanish translations for new help keys                                                                                                                                                            |
 
 ---
 
@@ -225,7 +212,7 @@ Implementation: a simple two-button split at the top of the page, with the selec
 - Mobile hamburger menu (not needed — no nav links on help pages)
 - Actual legal review of privacy/terms content
 - Changes to authenticated pages (dashboard, etc.)
-- Passphrase recovery (by design — see CLAUDE.md)
+- Returning to view past broadcasts (post-MVP — see broadcast spec)
 
 ---
 
@@ -234,7 +221,7 @@ Implementation: a simple two-button split at the top of the page, with the selec
 1. `npm run typecheck` — no errors
 2. `npm run build:frontend` — builds cleanly
 3. `/help` has `<PublicHeader />`, `<PublicFooter />`, and `<IconCircle />` section icon
-4. `/help/mailbox/:id` has the same chrome (`<PublicHeader />` + `<PublicFooter />`)
+4. Receipt screen displays broadcast ID and safe-word after submission
 5. `/legal` renders with privacy and terms sections using `<Container narrow>` and `font-heading`
 6. Privacy/terms links (`/legal#privacy`, `/legal#terms`) scroll to correct anchors
 7. Logo click navigates back to `/`
@@ -246,4 +233,4 @@ Implementation: a simple two-button split at the top of the page, with the selec
 13. Mobile: everything stacks cleanly
 14. Tab through: focus states work on all interactive elements (44px touch targets preserved)
 15. Honeypot field is invisible and `aria-hidden`
-16. Returning user toggle works (two-button split renders correct flow)
+16. No returning user toggle (broadcast model is fire-and-forget)

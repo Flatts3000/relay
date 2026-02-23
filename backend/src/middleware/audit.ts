@@ -3,7 +3,7 @@ import { logAuditEvent } from '../services/audit.service.js';
 import type { NewAuditLogEntry } from '../db/schema/index.js';
 
 // Paths that should NEVER have audit logging (anonymous routes)
-const ANONYMOUS_PATHS = ['/api/mailbox'];
+const ANONYMOUS_PATHS = ['/api/mailbox', '/api/broadcasts', '/api/directory'];
 
 // Map HTTP methods to audit actions
 function getAuditAction(method: string, path: string): NewAuditLogEntry['action'] | null {

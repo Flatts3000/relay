@@ -30,22 +30,24 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 
 ### Anonymous help requests (E2E encrypted)
 
-- Individuals request help using only a passphrase (no email, phone, or account)
-- System generates passphrase client-side; individual writes it down
-- Groups see anonymous requests (category + region only) and send encrypted replies
-- Messages are E2E encrypted; Relay cannot read them
-- Private key derived from passphrase client-side; never transmitted
-- Mailboxes auto-delete after 7 days of inactivity
+- Individuals broadcast encrypted help requests to matching groups (no accounts, no persistent identity)
+- Contact info included in encrypted payload — only reviewed groups can decrypt
+- Client generates symmetric key, wraps per recipient group's public key
+- Per-group invites deleted after confirmation or TTL expiry
+- Safe-word verification code for out-of-band contact authentication
+- Relay stores only ciphertext it cannot decrypt; encrypted material deleted as soon as all invites are resolved
 - No IP logging on anonymous routes; no cookies for anonymous users
 - If subpoenaed, Relay can only produce encrypted blobs it cannot decrypt
+
+_Migration note: Replaces the earlier mailbox/passphrase model. See `docs/encrypted_public_help_broadcast.md`._
 
 ### Group-level operations
 
 - Trust and accountability for fund routing live at the group level
 - Distribution decisions remain local
 - Groups submit funding requests on behalf of their work, not individuals
-- Groups respond to anonymous help requests via encrypted messages
-- Individuals contact groups directly outside Relay after receiving encrypted responses
+- Groups decrypt broadcast invites and contact individuals directly outside Relay
+- Individuals include contact info in encrypted broadcasts; groups contact them directly using safe-word verification
 
 ### Lightweight verification
 
@@ -210,43 +212,46 @@ No receipts, narratives, or recipient data required.
 
 No per-person or per-household reporting.
 
-### 6. Anonymous Help Requests (E2E Encrypted)
+### 6. Anonymous Help Broadcasts (E2E Encrypted)
 
 Individual flow:
 
-1. Select "I need help" → system generates passphrase
-2. Specify help type (rent, food, utilities) and region
-3. Write down passphrase (only way to access responses)
-4. Return later, enter passphrase, read encrypted messages from groups
-5. Contact group directly using info they provided
+1. Select "Request help (anonymous)"
+2. Choose coarse region and one or more aid categories
+3. Write message with at least one contact method (phone / email / freeform)
+4. Client encrypts payload, wraps key per recipient group — submit
+5. Receipt screen: broadcast ID + safe-word verification code
+6. Individual leaves. Fire-and-forget.
 
 Group flow:
 
-1. See anonymous requests matching their service area (category + region only)
-2. Send encrypted reply with contact info and how they can help
-3. Cannot see other groups' replies or any identifying info
+1. Unlock group key material
+2. Fetch and decrypt pending invites for subscribed buckets
+3. See message, contact info, and safe-word
+4. Confirm receipt (10-minute auto-delete window)
+5. Contact individual outside Relay using safe-word to verify
 
 Privacy guarantees:
 
-- No email, phone, or account required from individuals
-- Messages E2E encrypted (libsodium); server cannot read
-- Passphrase derives private key client-side; never transmitted
-- Mailboxes auto-delete after 7 days of inactivity
+- No email, phone, or account required from individuals _to Relay_ (contact info is inside encrypted payload)
+- Broadcasts E2E encrypted (TweetNaCl.js); Relay cannot read payloads
+- Per-group invites deleted after confirmation or TTL expiry; ciphertext deleted when all invites resolved
+- Safe-word verification for out-of-band contact
 - No IP logging, no cookies, no tracking on anonymous routes
 
 ## Explicitly Out of Scope
 
-- Individual accounts/registration (passphrase-only access)
-- Collection of email/phone from individuals
-- Server-readable messages (all individual messages E2E encrypted)
+- Individual accounts/registration (anonymous fire-and-forget broadcasts)
+- Collection of individual contact info by Relay (contact info is inside encrypted payload that Relay cannot read)
+- Server-readable messages (all broadcast payloads E2E encrypted)
 - Case management
-- Long-term storage of individual requests (mailboxes auto-delete after 7 days)
+- Long-term storage of broadcasts (invites deleted after confirmation; ciphertext deleted when all invites resolved)
 - Document uploads
 - Donor-facing dashboards
-- Real-time chat (async encrypted mailbox approach instead)
+- Real-time chat (encrypted broadcast with out-of-band contact instead)
 - Automation of eligibility decisions
 - Analytics on individual usage
-- Passphrase recovery (by design; would require storing identity)
+- Returning to view past broadcasts (post-MVP, pending stakeholder confirmation)
 
 If any become necessary, the pilot pauses for reevaluation.
 
@@ -261,20 +266,20 @@ If any become necessary, the pilot pauses for reevaluation.
 
 ## Actors
 
-| Role                    | Description                                                                                                                                   |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Hub**                 | Raises pooled money, needs confidence in downstream distribution                                                                              |
-| **Local Group**         | Informal/semi-formal, deep local knowledge, needs fast fund access; responds to anonymous help requests                                       |
-| **Community Member**    | Heard about a group or wants to find local resources; browses the public group directory without authentication or tracking                   |
-| **Individual Resident** | Person in crisis; creates anonymous mailbox with passphrase, receives encrypted responses from groups, contacts groups directly outside Relay |
-| **Verifier**            | Existing org, peer group, or intermediary providing attestation                                                                               |
+| Role                    | Description                                                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Hub**                 | Raises pooled money, needs confidence in downstream distribution                                                                                                 |
+| **Local Group**         | Informal/semi-formal, deep local knowledge, needs fast fund access; responds to anonymous help requests                                                          |
+| **Community Member**    | Heard about a group or wants to find local resources; browses the public group directory without authentication or tracking                                      |
+| **Individual Resident** | Person in crisis; submits anonymous encrypted broadcast with contact info and safe-word; groups contact them directly outside Relay using safe-word verification |
+| **Verifier**            | Existing org, peer group, or intermediary providing attestation                                                                                                  |
 
 ## Success Criteria
 
 - Groups connect without relying on personal introductions
 - Community members can find local groups by region and category without creating an account
 - Individuals can request help without providing identifying information
-- Groups can respond to individuals in need without knowing who they are
+- Groups can receive anonymous help requests and contact individuals directly, verified by safe-word
 - Hub reviews and routes funds with less back-and-forth
 - Funds move faster than before
 - Feels safer than ad hoc tools

@@ -47,8 +47,9 @@ function hashIpWithRotatingSalt(ip: string): string {
 /**
  * Key generator for anonymous routes.
  * Uses hashed IP with rotating salt - no raw IP storage.
+ * Exported for reuse by broadcast and other anonymous rate limiters.
  */
-function anonymousKeyGenerator(req: Request): string {
+export function anonymousKeyGenerator(req: Request): string {
   const ip =
     (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
     req.socket.remoteAddress ||
@@ -90,5 +91,18 @@ export const mailboxCreationRateLimiter = rateLimit({
   standardHeaders: false,
   legacyHeaders: false,
   message: { error: 'Too many mailbox creation attempts, please try again later.' },
+  keyGenerator: anonymousKeyGenerator,
+});
+
+/**
+ * Strict rate limiter for broadcast creation.
+ * Prevents abuse of anonymous broadcast submission.
+ */
+export const broadcastCreationRateLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // 5 broadcasts per hour
+  standardHeaders: false,
+  legacyHeaders: false,
+  message: { error: 'Too many broadcast attempts, please try again later.' },
   keyGenerator: anonymousKeyGenerator,
 });

@@ -195,5 +195,77 @@
     "passphraseVisible": "Frase secreta visible",
     "passphraseHidden": "Frase secreta oculta",
     "toggleVisibility": "Alternar visibilidad de la frase secreta"
+  },
+  "broadcast": {
+    "title": "Solicitar ayuda de forma anónima",
+    "description": "Envíe una solicitud encriptada a grupos locales de ayuda mutua. No se necesita cuenta.",
+    "regionLabel": "Su área",
+    "categoriesLabel": "Tipos de ayuda necesaria",
+    "messageLabel": "Su mensaje",
+    "messagePlaceholder": "Describa con qué necesita ayuda...",
+    "contactLabel": "Cómo contactarle",
+    "contactPlaceholder": "Teléfono, correo electrónico u otra forma de contacto",
+    "contactHelper": "Esto será encriptado — solo los grupos correspondientes pueden verlo.",
+    "privacyWarning": "Su información de contacto está encriptada de extremo a extremo. Relay no puede leerla. Solo los grupos verificados en su área la recibirán.",
+    "submit": "Enviar solicitud encriptada",
+    "privacy1": "No se requiere cuenta ni correo electrónico",
+    "privacy2": "No rastreamos sus visitas ni su dirección IP",
+    "privacy3": "Su mensaje está encriptado de extremo a extremo",
+    "privacy4": "Las solicitudes se auto-eliminan después de 7 días",
+    "receipt": {
+      "title": "Su solicitud ha sido enviada",
+      "explanation": "Cuando un grupo lo contacte y diga esta palabra, sabrá que vino a través de Relay.",
+      "safeWordLabel": "Su palabra de seguridad",
+      "broadcastIdLabel": "ID de solicitud",
+      "done": "Listo",
+      "copied": "Copiado al portapapeles",
+      "copy": "Copiar"
+    },
+    "errors": {
+      "categoryRequired": "Por favor seleccione al menos una categoría",
+      "messageRequired": "Por favor ingrese un mensaje",
+      "contactRequired": "Por favor ingrese su información de contacto",
+      "noGroups": "No se encontraron grupos en su área para las categorías seleccionadas. Intente ampliar su selección.",
+      "submitFailed": "Error al enviar la solicitud. Por favor intente de nuevo."
+    }
+  },
+  "broadcastCategories": {
+    "food": "Comida",
+    "shelter_housing": "Refugio / Vivienda",
+    "transportation": "Transporte",
+    "medical": "Médico",
+    "safety_escort": "Seguridad / Acompañamiento",
+    "childcare": "Cuidado de niños",
+    "legal": "Legal",
+    "supplies": "Suministros",
+    "other": "Otro"
+  },
+  "inbox": {
+    "title": "Bandeja de solicitudes de ayuda",
+    "description": "Solicitudes de ayuda encriptadas de personas en su área",
+    "noInvites": "No hay solicitudes de ayuda pendientes",
+    "noInvitesDescription": "Nuevas solicitudes de personas en su área aparecerán aquí.",
+    "region": "Región",
+    "categories": "Categorías",
+    "received": "Recibido",
+    "expires": "Expira",
+    "viewRequest": "Ver solicitud",
+    "unlock": {
+      "title": "Desbloquear clave del grupo",
+      "description": "Ingrese la clave privada de su grupo para descifrar esta solicitud.",
+      "placeholder": "Pegue la clave privada de su grupo (base64)",
+      "submit": "Descifrar",
+      "error": "Error al descifrar. Verifique su clave e intente de nuevo."
+    },
+    "decrypted": {
+      "title": "Solicitud de ayuda descifrada",
+      "message": "Mensaje",
+      "contactInfo": "Información de contacto",
+      "safeWord": "Palabra de seguridad",
+      "safeWordExplanation": "Use esta palabra cuando contacte a esta persona para que sepa que usted vino a través de Relay.",
+      "countdown": "Se auto-elimina en {{time}}",
+      "saved": "He guardado esta información",
+      "decryptionFailed": "No se pudo descifrar esta solicitud. La clave puede ser incorrecta."
+    }
   }
 }

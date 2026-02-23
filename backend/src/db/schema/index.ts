@@ -8,3 +8,4 @@ export * from './funding_request_status_history.js';
 export * from './verification_requests.js';
 export * from './audit_log.js';
 export * from './mailboxes.js';
+export * from './broadcasts.js';
