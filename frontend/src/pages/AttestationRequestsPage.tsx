@@ -11,6 +11,7 @@ export function AttestationRequestsPage() {
   const [error, setError] = useState('');
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [success, setSuccess] = useState('');
+  const [confirmedIds, setConfirmedIds] = useState<Set<string>>(new Set());
 
   const loadRequests = async () => {
     setIsLoading(true);
@@ -39,6 +40,11 @@ export function AttestationRequestsPage() {
     try {
       await submitAttestation(requestId);
       setSuccess(t('verification:peerAttestation.attestationSubmitted'));
+      setConfirmedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(requestId);
+        return next;
+      });
       // Refresh the list
       await loadRequests();
     } catch (err) {
@@ -105,7 +111,23 @@ export function AttestationRequestsPage() {
 
               <div className="bg-gray-50 rounded-lg p-4 mb-4">
                 <label className="flex items-start">
-                  <input type="checkbox" className="mt-1 mr-3" id={`confirm-${request.id}`} />
+                  <input
+                    type="checkbox"
+                    className="mt-1 mr-3"
+                    id={`confirm-${request.id}`}
+                    checked={confirmedIds.has(request.id)}
+                    onChange={() =>
+                      setConfirmedIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(request.id)) {
+                          next.delete(request.id);
+                        } else {
+                          next.add(request.id);
+                        }
+                        return next;
+                      })
+                    }
+                  />
                   <span className="text-sm text-gray-700">
                     {t('verification:peerAttestation.confirmAttestation')}
                   </span>
@@ -114,7 +136,7 @@ export function AttestationRequestsPage() {
 
               <Button
                 onClick={() => handleAttest(request.id)}
-                disabled={submittingId === request.id}
+                disabled={!confirmedIds.has(request.id) || submittingId === request.id}
                 isLoading={submittingId === request.id}
               >
                 {t('verification:peerAttestation.submitAttestation')}

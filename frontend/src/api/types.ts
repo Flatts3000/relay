@@ -266,6 +266,90 @@ export interface TombstonesListResponse {
   total: number;
 }
 
+// Broadcast categories (separate from AidCategory — used for encrypted help broadcasts)
+export const BROADCAST_CATEGORIES = [
+  'food',
+  'shelter_housing',
+  'transportation',
+  'medical',
+  'safety_escort',
+  'childcare',
+  'legal',
+  'supplies',
+  'other',
+] as const;
+export type BroadcastCategory = (typeof BROADCAST_CATEGORIES)[number];
+
+// Directory types (public, anonymous)
+export interface DirectoryEntry {
+  id: string;
+  name: string;
+  serviceArea: string;
+  broadcastCategories: BroadcastCategory[] | null;
+  publicKey: string; // base64-encoded
+  broadcastServiceArea: string | null;
+}
+
+// Dashboard types (group coordinator)
+export interface DashboardSummary {
+  group: { id: string; name: string; verificationStatus: VerificationStatus };
+  pendingInvites: number;
+  fundingRequests: {
+    submitted: number;
+    approved: number;
+    declined: number;
+    fundsSent: number;
+    acknowledged: number;
+  };
+}
+
+// Public directory types (anonymous, no auth)
+export interface PublicDirectoryEntry {
+  id: string;
+  name: string;
+  serviceArea: string;
+  aidCategories: AidCategory[];
+  contactEmail: string;
+}
+
+// Broadcast submission types (anonymous)
+export interface BroadcastSubmitInput {
+  ciphertextPayload: string; // base64
+  nonce: string; // base64
+  region: string;
+  categories: BroadcastCategory[];
+  invites: Array<{ groupId: string; wrappedKey: string }>; // wrappedKey is base64
+  honeypot: string;
+  elapsed: number;
+}
+
+export interface BroadcastSubmitResponse {
+  broadcastId: string;
+}
+
+// Invite types (authenticated, group coordinator)
+export const INVITE_STATUSES = ['pending', 'decrypted', 'expired'] as const;
+export type InviteStatus = (typeof INVITE_STATUSES)[number];
+
+export interface Invite {
+  inviteId: string;
+  broadcastId: string;
+  wrappedKey: string; // base64
+  region: string;
+  categories: BroadcastCategory[];
+  createdAt: string;
+  expiresAt: string;
+}
+
+export interface InviteListResponse {
+  invites: Invite[];
+}
+
+export interface InviteCiphertextResponse {
+  ciphertextPayload: string; // base64
+  nonce: string; // base64
+}
+
 // Report types
 export interface DateRangeQuery {
   startDate?: string;

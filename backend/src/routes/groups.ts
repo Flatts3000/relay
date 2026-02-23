@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { authenticate, requireHubAdmin } from '../middleware/auth.js';
+import { authenticate, requireHubAdmin, requireGroupCoordinator } from '../middleware/auth.js';
 import {
   createGroup,
   getGroupById,
@@ -16,6 +16,7 @@ import {
   groupIdParamSchema,
   listGroupsQuerySchema,
 } from '../validations/group.validation.js';
+import { getGroupDashboard } from '../services/dashboard.service.js';
 
 export const groupsRouter = Router();
 
@@ -101,6 +102,28 @@ groupsRouter.get('/', authenticate, async (req, res) => {
     }
     throw err;
   }
+});
+
+/**
+ * GET /api/groups/me/dashboard - Group coordinator dashboard summary
+ * Returns group info, pending invites count, and funding request counts by status.
+ */
+groupsRouter.get('/me/dashboard', authenticate, requireGroupCoordinator, async (req, res) => {
+  const user = req.user!;
+
+  if (!user.groupId) {
+    res.status(400).json({ error: 'User is not associated with a group' });
+    return;
+  }
+
+  const summary = await getGroupDashboard(user.groupId);
+
+  if (!summary) {
+    res.status(404).json({ error: 'Group not found' });
+    return;
+  }
+
+  res.json(summary);
 });
 
 /**

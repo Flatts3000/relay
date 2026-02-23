@@ -48,7 +48,32 @@
   "directory": {
     "title": "Directorio de Grupos",
     "description": "Encuentra grupos verificados de ayuda mutua en tu área",
-    "comingSoon": "El directorio está en construcción. Vuelve pronto para explorar grupos verificados de ayuda mutua por región y tipo de ayuda."
+    "searchPlaceholder": "Buscar por nombre o área...",
+    "allCategories": "Todas las categorías",
+    "noGroupsFound": "No se encontraron grupos que coincidan con tu búsqueda.",
+    "noGroupsYet": "Aún no hay grupos verificados. Vuelve pronto.",
+    "contactEmail": "Contacto",
+    "groupCount_one": "{{count}} grupo verificado",
+    "groupCount_other": "{{count}} grupos verificados"
+  },
+  "dashboard": {
+    "title": "Panel de Control",
+    "welcome": "Bienvenido/a, {{name}}",
+    "verificationBanner": {
+      "pending": "La verificación de tu grupo está pendiente de revisión.",
+      "verified": "Tu grupo está verificado y aparece en el directorio público.",
+      "revoked": "La verificación de tu grupo ha sido revocada. Contacta al administrador del hub."
+    },
+    "cards": {
+      "pendingInvites": "Invitaciones Pendientes",
+      "fundingSubmitted": "Solicitudes Enviadas",
+      "fundingApproved": "Solicitudes Aprobadas"
+    },
+    "actions": {
+      "viewInbox": "Ver Bandeja de Entrada",
+      "newRequest": "Nueva Solicitud de Fondos",
+      "viewProfile": "Perfil del Grupo"
+    }
   },
   "footer": {
     "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos.",

@@ -48,7 +48,32 @@
   "directory": {
     "title": "Group Directory",
     "description": "Find verified mutual aid groups in your area",
-    "comingSoon": "The directory is being built. Check back soon to browse verified mutual aid groups by region and type of help."
+    "searchPlaceholder": "Search by name or area...",
+    "allCategories": "All categories",
+    "noGroupsFound": "No groups found matching your search.",
+    "noGroupsYet": "No verified groups are listed yet. Check back soon.",
+    "contactEmail": "Contact",
+    "groupCount_one": "{{count}} verified group",
+    "groupCount_other": "{{count}} verified groups"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "verificationBanner": {
+      "pending": "Your group's verification is pending review.",
+      "verified": "Your group is verified and listed in the public directory.",
+      "revoked": "Your group's verification has been revoked. Contact your hub admin."
+    },
+    "cards": {
+      "pendingInvites": "Pending Invites",
+      "fundingSubmitted": "Requests Submitted",
+      "fundingApproved": "Requests Approved"
+    },
+    "actions": {
+      "viewInbox": "View Inbox",
+      "newRequest": "New Funding Request",
+      "viewProfile": "Group Profile"
+    }
   },
   "footer": {
     "tagline": "Coordination platform connecting mutual aid groups with fund hubs.",
