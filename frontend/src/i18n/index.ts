@@ -11,6 +11,7 @@ import enRequests from '../locales/en/requests.json';
 import enReports from '../locales/en/reports.json';
 import enHelp from '../locales/en/help.json';
 import enHome from '../locales/en/home.json';
+import enAdmin from '../locales/en/admin.json';
 
 import esCommon from '../locales/es/common.json';
 import esAuth from '../locales/es/auth.json';
@@ -20,6 +21,7 @@ import esRequests from '../locales/es/requests.json';
 import esReports from '../locales/es/reports.json';
 import esHelp from '../locales/es/help.json';
 import esHome from '../locales/es/home.json';
+import esAdmin from '../locales/es/admin.json';
 
 const resources = {
   en: {
@@ -31,6 +33,7 @@ const resources = {
     reports: enReports,
     help: enHelp,
     home: enHome,
+    admin: enAdmin,
   },
   es: {
     common: esCommon,
@@ -41,6 +44,7 @@ const resources = {
     reports: esReports,
     help: esHelp,
     home: esHome,
+    admin: esAdmin,
   },
 };
 
@@ -51,7 +55,17 @@ i18n
     resources,
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'auth', 'groups', 'verification', 'requests', 'reports', 'help', 'home'],
+    ns: [
+      'common',
+      'auth',
+      'groups',
+      'verification',
+      'requests',
+      'reports',
+      'help',
+      'home',
+      'admin',
+    ],
 
     detection: {
       // Order of language detection

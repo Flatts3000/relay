@@ -4,6 +4,7 @@ import {
   verificationRequests,
   peerAttestations,
   groups,
+  groupHubMemberships,
   type VerificationRequest,
 } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
@@ -48,6 +49,7 @@ function toVerificationRequestResponse(
  */
 export async function createVerificationRequest(
   groupId: string,
+  hubId: string,
   input: CreateVerificationRequestInput,
   userId: string,
   req: Request
@@ -63,8 +65,20 @@ export async function createVerificationRequest(
     throw new Error('Group not found');
   }
 
-  // Check if group is already verified
-  if (group[0].verificationStatus === 'verified') {
+  // Check if group is already verified for this hub via group_hub_memberships
+  const [existingMembership] = await db
+    .select()
+    .from(groupHubMemberships)
+    .where(
+      and(
+        eq(groupHubMemberships.groupId, groupId),
+        eq(groupHubMemberships.hubId, hubId),
+        eq(groupHubMemberships.verificationStatus, 'verified')
+      )
+    )
+    .limit(1);
+
+  if (existingMembership) {
     throw new Error('Group is already verified');
   }
 
@@ -73,7 +87,11 @@ export async function createVerificationRequest(
     .select()
     .from(verificationRequests)
     .where(
-      and(eq(verificationRequests.groupId, groupId), eq(verificationRequests.status, 'pending'))
+      and(
+        eq(verificationRequests.groupId, groupId),
+        eq(verificationRequests.hubId, hubId),
+        eq(verificationRequests.status, 'pending')
+      )
     )
     .limit(1);
 
@@ -86,6 +104,7 @@ export async function createVerificationRequest(
     .insert(verificationRequests)
     .values({
       groupId,
+      hubId,
       method: input.method,
       sponsorInfo: input.sponsorInfo ?? null,
     })
@@ -100,6 +119,7 @@ export async function createVerificationRequest(
     entityId: request.id,
     metadata: {
       groupId,
+      hubId,
       method: input.method,
     },
     req,
@@ -115,8 +135,8 @@ export async function listVerificationRequests(
   hubId: string,
   query: ListVerificationRequestsQuery
 ): Promise<{ requests: VerificationRequestResponse[]; total: number }> {
-  // Build conditions
-  const conditions = [eq(groups.hubId, hubId), isNull(groups.deletedAt)];
+  // Build conditions — filter by verificationRequests.hubId since it now has the column
+  const conditions = [eq(verificationRequests.hubId, hubId), isNull(groups.deletedAt)];
 
   if (query.status) {
     conditions.push(eq(verificationRequests.status, query.status));
@@ -180,7 +200,11 @@ export async function getVerificationRequest(
     .from(verificationRequests)
     .innerJoin(groups, eq(verificationRequests.groupId, groups.id))
     .where(
-      and(eq(verificationRequests.id, requestId), eq(groups.hubId, hubId), isNull(groups.deletedAt))
+      and(
+        eq(verificationRequests.id, requestId),
+        eq(verificationRequests.hubId, hubId),
+        isNull(groups.deletedAt)
+      )
     )
     .limit(1);
 
@@ -246,14 +270,19 @@ export async function approveVerificationRequest(
     .where(eq(verificationRequests.id, requestId))
     .returning();
 
-  // Update the group's verification status
+  // Update the group's verification status in group_hub_memberships
   await db
-    .update(groups)
+    .update(groupHubMemberships)
     .set({
       verificationStatus: 'verified',
       updatedAt: new Date(),
     })
-    .where(eq(groups.id, requestData.groupId));
+    .where(
+      and(
+        eq(groupHubMemberships.groupId, requestData.groupId),
+        eq(groupHubMemberships.hubId, hubId)
+      )
+    );
 
   await logAuditEvent({
     userId,
@@ -338,29 +367,40 @@ export async function revokeGroupVerification(
   userId: string,
   req: Request
 ): Promise<void> {
-  // Verify the group exists and belongs to the hub
+  // Verify the group exists
   const group = await db
     .select()
     .from(groups)
-    .where(and(eq(groups.id, groupId), eq(groups.hubId, hubId), isNull(groups.deletedAt)))
+    .where(and(eq(groups.id, groupId), isNull(groups.deletedAt)))
     .limit(1);
 
   if (!group[0]) {
     throw new Error('Group not found');
   }
 
-  if (group[0].verificationStatus !== 'verified') {
+  // Check membership and verification status via group_hub_memberships
+  const [membership] = await db
+    .select()
+    .from(groupHubMemberships)
+    .where(and(eq(groupHubMemberships.groupId, groupId), eq(groupHubMemberships.hubId, hubId)))
+    .limit(1);
+
+  if (!membership) {
+    throw new Error('Group not found');
+  }
+
+  if (membership.verificationStatus !== 'verified') {
     throw new Error('Group is not verified');
   }
 
-  // Update the group's verification status
+  // Update the group's verification status in group_hub_memberships
   await db
-    .update(groups)
+    .update(groupHubMemberships)
     .set({
       verificationStatus: 'revoked',
       updatedAt: new Date(),
     })
-    .where(eq(groups.id, groupId));
+    .where(and(eq(groupHubMemberships.groupId, groupId), eq(groupHubMemberships.hubId, hubId)));
 
   await logAuditEvent({
     userId,
@@ -407,20 +447,30 @@ export async function submitPeerAttestation(
     throw new Error('Cannot attest for your own group');
   }
 
-  // Verify the attesting group is verified
+  // Verify the attesting group exists and is not deleted
   const attestingGroup = await db
     .select()
     .from(groups)
+    .where(and(eq(groups.id, attestingGroupId), isNull(groups.deletedAt)))
+    .limit(1);
+
+  if (!attestingGroup[0]) {
+    throw new Error('Only verified groups can provide attestations');
+  }
+
+  // Verify the attesting group is verified in at least one hub via group_hub_memberships
+  const [attestingGroupVerified] = await db
+    .select()
+    .from(groupHubMemberships)
     .where(
       and(
-        eq(groups.id, attestingGroupId),
-        eq(groups.verificationStatus, 'verified'),
-        isNull(groups.deletedAt)
+        eq(groupHubMemberships.groupId, attestingGroupId),
+        eq(groupHubMemberships.verificationStatus, 'verified')
       )
     )
     .limit(1);
 
-  if (!attestingGroup[0]) {
+  if (!attestingGroupVerified) {
     throw new Error('Only verified groups can provide attestations');
   }
 
@@ -503,7 +553,7 @@ export async function getPendingAttestationRequests(
   groupId: string,
   hubId: string
 ): Promise<VerificationRequestResponse[]> {
-  // Get all pending peer attestation requests from the same hub
+  // Get all pending peer attestation requests for this hub
   // that this group hasn't already attested to
   const results = await db
     .select({
@@ -515,7 +565,7 @@ export async function getPendingAttestationRequests(
     .innerJoin(groups, eq(verificationRequests.groupId, groups.id))
     .where(
       and(
-        eq(groups.hubId, hubId),
+        eq(verificationRequests.hubId, hubId),
         eq(verificationRequests.method, 'peer_attestation'),
         eq(verificationRequests.status, 'pending'),
         isNull(groups.deletedAt)

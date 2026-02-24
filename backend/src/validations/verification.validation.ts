@@ -16,6 +16,7 @@ export type VerificationRequestStatus = (typeof verificationRequestStatuses)[num
 export const createVerificationRequestSchema = z
   .object({
     method: z.enum(verificationMethods),
+    hubId: z.string().uuid('Invalid hub ID format'),
     sponsorInfo: z
       .string()
       .max(1000, 'Sponsor information must be 1000 characters or less')

@@ -1,4 +1,4 @@
-import { eq, and, isNotNull, isNull, ilike, sql } from 'drizzle-orm';
+import { and, isNotNull, isNull, ilike, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { groups } from '../db/schema/groups.js';
 
@@ -13,7 +13,7 @@ export interface DirectoryEntry {
 
 /**
  * Get directory entries for groups that can receive broadcasts.
- * Only returns verified groups with a public key set.
+ * Only returns verified groups (verified in at least one hub) with a public key set.
  * Optionally filtered by region and/or categories.
  *
  * CRITICAL: This is a public, anonymous endpoint. No auth required.
@@ -23,13 +23,13 @@ export async function getDirectoryEntries(
   categories?: string[]
 ): Promise<DirectoryEntry[]> {
   const conditions = [
-    eq(groups.verificationStatus, 'verified'),
+    sql`EXISTS (SELECT 1 FROM group_hub_memberships ghm WHERE ghm.group_id = ${groups.id} AND ghm.verification_status = 'verified')`,
     isNotNull(groups.publicKey),
     isNull(groups.deletedAt),
   ];
 
   if (region) {
-    conditions.push(eq(groups.broadcastServiceArea, region));
+    conditions.push(sql`${groups.broadcastServiceArea} = ${region}`);
   }
 
   const results = await db
@@ -86,7 +86,10 @@ export async function getPublicDirectoryEntries(
   search?: string,
   category?: string
 ): Promise<PublicDirectoryEntry[]> {
-  const conditions = [eq(groups.verificationStatus, 'verified'), isNull(groups.deletedAt)];
+  const conditions = [
+    sql`EXISTS (SELECT 1 FROM group_hub_memberships ghm WHERE ghm.group_id = ${groups.id} AND ghm.verification_status = 'verified')`,
+    isNull(groups.deletedAt),
+  ];
 
   if (search) {
     conditions.push(

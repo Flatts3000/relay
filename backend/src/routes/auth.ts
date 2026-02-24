@@ -9,6 +9,7 @@ import {
 import { sendMagicLinkEmail } from '../services/email.service.js';
 import { authenticate } from '../middleware/auth.js';
 import { logLogin, logLogout } from '../services/audit.service.js';
+import { config } from '../config.js';
 
 export const authRouter = Router();
 
@@ -35,8 +36,22 @@ authRouter.post('/login', async (req, res) => {
       return;
     }
 
-    const token = await createMagicLinkToken(user.id);
+    // Staff admin email whitelist gate
+    if (user.role === 'staff_admin') {
+      const allowedEmails = config.staffAdminEmails
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
+      if (!allowedEmails.includes(email.toLowerCase())) {
+        // Don't reveal the whitelist — return generic message
+        res.json({
+          message: 'If an account exists with this email, a login link has been sent.',
+        });
+        return;
+      }
+    }
 
+    const token = await createMagicLinkToken(user.id);
     // Send magic link email
     try {
       await sendMagicLinkEmail(email, token);
@@ -99,8 +114,12 @@ authRouter.get('/me', authenticate, (req, res) => {
       id: user.id,
       email: user.email,
       role: user.role,
-      hubId: user.hubId,
-      groupId: user.groupId,
+      hubId: user.hubId ?? null,
+      groupId: user.groupId ?? null,
+      hubName: user.hubName ?? null,
+      groupName: user.groupName ?? null,
+      isOwner: user.isOwner ?? false,
+      groupServiceArea: user.groupServiceArea ?? null,
     },
   });
 });

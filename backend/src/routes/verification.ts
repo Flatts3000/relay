@@ -43,7 +43,7 @@ verificationRouter.post('/groups/:groupId/request', requireGroupCoordinator, asy
       return;
     }
 
-    const request = await createVerificationRequest(groupId, input, user.id, req);
+    const request = await createVerificationRequest(groupId, input.hubId, input, user.id, req);
     res.status(201).json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {

@@ -1,5 +1,6 @@
 import { pgTable, uuid, timestamp, pgEnum, text } from 'drizzle-orm/pg-core';
 import { groups } from './groups.js';
+import { hubs } from './hubs.js';
 import { users } from './users.js';
 
 export const verificationMethodEnum = pgEnum('verification_method', [
@@ -19,6 +20,7 @@ export const verificationRequests = pgTable('verification_requests', {
   groupId: uuid('group_id')
     .notNull()
     .references(() => groups.id),
+  hubId: uuid('hub_id').references(() => hubs.id),
   method: verificationMethodEnum('method').notNull(),
   status: verificationRequestStatusEnum('status').notNull().default('pending'),
   // For sponsor reference method

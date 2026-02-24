@@ -9,3 +9,7 @@ export * from './verification_requests.js';
 export * from './audit_log.js';
 export * from './mailboxes.js';
 export * from './broadcasts.js';
+export * from './hub_members.js';
+export * from './group_members.js';
+export * from './group_hub_memberships.js';
+export * from './onboarding_invites.js';

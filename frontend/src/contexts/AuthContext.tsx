@@ -1,13 +1,6 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { getCurrentUser, logout as apiLogout, verifyToken } from '../api/auth';
-import { getSessionToken, clearSession } from '../api/client';
+import { getSessionToken, setSessionToken, clearSession } from '../api/client';
 import type { User } from '../api/types';
 
 interface AuthState {
@@ -18,6 +11,7 @@ interface AuthState {
 
 interface AuthContextValue extends AuthState {
   login: (token: string) => Promise<void>;
+  loginWithSession: (sessionToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -58,6 +52,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const loginWithSession = useCallback(async (token: string) => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+    setSessionToken(token);
+    try {
+      const { user } = await getCurrentUser();
+      setState({ user, isLoading: false, isAuthenticated: true });
+    } catch (error) {
+      clearSession();
+      setState({ user: null, isLoading: false, isAuthenticated: false });
+      throw error;
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true }));
     try {
@@ -77,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         ...state,
         login,
+        loginWithSession,
         logout,
         refreshUser,
       }}

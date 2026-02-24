@@ -33,7 +33,9 @@ export const authenticate: RequestHandler = async (req, res, next) => {
   next();
 };
 
-export const requireRole = (...roles: Array<'hub_admin' | 'group_coordinator'>): RequestHandler => {
+export const requireRole = (
+  ...roles: Array<'hub_admin' | 'group_coordinator' | 'staff_admin'>
+): RequestHandler => {
   return (req, res, next) => {
     if (!req.user) {
       res.status(401).json({ error: 'Authentication required' });
@@ -51,6 +53,7 @@ export const requireRole = (...roles: Array<'hub_admin' | 'group_coordinator'>):
 
 export const requireHubAdmin: RequestHandler = requireRole('hub_admin');
 export const requireGroupCoordinator: RequestHandler = requireRole('group_coordinator');
+export const requireStaffAdmin: RequestHandler = requireRole('staff_admin');
 
 /**
  * Middleware factory that verifies the authenticated user belongs to a specific group.
@@ -76,10 +79,16 @@ export const requireGroupMember = (groupIdParam: string = 'groupId'): RequestHan
       return;
     }
 
-    // Hub admins can access any group in their hub
-    if (req.user.role === 'hub_admin') {
-      // Note: In a full implementation, we'd verify the group belongs to the hub
-      // For now, hub admins have access to all groups
+    // Staff admins can access any group
+    if (req.user.role === 'staff_admin') {
+      next();
+      return;
+    }
+
+    // Hub admins can access groups in their hub (verified via group_hub_memberships)
+    if (req.user.role === 'hub_admin' && req.user.hubId) {
+      // The hub_admin's hubId is enriched from membership tables.
+      // Route-level service calls will verify group→hub association via group_hub_memberships.
       next();
       return;
     }
@@ -111,6 +120,12 @@ export const requireHubMember = (hubIdParam: string = 'hubId'): RequestHandler =
 
     if (!hubId) {
       res.status(400).json({ error: 'Hub ID is required' });
+      return;
+    }
+
+    // Staff admins can access any hub
+    if (req.user.role === 'staff_admin') {
+      next();
       return;
     }
 

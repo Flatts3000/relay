@@ -34,7 +34,7 @@ groupsRouter.post('/', authenticate, requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const group = await createGroup(user.hubId, input, user.id, req);
+    const group = await createGroup(input, user.id, req);
 
     res.status(201).json({ group });
   } catch (err) {
@@ -78,7 +78,7 @@ groupsRouter.get('/', authenticate, async (req, res) => {
       }
 
       // Group coordinators can only see their own group
-      const group = await getGroupById(user.groupId);
+      const group = await getGroupById(user.groupId, user.hubId ?? undefined);
 
       if (!group) {
         res.json({ groups: [], total: 0 });
@@ -136,14 +136,20 @@ groupsRouter.get('/:id', authenticate, async (req, res) => {
     const { id } = groupIdParamSchema.parse(req.params);
     const user = req.user!;
 
-    const canAccess = await canUserAccessGroup(user.id, user.role, user.hubId, user.groupId, id);
+    const canAccess = await canUserAccessGroup(
+      user.id,
+      user.role,
+      user.hubId ?? null,
+      user.groupId ?? null,
+      id
+    );
 
     if (!canAccess) {
       res.status(404).json({ error: 'Group not found' });
       return;
     }
 
-    const group = await getGroupById(id);
+    const group = await getGroupById(id, user.hubId ?? undefined);
 
     if (!group) {
       res.status(404).json({ error: 'Group not found' });
@@ -170,7 +176,7 @@ groupsRouter.patch('/:id', authenticate, async (req, res) => {
     const input = updateGroupSchema.parse(req.body);
     const user = req.user!;
 
-    const canModify = canUserModifyGroup(user.role, user.groupId, id);
+    const canModify = canUserModifyGroup(user.role, user.groupId ?? null, id);
 
     if (!canModify) {
       res.status(403).json({ error: 'You can only update your own group profile' });
@@ -215,14 +221,15 @@ groupsRouter.delete('/:id', authenticate, requireHubAdmin, async (req, res) => {
     }
 
     // Verify the group belongs to this hub before deleting
-    const group = await getGroupById(id);
+    const canAccess = await canUserAccessGroup(
+      user.id,
+      user.role,
+      user.hubId ?? null,
+      user.groupId ?? null,
+      id
+    );
 
-    if (!group) {
-      res.status(404).json({ error: 'Group not found' });
-      return;
-    }
-
-    if (group.hubId !== user.hubId) {
+    if (!canAccess) {
       res.status(403).json({ error: 'You can only delete groups in your hub' });
       return;
     }

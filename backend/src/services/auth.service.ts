@@ -1,11 +1,17 @@
 import { eq, and, gt, lt, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { users, authTokens, sessions, groups } from '../db/schema/index.js';
+import { users, authTokens, sessions } from '../db/schema/index.js';
 import { generateToken, generateExpiresAt } from '../utils/crypto.js';
+import { getHubMembershipForUser, getGroupMembershipForUser } from './membership.service.js';
 import type { User } from '../db/schema/index.js';
 
-// Extended user type with group service area for authenticated requests
+// Extended user type with membership data for authenticated requests
 export interface AuthenticatedUser extends User {
+  hubId?: string | null;
+  groupId?: string | null;
+  hubName?: string | null;
+  groupName?: string | null;
+  isOwner?: boolean;
   groupServiceArea?: string | null;
 }
 
@@ -97,11 +103,9 @@ export async function validateSession(sessionToken: string): Promise<Authenticat
     .select({
       session: sessions,
       user: users,
-      groupServiceArea: groups.serviceArea,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
-    .leftJoin(groups, eq(users.groupId, groups.id))
     .where(
       and(eq(sessions.token, sessionToken), gt(sessions.expiresAt, now), isNull(users.deletedAt))
     )
@@ -120,10 +124,32 @@ export async function validateSession(sessionToken: string): Promise<Authenticat
     .set({ expiresAt: newExpiresAt, lastActivityAt: now })
     .where(eq(sessions.id, record.session.id));
 
+  // Enrich with membership data
+  const hubMembership = await getHubMembershipForUser(record.user.id);
+  const groupMembership = await getGroupMembershipForUser(record.user.id);
+
   return {
     ...record.user,
-    groupServiceArea: record.groupServiceArea,
+    hubId: hubMembership?.hubId ?? null,
+    groupId: groupMembership?.groupId ?? null,
+    hubName: hubMembership?.hubName ?? null,
+    groupName: groupMembership?.groupName ?? null,
+    isOwner: hubMembership?.isOwner ?? groupMembership?.isOwner ?? false,
+    groupServiceArea: groupMembership?.serviceArea ?? null,
   };
+}
+
+export async function createSessionForUser(userId: string): Promise<string> {
+  const sessionToken = generateToken();
+  const sessionExpiresAt = generateExpiresAt(SESSION_EXPIRY_MINUTES);
+
+  await db.insert(sessions).values({
+    userId,
+    token: sessionToken,
+    expiresAt: sessionExpiresAt,
+  });
+
+  return sessionToken;
 }
 
 export async function invalidateSession(sessionToken: string): Promise<void> {

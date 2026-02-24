@@ -75,12 +75,11 @@ export type ListGroupsQuery = z.infer<typeof listGroupsQuerySchema>;
 // Group response DTO
 export const groupResponseSchema = z.object({
   id: z.string().uuid(),
-  hubId: z.string().uuid(),
   name: z.string(),
   serviceArea: z.string(),
   aidCategories: z.array(z.enum(aidCategories)),
   contactEmail: z.string().email(),
-  verificationStatus: z.enum(verificationStatuses),
+  verificationStatus: z.enum(verificationStatuses).optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

@@ -4,6 +4,7 @@ import {
   fundingRequests,
   fundingRequestStatusHistory,
   groups,
+  groupHubMemberships,
   type FundingRequest,
 } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
@@ -88,7 +89,7 @@ export async function createFundingRequest(
   userId: string,
   req: Request
 ): Promise<FundingRequestResponse> {
-  // Get group info and verify it's verified
+  // Get group info and verify it exists
   const group = await db
     .select()
     .from(groups)
@@ -99,7 +100,19 @@ export async function createFundingRequest(
     throw new Error('Group not found');
   }
 
-  if (group[0].verificationStatus !== 'verified') {
+  // Check if the group is verified in at least one hub via group_hub_memberships
+  const [verified] = await db
+    .select()
+    .from(groupHubMemberships)
+    .where(
+      and(
+        eq(groupHubMemberships.groupId, groupId),
+        eq(groupHubMemberships.verificationStatus, 'verified')
+      )
+    )
+    .limit(1);
+
+  if (!verified) {
     throw new Error('Only verified groups can submit funding requests');
   }
 
@@ -152,8 +165,8 @@ export async function listFundingRequests(
   const conditions = [isNull(fundingRequests.deletedAt), isNull(groups.deletedAt)];
 
   if (role === 'hub_admin' && hubId) {
-    // Hub admins see all requests for groups in their hub
-    conditions.push(eq(groups.hubId, hubId));
+    // Hub admins see all requests for groups in their hub (via group_hub_memberships)
+    conditions.push(eq(groupHubMemberships.hubId, hubId));
   } else if (role === 'group_coordinator' && groupId) {
     // Group coordinators only see their own group's requests
     conditions.push(eq(fundingRequests.groupId, groupId));
@@ -200,6 +213,7 @@ export async function listFundingRequests(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .leftJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(and(...conditions))
     .orderBy(orderBy);
 
@@ -222,7 +236,6 @@ export async function getFundingRequest(
     .select({
       request: fundingRequests,
       groupName: groups.name,
-      groupHubId: groups.hubId,
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
@@ -235,7 +248,18 @@ export async function getFundingRequest(
 
   // Check access
   if (role === 'hub_admin' && hubId) {
-    if (result[0].groupHubId !== hubId) {
+    // Check if the request's group belongs to this hub via group_hub_memberships
+    const [membership] = await db
+      .select()
+      .from(groupHubMemberships)
+      .where(
+        and(
+          eq(groupHubMemberships.groupId, result[0].request.groupId),
+          eq(groupHubMemberships.hubId, hubId)
+        )
+      )
+      .limit(1);
+    if (!membership) {
       return null;
     }
   } else if (role === 'group_coordinator' && groupId) {

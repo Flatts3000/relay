@@ -13,14 +13,18 @@ const configSchema = z.object({
     password: z.string().default('postgres'),
   }),
   email: z.object({
-    // Email provider: 'console' for dev, 'ses' for production
-    provider: z.enum(['console', 'ses']).default('console'),
-    // AWS SES configuration (only needed in production)
+    // Email provider: 'console' for dev, 'resend' for early prod, 'ses' for production
+    provider: z.enum(['console', 'resend', 'ses']).default('console'),
+    // Resend API key (only needed when provider is 'resend')
+    resendApiKey: z.string().default(''),
+    // AWS SES configuration (only needed when provider is 'ses')
     sesRegion: z.string().default('us-east-1'),
     // From address for emails
     fromAddress: z.string().email().default('noreply@relayfunds.org'),
     fromName: z.string().default('Relay'),
   }),
+  // Comma-separated list of emails allowed to log in as staff_admin
+  staffAdminEmails: z.string().default(''),
 });
 
 const env = {
@@ -37,10 +41,12 @@ const env = {
   },
   email: {
     provider: process.env['EMAIL_PROVIDER'],
+    resendApiKey: process.env['RESEND_API_KEY'],
     sesRegion: process.env['AWS_SES_REGION'],
     fromAddress: process.env['EMAIL_FROM_ADDRESS'],
     fromName: process.env['EMAIL_FROM_NAME'],
   },
+  staffAdminEmails: process.env['STAFF_ADMIN_EMAILS'],
 };
 
 export const config = configSchema.parse(env);

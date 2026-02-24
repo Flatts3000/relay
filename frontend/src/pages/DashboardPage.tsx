@@ -21,6 +21,11 @@ export function DashboardPage() {
     return <Navigate to="/login" replace />;
   }
 
+  // Staff admins go to admin dashboard
+  if (user.role === 'staff_admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
   // Hub admins go straight to groups list
   if (user.role === 'hub_admin') {
     return <Navigate to="/groups" replace />;

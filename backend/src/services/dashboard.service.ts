@@ -1,6 +1,7 @@
 import { eq, and, isNull, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { groups } from '../db/schema/groups.js';
+import { groupHubMemberships } from '../db/schema/index.js';
 import { broadcastInvites } from '../db/schema/broadcasts.js';
 import { fundingRequests } from '../db/schema/funding_requests.js';
 
@@ -30,7 +31,6 @@ export async function getGroupDashboard(groupId: string): Promise<DashboardSumma
     .select({
       id: groups.id,
       name: groups.name,
-      verificationStatus: groups.verificationStatus,
     })
     .from(groups)
     .where(and(eq(groups.id, groupId), isNull(groups.deletedAt)));
@@ -38,6 +38,20 @@ export async function getGroupDashboard(groupId: string): Promise<DashboardSumma
   if (!group) {
     return null;
   }
+
+  // Get per-hub verification statuses
+  const hubStatuses = await db
+    .select({
+      hubId: groupHubMemberships.hubId,
+      verificationStatus: groupHubMemberships.verificationStatus,
+    })
+    .from(groupHubMemberships)
+    .where(eq(groupHubMemberships.groupId, groupId));
+
+  // Determine aggregate verification status
+  const hasVerified = hubStatuses.some((s) => s.verificationStatus === 'verified');
+  const hasPending = hubStatuses.some((s) => s.verificationStatus === 'pending');
+  const aggregateStatus = hasVerified ? 'verified' : hasPending ? 'pending' : 'revoked';
 
   // Count pending invites
   const [inviteResult] = await db
@@ -66,7 +80,7 @@ export async function getGroupDashboard(groupId: string): Promise<DashboardSumma
     group: {
       id: group.id,
       name: group.name,
-      verificationStatus: group.verificationStatus,
+      verificationStatus: aggregateStatus,
     },
     pendingInvites: inviteResult?.count ?? 0,
     fundingRequests: {

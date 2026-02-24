@@ -2,6 +2,7 @@ import { eq, and, gte, lte, isNull, sql, count } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { fundingRequests } from '../db/schema/funding_requests.js';
 import { groups } from '../db/schema/groups.js';
+import { groupHubMemberships } from '../db/schema/index.js';
 import type {
   DateRangeQuery,
   SummaryReportResponse,
@@ -51,7 +52,8 @@ export async function getSummaryReport(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
-    .where(and(...conditions, eq(groups.hubId, hubId)));
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
+    .where(and(...conditions, eq(groupHubMemberships.hubId, hubId)));
 
   // Get breakdown by category
   const categoryResults = await db
@@ -65,7 +67,8 @@ export async function getSummaryReport(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
-    .where(and(...conditions, eq(groups.hubId, hubId)))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
+    .where(and(...conditions, eq(groupHubMemberships.hubId, hubId)))
     .groupBy(fundingRequests.category);
 
   const byCategory: CategorySummary[] = categoryResults.map((r) => ({
@@ -113,20 +116,22 @@ export async function getGroupsReport(
   hubId: string,
   query: DateRangeQuery
 ): Promise<GroupsReportResponse> {
-  // Total groups in hub
+  // Total groups in hub (via group_hub_memberships)
   const totalGroupsResult = await db
     .select({ count: count() })
-    .from(groups)
-    .where(and(eq(groups.hubId, hubId), isNull(groups.deletedAt)));
+    .from(groupHubMemberships)
+    .innerJoin(groups, eq(groupHubMemberships.groupId, groups.id))
+    .where(and(eq(groupHubMemberships.hubId, hubId), isNull(groups.deletedAt)));
 
-  // Verified groups
+  // Verified groups (via group_hub_memberships)
   const verifiedGroupsResult = await db
     .select({ count: count() })
-    .from(groups)
+    .from(groupHubMemberships)
+    .innerJoin(groups, eq(groupHubMemberships.groupId, groups.id))
     .where(
       and(
-        eq(groups.hubId, hubId),
-        eq(groups.verificationStatus, 'verified'),
+        eq(groupHubMemberships.hubId, hubId),
+        eq(groupHubMemberships.verificationStatus, 'verified'),
         isNull(groups.deletedAt)
       )
     );
@@ -138,10 +143,11 @@ export async function getGroupsReport(
     .selectDistinct({ groupId: fundingRequests.groupId })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(
       and(
         ...conditions,
-        eq(groups.hubId, hubId),
+        eq(groupHubMemberships.hubId, hubId),
         sql`${fundingRequests.status} IN ('approved', 'funds_sent', 'acknowledged')`
       )
     );
@@ -151,10 +157,11 @@ export async function getGroupsReport(
     .selectDistinct({ groupId: fundingRequests.groupId })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(
       and(
         ...conditions,
-        eq(groups.hubId, hubId),
+        eq(groupHubMemberships.hubId, hubId),
         sql`${fundingRequests.status} IN ('funds_sent', 'acknowledged')`
       )
     );
@@ -189,8 +196,13 @@ export async function getTimingReport(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(
-      and(...conditions, eq(groups.hubId, hubId), sql`${fundingRequests.approvedAt} IS NOT NULL`)
+      and(
+        ...conditions,
+        eq(groupHubMemberships.hubId, hubId),
+        sql`${fundingRequests.approvedAt} IS NOT NULL`
+      )
     );
 
   // Average time from submission to funds sent
@@ -200,8 +212,13 @@ export async function getTimingReport(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(
-      and(...conditions, eq(groups.hubId, hubId), sql`${fundingRequests.fundsSentAt} IS NOT NULL`)
+      and(
+        ...conditions,
+        eq(groupHubMemberships.hubId, hubId),
+        sql`${fundingRequests.fundsSentAt} IS NOT NULL`
+      )
     );
 
   // Average time from submission to acknowledged
@@ -211,10 +228,11 @@ export async function getTimingReport(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(
       and(
         ...conditions,
-        eq(groups.hubId, hubId),
+        eq(groupHubMemberships.hubId, hubId),
         sql`${fundingRequests.acknowledgedAt} IS NOT NULL`
       )
     );
@@ -226,8 +244,13 @@ export async function getTimingReport(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(
-      and(...conditions, eq(groups.hubId, hubId), sql`${fundingRequests.approvedAt} IS NOT NULL`)
+      and(
+        ...conditions,
+        eq(groupHubMemberships.hubId, hubId),
+        sql`${fundingRequests.approvedAt} IS NOT NULL`
+      )
     );
 
   const avgApproval = approvalTimingResult[0]?.avgHours;
@@ -270,7 +293,8 @@ export async function getExportData(
     })
     .from(fundingRequests)
     .innerJoin(groups, eq(fundingRequests.groupId, groups.id))
-    .where(and(...conditions, eq(groups.hubId, hubId)))
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
+    .where(and(...conditions, eq(groupHubMemberships.hubId, hubId)))
     .groupBy(fundingRequests.category);
 
   const periodStr =

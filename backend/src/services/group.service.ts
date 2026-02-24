@@ -1,6 +1,6 @@
 import { eq, and, isNull, ilike, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { groups, type Group, type NewGroup } from '../db/schema/index.js';
+import { groups, groupHubMemberships, type Group, type NewGroup } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
 import type { Request } from 'express';
 import type {
@@ -15,15 +15,14 @@ import type {
 /**
  * Transform a database group record into an API response
  */
-function toGroupResponse(group: Group): GroupResponse {
+function toGroupResponse(group: Group, verificationStatus?: VerificationStatus): GroupResponse {
   return {
     id: group.id,
-    hubId: group.hubId,
     name: group.name,
     serviceArea: group.serviceArea,
     aidCategories: group.aidCategories as AidCategory[],
     contactEmail: group.contactEmail,
-    verificationStatus: group.verificationStatus as VerificationStatus,
+    ...(verificationStatus && { verificationStatus }),
     createdAt: group.createdAt.toISOString(),
     updatedAt: group.updatedAt.toISOString(),
   };
@@ -33,7 +32,6 @@ function toGroupResponse(group: Group): GroupResponse {
  * Create a new group
  */
 export async function createGroup(
-  hubId: string,
   input: CreateGroupInput,
   userId: string,
   req: Request
@@ -41,12 +39,10 @@ export async function createGroup(
   const result = await db
     .insert(groups)
     .values({
-      hubId,
       name: input.name,
       serviceArea: input.serviceArea,
       aidCategories: input.aidCategories,
       contactEmail: input.contactEmail,
-      verificationStatus: 'pending',
     })
     .returning();
 
@@ -69,9 +65,9 @@ export async function createGroup(
 }
 
 /**
- * Get a group by ID
+ * Get a group by ID, optionally including verification status for a specific hub
  */
-export async function getGroupById(groupId: string): Promise<GroupResponse | null> {
+export async function getGroupById(groupId: string, hubId?: string): Promise<GroupResponse | null> {
   const result = await db
     .select()
     .from(groups)
@@ -79,7 +75,19 @@ export async function getGroupById(groupId: string): Promise<GroupResponse | nul
     .limit(1);
 
   const group = result[0];
-  return group ? toGroupResponse(group) : null;
+  if (!group) return null;
+
+  let verificationStatus: VerificationStatus | undefined;
+  if (hubId) {
+    const [membership] = await db
+      .select({ verificationStatus: groupHubMemberships.verificationStatus })
+      .from(groupHubMemberships)
+      .where(and(eq(groupHubMemberships.groupId, groupId), eq(groupHubMemberships.hubId, hubId)))
+      .limit(1);
+    verificationStatus = membership?.verificationStatus as VerificationStatus | undefined;
+  }
+
+  return toGroupResponse(group, verificationStatus);
 }
 
 /**
@@ -89,10 +97,10 @@ export async function listGroups(
   hubId: string,
   query: ListGroupsQuery
 ): Promise<{ groups: GroupResponse[]; total: number }> {
-  const conditions = [eq(groups.hubId, hubId), isNull(groups.deletedAt)];
+  const conditions = [eq(groupHubMemberships.hubId, hubId), isNull(groups.deletedAt)];
 
   if (query.verificationStatus) {
-    conditions.push(eq(groups.verificationStatus, query.verificationStatus));
+    conditions.push(eq(groupHubMemberships.verificationStatus, query.verificationStatus));
   }
 
   if (query.aidCategory) {
@@ -108,13 +116,14 @@ export async function listGroups(
   }
 
   const result = await db
-    .select()
+    .select({ group: groups, verificationStatus: groupHubMemberships.verificationStatus })
     .from(groups)
+    .innerJoin(groupHubMemberships, eq(groups.id, groupHubMemberships.groupId))
     .where(and(...conditions))
     .orderBy(groups.name);
 
   return {
-    groups: result.map(toGroupResponse),
+    groups: result.map((r) => toGroupResponse(r.group, r.verificationStatus as VerificationStatus)),
     total: result.length,
   };
 }
@@ -181,11 +190,7 @@ export async function updateGroup(
 /**
  * Soft delete a group
  */
-export async function deleteGroup(
-  groupId: string,
-  userId: string,
-  req: Request
-): Promise<boolean> {
+export async function deleteGroup(groupId: string, userId: string, req: Request): Promise<boolean> {
   const existing = await db
     .select()
     .from(groups)
@@ -220,7 +225,7 @@ export async function deleteGroup(
 
 /**
  * Check if a user can access a specific group
- * - Hub admins can access any group in their hub
+ * - Hub admins can access any group in their hub (via group_hub_memberships)
  * - Group coordinators can only access their own group
  */
 export async function canUserAccessGroup(
@@ -231,9 +236,18 @@ export async function canUserAccessGroup(
   targetGroupId: string
 ): Promise<boolean> {
   if (userRole === 'hub_admin' && userHubId) {
-    // Hub admin can access any group in their hub
-    const group = await getGroupById(targetGroupId);
-    return group !== null && group.hubId === userHubId;
+    // Check if group belongs to user's hub via group_hub_memberships
+    const [membership] = await db
+      .select()
+      .from(groupHubMemberships)
+      .where(
+        and(
+          eq(groupHubMemberships.groupId, targetGroupId),
+          eq(groupHubMemberships.hubId, userHubId)
+        )
+      )
+      .limit(1);
+    return !!membership;
   }
 
   if (userRole === 'group_coordinator' && userGroupId) {

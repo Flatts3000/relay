@@ -30,5 +30,24 @@ export { GroupDirectoryPage } from './GroupDirectoryPage';
 export { PrivacyPage } from './PrivacyPage';
 export { TermsPage } from './TermsPage';
 export { SecurityPage } from './SecurityPage';
+// Onboarding & settings pages
+export { OnboardingPage } from './OnboardingPage';
+export { HubSettingsPage } from './HubSettingsPage';
+export { GroupSettingsPage } from './GroupSettingsPage';
 // Design system
 export { DesignSystemPage } from './DesignSystemPage';
+// Staff admin pages
+export {
+  AdminOverviewPage,
+  AdminHubsPage,
+  AdminHubDetailPage,
+  AdminGroupsPage,
+  AdminGroupDetailPage,
+  AdminUsersPage,
+  AdminUserDetailPage,
+  AdminVerificationPage,
+  AdminVerificationDetailPage,
+  AdminFundingPage,
+  AdminFundingDetailPage,
+  AdminAuditLogPage,
+} from './admin';

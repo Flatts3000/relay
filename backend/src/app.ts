@@ -18,6 +18,8 @@ import { broadcastsRouter } from './routes/broadcasts.js';
 import { directoryRouter } from './routes/directory.js';
 import { invitesRouter } from './routes/invites.js';
 import { helpRequestsRouter } from './routes/help-requests.js';
+import { adminRouter } from './routes/admin.js';
+import { onboardingRouter } from './routes/onboarding.js';
 
 export const app = express();
 
@@ -100,6 +102,8 @@ app.use('/api/requests', requestsRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/help-requests', helpRequestsRouter);
 app.use('/api/invites', invitesRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/onboarding', onboardingRouter);
 
 // 404 handler
 app.use((_req, res) => {

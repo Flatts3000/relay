@@ -1,3 +1,4 @@
+import './env.js';
 import { app } from './app.js';
 import { config } from './config.js';
 import { startInviteCleanup, stopInviteCleanup } from './services/invite-cleanup.service.js';
@@ -26,4 +27,14 @@ process.on('SIGINT', () => {
     console.log('Server closed');
     process.exit(0);
   });
+});
+
+// Windows: tsx watch sends SIGHUP on restart, and exit when console closes
+process.on('SIGHUP', () => {
+  stopInviteCleanup();
+  server.close(() => process.exit(0));
+});
+
+process.on('exit', () => {
+  stopInviteCleanup();
 });

@@ -20,8 +20,12 @@ RUN addgroup -g 1001 -S nodejs && \
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/drizzle ./drizzle
+COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
 
-RUN npm install --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && \
+    npm install drizzle-kit tsx && \
+    npm cache clean --force
 
 USER nodejs
 

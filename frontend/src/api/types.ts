@@ -5,7 +5,7 @@ export type AidCategory = (typeof AID_CATEGORIES)[number];
 export const VERIFICATION_STATUSES = ['pending', 'verified', 'revoked'] as const;
 export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number];
 
-export const USER_ROLES = ['hub_admin', 'group_coordinator'] as const;
+export const USER_ROLES = ['hub_admin', 'group_coordinator', 'staff_admin'] as const;
 export type UserRole = (typeof USER_ROLES)[number];
 
 // User types
@@ -15,17 +15,20 @@ export interface User {
   role: UserRole;
   hubId: string | null;
   groupId: string | null;
+  hubName: string | null;
+  groupName: string | null;
+  isOwner: boolean;
+  groupServiceArea: string | null;
 }
 
 // Group types
 export interface Group {
   id: string;
-  hubId: string;
   name: string;
   serviceArea: string;
   aidCategories: AidCategory[];
   contactEmail: string;
-  verificationStatus: VerificationStatus;
+  verificationStatus?: VerificationStatus;
   createdAt: string;
   updatedAt: string;
 }
@@ -350,6 +353,127 @@ export interface InviteCiphertextResponse {
   nonce: string; // base64
 }
 
+// Staff admin types
+export interface AdminOverview {
+  totalHubs: number;
+  totalGroups: number;
+  totalUsers: number;
+  pendingVerifications: number;
+  totalFundingRequests: number;
+  totalFundsApproved: string;
+}
+
+export interface AdminHub {
+  id: string;
+  name: string;
+  contactEmail: string;
+  groupCount: number;
+  createdAt: string;
+}
+
+export interface AdminHubDetail extends AdminHub {
+  updatedAt: string;
+  groups: Array<{
+    id: string;
+    name: string;
+    serviceArea: string;
+    verificationStatus: VerificationStatus;
+    contactEmail: string;
+    createdAt: string;
+  }>;
+  userCount: number;
+}
+
+export interface AdminGroup {
+  id: string;
+  hubId: string;
+  hubName: string;
+  name: string;
+  serviceArea: string;
+  aidCategories: AidCategory[];
+  contactEmail: string;
+  verificationStatus: VerificationStatus;
+  createdAt: string;
+}
+
+export interface AdminGroupDetail extends AdminGroup {
+  updatedAt: string;
+  coordinatorEmail: string | null;
+  fundingRequestCount: number;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  hubName: string | null;
+  groupName: string | null;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface AdminUserDetail extends AdminUser {
+  hubId: string | null;
+  groupId: string | null;
+  updatedAt: string;
+}
+
+export interface AdminAuditEntry {
+  id: string;
+  userId: string | null;
+  userEmail: string | null;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface AdminVerificationRequest {
+  id: string;
+  groupId: string;
+  groupName: string;
+  groupServiceArea: string;
+  method: VerificationMethod;
+  status: VerificationRequestStatus;
+  sponsorInfo: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  denialReason: string | null;
+  createdAt: string;
+}
+
+export interface AdminFundingRequest {
+  id: string;
+  groupId: string;
+  groupName: string;
+  amount: string;
+  category: AidCategory;
+  urgency: Urgency;
+  region: string;
+  status: RequestStatus;
+  submittedAt: string;
+  createdAt: string;
+}
+
+export interface AdminFundingRequestDetail extends AdminFundingRequest {
+  justification: string | null;
+  declineReason: string | null;
+  clarificationRequest: string | null;
+  approvedBy: string | null;
+  approvedAt: string | null;
+  declinedAt: string | null;
+  fundsSentAt: string | null;
+  acknowledgedAt: string | null;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 // Report types
 export interface DateRangeQuery {
   startDate?: string;
@@ -403,4 +527,77 @@ export interface TimingReport {
   averageTimeToAcknowledged: number | null;
   medianTimeToApproval: number | null;
   requestsAnalyzed: number;
+}
+
+// Onboarding types
+export type InviteFlow =
+  | 'hub_owner_setup'
+  | 'hub_staff'
+  | 'group_owner_setup'
+  | 'group_staff'
+  | 'staff_admin'
+  | 'hub_membership';
+
+export interface InviteContext {
+  id: string;
+  email: string;
+  role: UserRole;
+  flow: InviteFlow;
+  hubName?: string;
+  groupName?: string;
+  userExists: boolean;
+}
+
+export interface OnboardingInvite {
+  id: string;
+  email: string;
+  role: UserRole;
+  targetHubId: string | null;
+  targetGroupId: string | null;
+  invitedById: string;
+  token: string;
+  expiresAt: string;
+  acceptedAt: string | null;
+  createdAt: string;
+}
+
+export interface CreateInviteInput {
+  email: string;
+  role: UserRole;
+  targetHubId?: string;
+  targetGroupId?: string;
+}
+
+export interface SetupHubInput {
+  token: string;
+  name: string;
+  contactEmail: string;
+}
+
+export interface SetupGroupInput {
+  token: string;
+  name: string;
+  serviceArea: string;
+  aidCategories: AidCategory[];
+  contactEmail: string;
+}
+
+export interface AcceptInviteResponse {
+  sessionToken: string;
+  userId: string;
+}
+
+export interface TeamMember {
+  id: string;
+  email: string;
+  role: UserRole;
+  isOwner: boolean;
+  joinedAt: string;
+}
+
+// Group hub association (for admin/settings views)
+export interface GroupHubAssociation {
+  hubId: string;
+  hubName: string;
+  verificationStatus: VerificationStatus;
 }

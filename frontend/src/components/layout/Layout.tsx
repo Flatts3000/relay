@@ -19,7 +19,9 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const getRoleLabel = (role: string) => {
-    return role === 'hub_admin' ? t('roles.hubAdmin') : t('roles.groupCoordinator');
+    if (role === 'hub_admin') return t('roles.hubAdmin');
+    if (role === 'staff_admin') return t('roles.staffAdmin');
+    return t('roles.groupCoordinator');
   };
 
   return (
@@ -36,6 +38,14 @@ export function Layout({ children }: LayoutProps) {
 
               {isAuthenticated && user && (
                 <>
+                  {user.isOwner && (
+                    <Link
+                      to={user.role === 'hub_admin' ? '/settings/hub' : '/settings/group'}
+                      className="text-sm text-gray-600 hover:text-gray-900"
+                    >
+                      {t('navigation.settings')}
+                    </Link>
+                  )}
                   <span className="text-sm text-gray-600 hidden sm:inline">
                     {user.email} ({getRoleLabel(user.role)})
                   </span>

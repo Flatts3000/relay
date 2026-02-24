@@ -77,7 +77,12 @@ requestsRouter.get('/', async (req, res) => {
     const user = req.user!;
     const query = listFundingRequestsQuerySchema.parse(req.query);
 
-    const result = await listFundingRequests(user.hubId, user.groupId, user.role, query);
+    const result = await listFundingRequests(
+      user.hubId ?? null,
+      user.groupId ?? null,
+      user.role,
+      query
+    );
 
     res.json(result);
   } catch (err) {
@@ -104,7 +109,12 @@ requestsRouter.get('/:id', async (req, res) => {
     const { id } = requestIdParamSchema.parse(req.params);
     const user = req.user!;
 
-    const request = await getFundingRequest(id, user.hubId, user.groupId, user.role);
+    const request = await getFundingRequest(
+      id,
+      user.hubId ?? null,
+      user.groupId ?? null,
+      user.role
+    );
 
     if (!request) {
       res.status(404).json({ error: 'Funding request not found' });

@@ -28,11 +28,13 @@
     "home": "Inicio",
     "groups": "Grupos",
     "profile": "Perfil",
+    "settings": "Configuración",
     "logout": "Cerrar sesión"
   },
   "roles": {
     "hubAdmin": "Administrador del Hub",
-    "groupCoordinator": "Coordinador de Grupo"
+    "groupCoordinator": "Coordinador de Grupo",
+    "staffAdmin": "Administrador del Sistema"
   },
   "verificationStatus": {
     "pending": "Pendiente",
@@ -74,6 +76,48 @@
       "newRequest": "Nueva Solicitud de Fondos",
       "viewProfile": "Perfil del Grupo"
     }
+  },
+  "onboarding": {
+    "missingToken": "Enlace de incorporación inválido. No se proporcionó un token.",
+    "welcome": "Bienvenido/a a Relay",
+    "invitedAs": "Has sido invitado/a como {{role}}",
+    "hubOwnerDescription": "Configura tu hub para comenzar.",
+    "hubName": "Nombre del Hub",
+    "hubNamePlaceholder": "Ingresa el nombre del hub",
+    "contactEmail": "Correo de Contacto",
+    "contactEmailPlaceholder": "hub@ejemplo.org",
+    "createHub": "Crear Hub",
+    "hubStaffDescription": "Te estás uniendo a {{hubName}} como administrador/a del hub.",
+    "acceptInvite": "Aceptar Invitación",
+    "groupOwnerDescription": "Configura tu grupo bajo {{hubName}}.",
+    "groupName": "Nombre del Grupo",
+    "groupNamePlaceholder": "Ingresa el nombre del grupo",
+    "serviceArea": "Área de Servicio",
+    "serviceAreaPlaceholder": "ej., Zona Metropolitana de Portland",
+    "aidCategories": "Categorías de Ayuda",
+    "createGroup": "Crear Grupo",
+    "groupStaffDescription": "Te estás uniendo a {{groupName}} como coordinador/a de grupo.",
+    "staffAdminDescription": "Estás siendo agregado/a como administrador/a del sistema de la plataforma Relay.",
+    "hubMembershipDescription": "Tu grupo está siendo invitado a unirse a {{hubName}}.",
+    "confirmMembership": "Confirmar Membresía"
+  },
+  "settings": {
+    "hubTitle": "Configuración del Hub",
+    "groupTitle": "Configuración del Grupo",
+    "teamMembers": "Miembros del Equipo",
+    "noMembers": "Aún no hay miembros del equipo.",
+    "inviteStaff": "Invitar Personal",
+    "inviteGroup": "Invitar Grupo",
+    "pendingInvites": "Invitaciones Pendientes",
+    "noPendingInvites": "No hay invitaciones pendientes.",
+    "emailPlaceholder": "correo@ejemplo.org",
+    "sendInvite": "Enviar Invitación",
+    "revokeInvite": "Revocar",
+    "removeMember": "Eliminar",
+    "owner": "Propietario/a",
+    "staff": "Personal",
+    "invited": "Invitado/a",
+    "expires": "Expira {{date}}"
   },
   "footer": {
     "tagline": "Plataforma de coordinación que conecta grupos de ayuda mutua con centros de fondos.",

@@ -1,5 +1,13 @@
 import { db } from '../db/index.js';
-import { hubs, groups, users, sessions } from '../db/schema/index.js';
+import {
+  hubs,
+  groups,
+  users,
+  sessions,
+  hubMembers,
+  groupMembers,
+  groupHubMemberships,
+} from '../db/schema/index.js';
 import { generateToken, generateExpiresAt } from '../utils/crypto.js';
 
 export interface TestHub {
@@ -10,20 +18,16 @@ export interface TestHub {
 
 export interface TestGroup {
   id: string;
-  hubId: string;
   name: string;
   serviceArea: string;
   aidCategories: string[];
   contactEmail: string;
-  verificationStatus: string;
 }
 
 export interface TestUser {
   id: string;
   email: string;
   role: 'hub_admin' | 'group_coordinator';
-  hubId: string | null;
-  groupId: string | null;
 }
 
 export async function createTestHub(overrides: Partial<TestHub> = {}): Promise<TestHub> {
@@ -40,37 +44,73 @@ export async function createTestHub(overrides: Partial<TestHub> = {}): Promise<T
 
 export async function createTestGroup(
   hubId: string,
-  overrides: Partial<Omit<TestGroup, 'id' | 'hubId'>> = {}
-): Promise<TestGroup> {
+  overrides: Partial<Omit<TestGroup, 'id'>> & {
+    verificationStatus?: 'pending' | 'verified' | 'revoked';
+  } = {}
+): Promise<TestGroup & { hubId: string; verificationStatus: string }> {
   const [group] = await db
     .insert(groups)
     .values({
-      hubId,
       name: overrides.name || 'Test Group',
       serviceArea: overrides.serviceArea || 'Test City',
-      aidCategories: (overrides.aidCategories as ('rent' | 'food' | 'utilities' | 'other')[]) || ['rent', 'food'],
+      aidCategories: (overrides.aidCategories as ('rent' | 'food' | 'utilities' | 'other')[]) || [
+        'rent',
+        'food',
+      ],
       contactEmail: overrides.contactEmail || 'group@test.org',
-      verificationStatus: (overrides.verificationStatus as 'pending' | 'verified' | 'revoked') || 'pending',
     })
     .returning();
 
-  return group as unknown as TestGroup;
+  // Create group↔hub membership
+  await db.insert(groupHubMemberships).values({
+    groupId: group!.id,
+    hubId,
+    verificationStatus: overrides.verificationStatus || 'pending',
+  });
+
+  return {
+    ...group!,
+    aidCategories: group!.aidCategories as string[],
+    hubId,
+    verificationStatus: overrides.verificationStatus || 'pending',
+  };
 }
 
 export async function createTestUser(
-  overrides: Partial<TestUser> = {}
-): Promise<TestUser> {
+  overrides: Partial<TestUser> & { hubId?: string; groupId?: string } = {}
+): Promise<TestUser & { hubId: string | null; groupId: string | null }> {
   const [user] = await db
     .insert(users)
     .values({
       email: overrides.email || `user-${Date.now()}@test.org`,
       role: overrides.role || 'hub_admin',
-      hubId: overrides.hubId || null,
-      groupId: overrides.groupId || null,
     })
     .returning();
 
-  return user as unknown as TestUser;
+  // Create membership records if hubId or groupId provided
+  if (overrides.hubId) {
+    await db.insert(hubMembers).values({
+      userId: user!.id,
+      hubId: overrides.hubId,
+      isOwner: true,
+    });
+  }
+
+  if (overrides.groupId) {
+    await db.insert(groupMembers).values({
+      userId: user!.id,
+      groupId: overrides.groupId,
+      isOwner: true,
+    });
+  }
+
+  return {
+    id: user!.id,
+    email: user!.email,
+    role: user!.role as 'hub_admin' | 'group_coordinator',
+    hubId: overrides.hubId || null,
+    groupId: overrides.groupId || null,
+  };
 }
 
 export async function createTestSession(userId: string): Promise<string> {
@@ -87,7 +127,7 @@ export async function createTestSession(userId: string): Promise<string> {
 }
 
 export async function createHubAdminWithSession(hubId: string): Promise<{
-  user: TestUser;
+  user: TestUser & { hubId: string | null; groupId: string | null };
   sessionToken: string;
 }> {
   const user = await createTestUser({
@@ -103,7 +143,7 @@ export async function createGroupCoordinatorWithSession(
   hubId: string,
   groupId: string
 ): Promise<{
-  user: TestUser;
+  user: TestUser & { hubId: string | null; groupId: string | null };
   sessionToken: string;
 }> {
   const user = await createTestUser({

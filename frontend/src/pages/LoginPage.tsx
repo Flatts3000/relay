@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts';
@@ -16,9 +16,12 @@ export function LoginPage() {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const verifyAttempted = useRef(false);
 
   // Handle token verification from URL
-  if (token && !isVerifying) {
+  useEffect(() => {
+    if (!token || verifyAttempted.current) return;
+    verifyAttempted.current = true;
     setIsVerifying(true);
     login(token)
       .then(() => {
@@ -28,6 +31,10 @@ export function LoginPage() {
         setError(err.message || t('auth:invalidToken'));
         setIsVerifying(false);
       });
+  }, [token, login, t]);
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (isLoading || isVerifying) {
@@ -41,10 +48,6 @@ export function LoginPage() {
         </div>
       </div>
     );
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
   }
 
   const handleSubmit = async (e: FormEvent) => {

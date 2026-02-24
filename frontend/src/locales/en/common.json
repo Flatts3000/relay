@@ -28,11 +28,13 @@
     "home": "Home",
     "groups": "Groups",
     "profile": "Profile",
+    "settings": "Settings",
     "logout": "Log out"
   },
   "roles": {
     "hubAdmin": "Hub Admin",
-    "groupCoordinator": "Group Coordinator"
+    "groupCoordinator": "Group Coordinator",
+    "staffAdmin": "Staff Admin"
   },
   "verificationStatus": {
     "pending": "Pending",
@@ -74,6 +76,48 @@
       "newRequest": "New Funding Request",
       "viewProfile": "Group Profile"
     }
+  },
+  "onboarding": {
+    "missingToken": "Invalid onboarding link. No token was provided.",
+    "welcome": "Welcome to Relay",
+    "invitedAs": "You have been invited as {{role}}",
+    "hubOwnerDescription": "Set up your hub to get started.",
+    "hubName": "Hub Name",
+    "hubNamePlaceholder": "Enter hub name",
+    "contactEmail": "Contact Email",
+    "contactEmailPlaceholder": "hub@example.org",
+    "createHub": "Create Hub",
+    "hubStaffDescription": "You are joining {{hubName}} as a hub administrator.",
+    "acceptInvite": "Accept Invite",
+    "groupOwnerDescription": "Set up your group under {{hubName}}.",
+    "groupName": "Group Name",
+    "groupNamePlaceholder": "Enter group name",
+    "serviceArea": "Service Area",
+    "serviceAreaPlaceholder": "e.g., Portland Metro",
+    "aidCategories": "Aid Categories",
+    "createGroup": "Create Group",
+    "groupStaffDescription": "You are joining {{groupName}} as a group coordinator.",
+    "staffAdminDescription": "You are being added as a staff administrator for the Relay platform.",
+    "hubMembershipDescription": "Your group is being invited to join {{hubName}}.",
+    "confirmMembership": "Confirm Membership"
+  },
+  "settings": {
+    "hubTitle": "Hub Settings",
+    "groupTitle": "Group Settings",
+    "teamMembers": "Team Members",
+    "noMembers": "No team members yet.",
+    "inviteStaff": "Invite Staff",
+    "inviteGroup": "Invite Group",
+    "pendingInvites": "Pending Invites",
+    "noPendingInvites": "No pending invites.",
+    "emailPlaceholder": "email@example.org",
+    "sendInvite": "Send Invite",
+    "revokeInvite": "Revoke",
+    "removeMember": "Remove",
+    "owner": "Owner",
+    "staff": "Staff",
+    "invited": "Invited",
+    "expires": "Expires {{date}}"
   },
   "footer": {
     "tagline": "Coordination platform connecting mutual aid groups with fund hubs.",
