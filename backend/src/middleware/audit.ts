@@ -3,7 +3,7 @@ import { logAuditEvent } from '../services/audit.service.js';
 import type { NewAuditLogEntry } from '../db/schema/index.js';
 
 // Paths that should NEVER have audit logging (anonymous routes)
-const ANONYMOUS_PATHS = ['/api/mailbox', '/api/broadcasts', '/api/directory'];
+const ANONYMOUS_PATHS = ['/api/broadcasts', '/api/directory'];
 
 // Map HTTP methods to audit actions
 function getAuditAction(method: string, path: string): NewAuditLogEntry['action'] | null {
@@ -48,7 +48,7 @@ function getEntityId(path: string): string | undefined {
 /**
  * Audit logging middleware for authenticated routes.
  *
- * CRITICAL: This middleware MUST NOT be applied to /api/mailbox/* routes.
+ * CRITICAL: This middleware MUST NOT be applied to /api/broadcasts/* routes.
  * Anonymous routes must have NO audit logging to protect user privacy.
  *
  * This middleware:

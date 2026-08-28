@@ -13,11 +13,9 @@ import { groupsRouter } from './routes/groups.js';
 import { verificationRouter } from './routes/verification.js';
 import { requestsRouter } from './routes/requests.js';
 import { reportsRouter } from './routes/reports.js';
-import { mailboxRouter } from './routes/mailbox.js';
 import { broadcastsRouter } from './routes/broadcasts.js';
 import { directoryRouter } from './routes/directory.js';
 import { invitesRouter } from './routes/invites.js';
-import { helpRequestsRouter } from './routes/help-requests.js';
 import { adminRouter } from './routes/admin.js';
 import { onboardingRouter } from './routes/onboarding.js';
 
@@ -98,7 +96,6 @@ app.use(requestLogger);
 
 // ANONYMOUS ROUTES - NO rate limiting, NO logging, NO audit
 // These routes have their own privacy-preserving rate limiting
-app.use('/api/mailbox', mailboxRouter);
 app.use('/api/broadcasts', broadcastsRouter);
 app.use('/api/directory', directoryRouter);
 
@@ -106,7 +103,7 @@ app.use('/api/directory', directoryRouter);
 app.use(authRateLimiter);
 
 // Audit middleware for authenticated routes
-// CRITICAL: Applied AFTER mailbox routes to ensure no audit on anonymous routes
+// CRITICAL: Applied AFTER the anonymous routers to ensure no audit on anonymous routes
 app.use(auditMiddleware);
 
 // Health check (no auth required)
@@ -120,7 +117,6 @@ app.use('/api/groups', groupsRouter);
 app.use('/api/verification', verificationRouter);
 app.use('/api/requests', requestsRouter);
 app.use('/api/reports', reportsRouter);
-app.use('/api/help-requests', helpRequestsRouter);
 app.use('/api/invites', invitesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/onboarding', onboardingRouter);

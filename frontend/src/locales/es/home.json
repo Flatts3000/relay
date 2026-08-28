@@ -18,31 +18,31 @@
     "individual": {
       "title": "¿Necesitas Ayuda?",
       "subtitle": "Conéctate con grupos locales de ayuda mutua de forma anónima",
-      "description": "Crea un buzón privado y encriptado. Los grupos locales en tu área pueden contactarte—sin que entregues ninguna información personal.",
+      "description": "Envíe una solicitud cifrada a los grupos de ayuda mutua que atienden su zona. Solo esos grupos pueden leerla, y se comunicarán con usted directamente usando los datos que elija incluir.",
       "features": [
         "No se requiere cuenta ni registro",
-        "No se recopila nombre, correo ni teléfono",
-        "Los mensajes están encriptados—solo tú puedes leerlos",
-        "Tu buzón se elimina automáticamente después de 7 días"
+        "Cifrada en su dispositivo: Relay nunca ve su mensaje",
+        "Usted decide qué datos de contacto incluir",
+        "Se elimina una vez que los grupos la han recibido"
       ],
       "cta": "Obtener Ayuda Anónimamente",
       "howItWorks": {
         "title": "Cómo funciona",
         "step1": {
-          "title": "Crea un buzón",
-          "description": "Recibirás una frase secreta. Anótala—es la única forma de revisar tus mensajes."
+          "title": "Elija su zona y su necesidad",
+          "description": "Seleccione su región y los tipos de ayuda que busca."
         },
         "step2": {
-          "title": "Elige tu área y necesidad",
-          "description": "Selecciona tu región y el tipo de ayuda que buscas (renta, comida, servicios, etc.)."
+          "title": "Escriba su solicitud",
+          "description": "Incluya una forma de contactarle: un teléfono, un correo o lo que prefiera."
         },
         "step3": {
-          "title": "Los grupos te contactan",
-          "description": "Los grupos locales de ayuda mutua pueden enviarte mensajes encriptados con recursos o próximos pasos."
+          "title": "Envíela cifrada",
+          "description": "Su solicitud se cifra antes de salir de su dispositivo. Solo los grupos que atienden su zona pueden abrirla."
         },
         "step4": {
-          "title": "Conéctate directamente",
-          "description": "Si un grupo puede ayudarte, te conectas con ellos directamente—fuera de Relay."
+          "title": "Un grupo le contacta",
+          "description": "Recibirá una palabra clave. Un grupo se la repetirá para que sepa que el contacto es auténtico."
         }
       },
       "privacy": {

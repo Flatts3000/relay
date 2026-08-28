@@ -18,31 +18,31 @@
     "individual": {
       "title": "Need Help?",
       "subtitle": "Connect with local mutual aid groups anonymously",
-      "description": "Create a private, encrypted mailbox. Local groups in your area can reach out to you—without you giving up any personal information.",
+      "description": "Send an encrypted request to mutual aid groups serving your area. Only those groups can read it, and they contact you directly using whatever details you choose to include.",
       "features": [
         "No account or sign-up required",
-        "No name, email, or phone number collected",
-        "Messages are encrypted—only you can read them",
-        "Your mailbox auto-deletes after 7 days"
+        "Encrypted on your device — Relay never sees your message",
+        "You decide what contact details to include",
+        "Deleted once the groups you sent it to have received it"
       ],
       "cta": "Get Help Anonymously",
       "howItWorks": {
         "title": "How it works",
         "step1": {
-          "title": "Create a mailbox",
-          "description": "You'll get a passphrase. Write it down—it's the only way to check for messages."
+          "title": "Choose your area and need",
+          "description": "Select your region and the kinds of help you're looking for."
         },
         "step2": {
-          "title": "Choose your area and need",
-          "description": "Select your region and what kind of help you're looking for (rent, food, utilities, etc.)."
+          "title": "Write your request",
+          "description": "Include a way to reach you — a phone number, an email, or whatever you're comfortable with."
         },
         "step3": {
-          "title": "Groups reach out",
-          "description": "Local mutual aid groups can send you encrypted messages with resources or next steps."
+          "title": "Send it encrypted",
+          "description": "Your request is encrypted before it leaves your device. Only groups serving your area can open it."
         },
         "step4": {
-          "title": "Connect directly",
-          "description": "If a group can help, you connect with them directly—outside of Relay."
+          "title": "A group contacts you",
+          "description": "You'll get a safe word. A group will repeat it back to you, so you know the contact is genuine."
         }
       },
       "privacy": {

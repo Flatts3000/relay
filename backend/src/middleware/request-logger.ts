@@ -1,11 +1,11 @@
 import type { RequestHandler } from 'express';
 
 // Paths that should NOT be logged (anonymous routes)
-const ANONYMOUS_PATHS = ['/api/mailbox', '/api/broadcasts', '/api/directory'];
+const ANONYMOUS_PATHS = ['/api/broadcasts', '/api/directory'];
 
 /**
  * Request logging middleware.
- * CRITICAL: Does NOT log requests to anonymous routes (/api/mailbox/*)
+ * CRITICAL: Does NOT log requests to anonymous routes (/api/broadcasts/*)
  * to protect user privacy.
  */
 export const requestLogger: RequestHandler = (req, _res, next) => {
