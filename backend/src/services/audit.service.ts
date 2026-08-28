@@ -4,6 +4,13 @@ import type { Request } from 'express';
 
 type AuditAction = NewAuditLogEntry['action'];
 
+/**
+ * Either the pool-backed client or an open transaction. Callers that write an
+ * audit entry alongside the change it describes should pass their transaction,
+ * so the entry commits or rolls back with the change rather than separately.
+ */
+type Executor = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 interface AuditParams {
   userId?: string;
   action: AuditAction;
@@ -13,14 +20,10 @@ interface AuditParams {
   req?: Request;
 }
 
-export async function logAuditEvent({
-  userId,
-  action,
-  entityType,
-  entityId,
-  metadata,
-  req,
-}: AuditParams): Promise<void> {
+export async function logAuditEvent(
+  { userId, action, entityType, entityId, metadata, req }: AuditParams,
+  executor: Executor = db
+): Promise<void> {
   const ipAddress = req
     ? (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       req.socket.remoteAddress ||
@@ -29,7 +32,7 @@ export async function logAuditEvent({
 
   const userAgent = req ? req.headers['user-agent']?.slice(0, 500) : null;
 
-  await db.insert(auditLog).values({
+  await executor.insert(auditLog).values({
     userId,
     action,
     entityType,

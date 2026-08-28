@@ -34,34 +34,57 @@ function toGroupResponse(group: Group, verificationStatus?: VerificationStatus):
 export async function createGroup(
   input: CreateGroupInput,
   userId: string,
+  hubId: string,
   req: Request
 ): Promise<GroupResponse> {
-  const result = await db
-    .insert(groups)
-    .values({
-      name: input.name,
-      serviceArea: input.serviceArea,
-      aidCategories: input.aidCategories,
-      contactEmail: input.contactEmail,
-    })
-    .returning();
+  // The group and its hub membership are written together. Verification status
+  // lives on the membership, not on the group, so a group without one is
+  // invisible to its hub's listings and can never be verified. Neither row is
+  // useful without the other, so neither is allowed to exist alone.
+  const group = await db.transaction(async (tx) => {
+    const result = await tx
+      .insert(groups)
+      .values({
+        name: input.name,
+        serviceArea: input.serviceArea,
+        aidCategories: input.aidCategories,
+        contactEmail: input.contactEmail,
+      })
+      .returning();
 
-  const group = result[0]!;
+    const created = result[0]!;
 
-  await logAuditEvent({
-    userId,
-    action: 'create',
-    entityType: 'group',
-    entityId: group.id,
-    metadata: {
-      name: input.name,
-      serviceArea: input.serviceArea,
-      aidCategories: input.aidCategories,
-    },
-    req,
+    await tx.insert(groupHubMemberships).values({
+      groupId: created.id,
+      hubId,
+      verificationStatus: 'pending',
+    });
+
+    // Audited inside the transaction as well. Writing it afterwards would let
+    // the group and membership commit while the audit insert fails, leaving the
+    // caller with an error for a group that actually exists - and a retry then
+    // produces a duplicate.
+    await logAuditEvent(
+      {
+        userId,
+        action: 'create',
+        entityType: 'group',
+        entityId: created.id,
+        metadata: {
+          name: input.name,
+          serviceArea: input.serviceArea,
+          aidCategories: input.aidCategories,
+          hubId,
+        },
+        req,
+      },
+      tx
+    );
+
+    return created;
   });
 
-  return toGroupResponse(group);
+  return toGroupResponse(group, 'pending');
 }
 
 /**
