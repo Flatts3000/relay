@@ -69,6 +69,27 @@ export function anonymousKeyGenerator(req: Request): string {
 }
 
 /**
+ * Rate limiter for anonymous browsing (/api/directory/*).
+ *
+ * Generous on purpose. Legitimate directory use is bursty - someone in
+ * difficulty filtering by region and category - and the whole point of the
+ * directory is that they find a group quickly. This sits well above normal
+ * browsing and far below scraping.
+ *
+ * PRIVACY: keys on anonymousKeyGenerator, so the address is hashed with a salt
+ * that rotates every 5 minutes and is never stored raw. CLAUDE.md forbids
+ * tracking who browses the directory; this is ephemeral use, not tracking.
+ */
+export const anonymousBrowseRateLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 60,
+  standardHeaders: false, // Don't leak rate limit info
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+  keyGenerator: anonymousKeyGenerator,
+});
+
+/**
  * Strict rate limiter for broadcast creation.
  * Prevents abuse of anonymous broadcast submission.
  */

@@ -1,7 +1,11 @@
 import { asyncRouter } from '../utils/async-router.js';
+import { anonymousBrowseRateLimiter } from '../middleware/rate-limit.js';
 import { getDirectoryEntries, getPublicDirectoryEntries } from '../services/directory.service.js';
 
 export const directoryRouter = asyncRouter();
+
+// Both routes are unauthenticated and hit the database on every request.
+directoryRouter.use(anonymousBrowseRateLimiter);
 
 /**
  * GET /api/directory
