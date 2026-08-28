@@ -4,6 +4,12 @@ const configSchema = z.object({
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
   port: z.coerce.number().default(4000),
   corsOrigin: z.string().default('http://localhost:3000'),
+  // Number of reverse proxy hops in front of this process, used for trust proxy.
+  // Defaults to 0: trusting a hop that is not there lets a direct client forge
+  // X-Forwarded-For and choose their own rate limit bucket. Production sets 1
+  // for Caddy; the root docker-compose publishes the backend directly and must
+  // stay at 0.
+  trustProxyHops: z.coerce.number().int().min(0).default(0),
   frontendUrl: z.string().default('http://localhost:3000'),
   database: z.object({
     host: z.string().default('localhost'),
@@ -31,6 +37,7 @@ const env = {
   nodeEnv: process.env['NODE_ENV'],
   port: process.env['PORT'],
   corsOrigin: process.env['CORS_ORIGIN'],
+  trustProxyHops: process.env['TRUST_PROXY_HOPS'],
   frontendUrl: process.env['FRONTEND_URL'],
   database: {
     host: process.env['DB_HOST'],

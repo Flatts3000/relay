@@ -23,6 +23,19 @@ import { onboardingRouter } from './routes/onboarding.js';
 
 export const app = express();
 
+// How many reverse proxy hops sit in front of this process, so req.ip is the
+// real client rather than the proxy. Without it, req.ip was Caddy's container
+// address for every request on earth and every limiter keyed on it shared one
+// global bucket: a noisy client locked out everybody, and no attacker was ever
+// individually limited.
+//
+// Configured, not hardcoded, and never `true`. Trusting a hop that is not there
+// is the same bug in reverse - a client connecting directly can send their own
+// X-Forwarded-For and pick their own bucket - and the root docker-compose.yml
+// publishes this port directly with no proxy at all. Production sets
+// TRUST_PROXY_HOPS=1 for Caddy; everything else defaults to 0.
+app.set('trust proxy', config.trustProxyHops);
+
 // NOTE: middleware registered directly on `app` below is NOT wrapped by
 // asyncRouter, which only covers the route modules. Express 4 does not forward
 // rejected promises from async middleware, so an async function registered here
