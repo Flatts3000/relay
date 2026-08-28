@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { authenticate, requireHubAdmin, requireGroupCoordinator } from '../middleware/auth.js';
 import {
@@ -18,7 +18,7 @@ import {
 } from '../validations/group.validation.js';
 import { getGroupDashboard } from '../services/dashboard.service.js';
 
-export const groupsRouter = Router();
+export const groupsRouter = asyncRouter();
 
 /**
  * POST /api/groups - Create a new group

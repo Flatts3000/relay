@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { anonymousRateLimiter, mailboxCreationRateLimiter } from '../middleware/rate-limit.js';
 import {
   createMailboxSchema,
@@ -12,7 +12,7 @@ import {
   deleteMailbox,
 } from '../services/mailbox.service.js';
 
-export const mailboxRouter = Router();
+export const mailboxRouter = asyncRouter();
 
 /**
  * CRITICAL SECURITY REQUIREMENTS FOR THIS ROUTER:

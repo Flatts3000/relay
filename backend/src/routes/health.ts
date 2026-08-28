@@ -1,6 +1,6 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 
-export const healthRouter = Router();
+export const healthRouter = asyncRouter();
 
 healthRouter.get('/', (_req, res) => {
   res.json({

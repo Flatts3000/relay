@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { authenticate, requireHubAdmin, requireGroupCoordinator } from '../middleware/auth.js';
 import {
@@ -20,7 +20,7 @@ import {
   clarifyFundingRequestSchema,
 } from '../validations/request.validation.js';
 
-export const requestsRouter = Router();
+export const requestsRouter = asyncRouter();
 
 // All routes require authentication
 requestsRouter.use(authenticate);

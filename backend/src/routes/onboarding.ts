@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { authenticate } from '../middleware/auth.js';
 import {
@@ -36,7 +36,7 @@ import { db } from '../db/index.js';
 import { hubMembers, groupMembers, users } from '../db/schema/index.js';
 import { eq, and, isNull } from 'drizzle-orm';
 
-export const onboardingRouter = Router();
+export const onboardingRouter = asyncRouter();
 
 // ---------- Invite management (authenticated) ----------
 

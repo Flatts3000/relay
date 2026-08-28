@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { authenticate, requireHubAdmin, requireGroupCoordinator } from '../middleware/auth.js';
 import {
@@ -22,7 +22,7 @@ import {
   type PeerAttestationResponse,
 } from '../validations/verification.validation.js';
 
-export const verificationRouter = Router();
+export const verificationRouter = asyncRouter();
 
 // All routes require authentication
 verificationRouter.use(authenticate);

@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { getDirectoryEntries, getPublicDirectoryEntries } from '../services/directory.service.js';
 
-export const directoryRouter = Router();
+export const directoryRouter = asyncRouter();
 
 /**
  * GET /api/directory

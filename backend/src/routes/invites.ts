@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { authenticate, requireGroupCoordinator } from '../middleware/auth.js';
 import {
@@ -8,7 +8,7 @@ import {
   deleteInvite,
 } from '../services/invite.service.js';
 
-export const invitesRouter = Router();
+export const invitesRouter = asyncRouter();
 
 // All invite routes require authentication as group coordinator
 invitesRouter.use(authenticate, requireGroupCoordinator);

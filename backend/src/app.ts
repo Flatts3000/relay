@@ -23,6 +23,13 @@ import { onboardingRouter } from './routes/onboarding.js';
 
 export const app = express();
 
+// NOTE: middleware registered directly on `app` below is NOT wrapped by
+// asyncRouter, which only covers the route modules. Express 4 does not forward
+// rejected promises from async middleware, so an async function registered here
+// that rejects will send no response and take the process down. Keep app-level
+// middleware synchronous; anything that needs to await belongs in a route
+// module, or the stack needs mounting through asyncRouter(). See async-router.ts.
+
 // Request ID for tracing (must be early in middleware chain)
 app.use(requestId);
 
