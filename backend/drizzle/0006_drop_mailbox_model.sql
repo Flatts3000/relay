@@ -9,12 +9,20 @@
 -- region, timestamps and responding group ids indefinitely, with no deletion
 -- path - a permanent record that a request of a given kind existed in a given
 -- region at a given time, outliving the deletion it was supposed to follow.
--- That contradicts the data minimisation the broadcast model was built for.
 --
--- NOTE: this file is NOT in meta/_journal.json, matching migrations 0003-0005.
--- drizzle-kit migrate will therefore not apply it. That is a known defect
--- tracked in #26, not an oversight here; journaling this alone would apply a
--- drop before the creates it depends on.
+-- To be clear about what this does and does not fix: broadcast_tombstones has
+-- the same shape and the same absence of a prune path, so the replacement model
+-- reproduces the pattern rather than eliminating it. That is tracked in #29.
+-- This migration removes one instance of it, not the category of problem.
+--
+-- This IS journaled, unlike 0003-0005. Everything dropped here is created by
+-- 0001 and indexed by 0002, both journaled, and 0003-0005 reference neither the
+-- mailbox tables nor deletion_type - so applying this at idx 3 is safe and does
+-- not depend on the unjournaled migrations. Leaving it unjournaled would strand
+-- the tombstone rows in every deployed database forever, now that the service
+-- code that could delete them is gone. When #26 repairs the journal, 0003-0005
+-- will land at idx 4-6, out of filename order; drizzle applies by journal order,
+-- so that is fine.
 
 DROP TABLE IF EXISTS "mailbox_messages";
 --> statement-breakpoint

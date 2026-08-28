@@ -18,31 +18,31 @@
     "individual": {
       "title": "¿Necesitas Ayuda?",
       "subtitle": "Conéctate con grupos locales de ayuda mutua de forma anónima",
-      "description": "Envíe una solicitud cifrada a los grupos de ayuda mutua que atienden su zona. Solo esos grupos pueden leerla, y se comunicarán con usted directamente usando los datos que elija incluir.",
+      "description": "Envía una solicitud cifrada a los grupos de ayuda mutua que atienden tu zona. Solo esos grupos pueden leerla, y se comunicarán contigo directamente usando los datos que elijas incluir.",
       "features": [
         "No se requiere cuenta ni registro",
-        "Cifrada en su dispositivo: Relay nunca ve su mensaje",
-        "Usted decide qué datos de contacto incluir",
+        "Cifrada en tu dispositivo: Relay nunca ve tu mensaje",
+        "Tú decides qué datos de contacto incluir",
         "Se elimina una vez que los grupos la han recibido"
       ],
       "cta": "Obtener Ayuda Anónimamente",
       "howItWorks": {
         "title": "Cómo funciona",
         "step1": {
-          "title": "Elija su zona y su necesidad",
-          "description": "Seleccione su región y los tipos de ayuda que busca."
+          "title": "Elige tu zona y tu necesidad",
+          "description": "Selecciona tu región y los tipos de ayuda que buscas."
         },
         "step2": {
-          "title": "Escriba su solicitud",
-          "description": "Incluya una forma de contactarle: un teléfono, un correo o lo que prefiera."
+          "title": "Escribe tu solicitud",
+          "description": "Incluye una forma de contactarte: un teléfono, un correo o lo que prefieras."
         },
         "step3": {
-          "title": "Envíela cifrada",
-          "description": "Su solicitud se cifra antes de salir de su dispositivo. Solo los grupos que atienden su zona pueden abrirla."
+          "title": "Envíala cifrada",
+          "description": "Tu solicitud se cifra antes de salir de tu dispositivo. Solo los grupos que atienden tu zona pueden abrirla."
         },
         "step4": {
-          "title": "Un grupo le contacta",
-          "description": "Recibirá una palabra clave. Un grupo se la repetirá para que sepa que el contacto es auténtico."
+          "title": "Un grupo te contacta",
+          "description": "Recibirás una palabra clave. Un grupo te la repetirá para que sepas que el contacto es auténtico."
         }
       },
       "privacy": {
@@ -51,7 +51,7 @@
           "Nunca pedimos tu nombre, dirección o identificación",
           "No rastreamos quién visita este sitio",
           "Los mensajes están encriptados de extremo a extremo",
-          "Todo se elimina automáticamente después de 7 días de inactividad"
+          "Todo se elimina automáticamente después de 7 días"
         ]
       }
     },

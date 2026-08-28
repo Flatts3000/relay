@@ -69,29 +69,6 @@ export function anonymousKeyGenerator(req: Request): string {
 }
 
 /**
- * Rate limiter for anonymous routes (/api/broadcasts/*).
- *
- * CRITICAL PRIVACY REQUIREMENTS:
- * 1. Uses short window (5 minutes) to minimize data retention
- * 2. IP addresses are hashed immediately, never stored raw
- * 3. Hash salt rotates every 5 minutes
- * 4. After window expires, all association data is gone
- *
- * This provides abuse protection while maintaining anonymity.
- */
-export const anonymousRateLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes (short window for privacy)
-  max: 30, // 30 requests per 5 minutes
-  standardHeaders: false, // Don't leak rate limit info
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
-  keyGenerator: anonymousKeyGenerator,
-  // Don't include request ID or any other identifying info in response
-  skipFailedRequests: false,
-  skipSuccessfulRequests: false,
-});
-
-/**
  * Strict rate limiter for broadcast creation.
  * Prevents abuse of anonymous broadcast submission.
  */

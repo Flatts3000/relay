@@ -51,7 +51,7 @@
           "We never ask for your name, address, or ID",
           "We don't track who visits this site",
           "Messages are encrypted end-to-end",
-          "Everything auto-deletes after 7 days of inactivity"
+          "Everything auto-deletes after 7 days"
         ]
       }
     },
