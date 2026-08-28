@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Relay** (relayfunds.org) is a coordination layer connecting local mutual aid groups with centralized fund hubs. It solves a coordination, discovery, and trust problem—not a fundraising problem.
 
-**Current state:** Development ready. Tech stack finalized, pilot planning complete.
+**Current state:** Paused since February 2026. Phases 1 through 10 shipped in modified form, but the deployment at relayfunds.org currently returns errors on every API route, there is no pilot running, and the database holds no data. Open work is tracked in [GitHub issues](https://github.com/Flatts3000/relay/issues); start there before making changes. Last reviewed 2026-08-28.
 
 ## The Core Problems
 
@@ -39,7 +39,7 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 - No IP logging on anonymous routes; no cookies for anonymous users
 - If subpoenaed, Relay can only produce encrypted blobs it cannot decrypt
 
-_Migration note: Replaces the earlier mailbox/passphrase model. See `docs/encrypted_public_help_broadcast.md`._
+_Migration note: Replaces the earlier mailbox/passphrase model. See `docs/encrypted_public_help_broadcast.md`. The migration was never finished: the mailbox tables, `/api/mailbox` routes, and mailbox pages are all still live. See [#15](https://github.com/Flatts3000/relay/issues/15)._
 
 ### Group-level operations
 
@@ -83,13 +83,19 @@ This is an open source project. Data integrity and security are paramount.
 
 ## Infrastructure Security (AWS)
 
-- **IAM:** Least privilege; no long-lived credentials; Fargate task roles
-- **Network:** VPC with private subnets; RDS not publicly accessible; security groups restrict access
-- **Secrets:** AWS Secrets Manager for credentials; no hardcoded secrets; automatic rotation
-- **Encryption:** KMS for RDS encryption at rest; TLS 1.3 in transit
-- **Audit:** CloudTrail enabled; CloudWatch Logs; VPC Flow Logs
-- **Containers:** ECR vulnerability scanning; non-root containers
-- **WAF:** AWS WAF on ALB for common attack protection
+These are the **target** controls, defined in `/infra`. Most are not in place, because `/infra` has never been applied and production is a single EC2 instance running Docker Compose. Do not assume any of these protect the running system. See [docs/deployment.md](docs/deployment.md) for what actually runs and [#7](https://github.com/Flatts3000/relay/issues/7) for the decision on which architecture to keep.
+
+| Control    | Target                                                 | Status                                                                                                              |
+| ---------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| IAM        | Least privilege, no long-lived credentials, task roles | **Not met.** Static IAM key on the host, no instance profile ([#11](https://github.com/Flatts3000/relay/issues/11)) |
+| Network    | VPC with private subnets, RDS not publicly accessible  | **Not met.** Single instance, directly internet-facing                                                              |
+| Secrets    | Secrets Manager, automatic rotation                    | **Not met.** Environment file on the host                                                                           |
+| Encryption | KMS at rest, TLS 1.3 in transit                        | **Partial.** TLS via Caddy. Database volume is not separately encrypted; S3 backups use SSE-S3                      |
+| Audit      | CloudTrail, CloudWatch Logs, VPC Flow Logs             | **Not met.** No log shipping, no alarms ([#2](https://github.com/Flatts3000/relay/issues/2))                        |
+| Containers | ECR vulnerability scanning, non-root                   | **Not met.** Images built on the host, no scanning ([#4](https://github.com/Flatts3000/relay/issues/4))             |
+| WAF        | AWS WAF on ALB                                         | **Not met.** No ALB and no WAF                                                                                      |
+
+When writing new infrastructure code, build toward the target column. When reasoning about the security of what is deployed today, use the status column.
 
 ## Conventions
 
@@ -97,31 +103,32 @@ This is an open source project. Data integrity and security are paramount.
 
 ## Tech Stack
 
-| Layer          | Technology                       |
-| -------------- | -------------------------------- |
-| Frontend       | React + Vite + TypeScript        |
-| Styling        | Tailwind CSS                     |
-| Backend        | Node.js + Express + TypeScript   |
-| Database       | PostgreSQL (AWS RDS)             |
-| Compute        | AWS Fargate                      |
-| Infrastructure | Terraform                        |
-| CI/CD          | GitHub Actions                   |
-| Containers     | Docker                           |
-| i18n           | react-i18next (English, Spanish) |
-| E2E Encryption | libsodium (TweetNaCl.js)         |
+| Layer          | Technology                           |
+| -------------- | ------------------------------------ |
+| Frontend       | React + Vite + TypeScript            |
+| Styling        | Tailwind CSS                         |
+| Backend        | Node.js + Express + TypeScript       |
+| Database       | PostgreSQL (container, not RDS)      |
+| Compute        | Single EC2 instance (not Fargate)    |
+| Infrastructure | Terraform in `/infra`, never applied |
+| CI/CD          | None. GitHub Actions is disabled     |
+| Containers     | Docker Compose                       |
+| i18n           | react-i18next (English, Spanish)     |
+| E2E Encryption | libsodium (TweetNaCl.js)             |
 
 ## Repository Structure
 
 ```
 /frontend    # React + Vite application
 /backend     # Express API server
-/infra       # Terraform configurations
+/deploy      # Scripts and Compose files for the deployment that actually runs
+/infra       # Terraform configurations (target architecture, never applied)
 /docs        # Project documentation
 ```
 
 ## GitHub Actions
 
-Currently **disabled** during early development.
+Currently **disabled**. This was a deliberate early-development choice that has outlived its usefulness now that there is a deployed environment and 20 open dependency advisories. Re-enabling is tracked in [#5](https://github.com/Flatts3000/relay/issues/5).
 
 ```bash
 # Re-enable when ready for CI
@@ -288,9 +295,11 @@ If any become necessary, the pilot pauses for reevaluation.
 
 ## Documentation
 
+- `/docs/deployment.md` - What actually runs in production, and how it differs from `/infra`
+- `/docs/known_issues.md` - Pointer to the GitHub issue tracker and current project state
 - `/docs/product_requirements_document.md` - Full PRD with functional/non-functional requirements
 - `/docs/user_personas.md` - User personas and design implications
-- `/docs/prd_to_mvp_plan.md` - Implementation plan with phases and checkpoints
+- `/docs/prd_to_mvp_plan.md` - Implementation plan with phases and checkpoints (historical, see the status note at its top)
 - `/docs/problem_brief.md` - Core problem and constraints
 - `/docs/pilot_proposal.md` - Pilot scope and success criteria
 - `/docs/decision_mobile_app_vs_web_app.md` - Platform decision rationale

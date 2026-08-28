@@ -1,35 +1,24 @@
 # Known Issues
 
-This document tracks known issues, gaps, and outstanding items that require attention before production deployment.
+Known issues are tracked as [GitHub issues](https://github.com/Flatts3000/relay/issues), not in this file. This document exists to point there and to record the state of the project as of the last full review.
 
-## Compliance
+**Last reviewed:** 2026-08-28
 
-### COPPA and GDPR Compliance
+## Current state
 
-- **Status:** Not addressed
-- **Priority:** High
-- **Description:** Need to evaluate and implement compliance requirements for:
-  - Children's Online Privacy Protection Act (COPPA)
-  - General Data Protection Regulation (GDPR)
-- **Considerations:**
-  - Relay is designed to minimize data collection, which aligns with privacy regulations
-  - Anonymous mailbox feature collects no PII by design
-  - Group coordinator accounts require email addresses (potential GDPR scope)
-  - Need to determine if COPPA applies given the target user base
+Development has been paused since February 2026. A deployment exists at relayfunds.org but its API returns errors on every route except the health check, so the application is not usable. The database contains no pilot or user data.
 
-## Analytics and Metrics
+## Open issue areas
 
-### Success Metrics Tracking
+| Area                             | Issues                                                                                                                                                                                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production outage and operations | [#1](https://github.com/Flatts3000/relay/issues/1) API returning 502, [#2](https://github.com/Flatts3000/relay/issues/2) no monitoring, [#10](https://github.com/Flatts3000/relay/issues/10) backups never restore-tested                                                                                     |
+| Security                         | [#3](https://github.com/Flatts3000/relay/issues/3) dependency advisories, [#4](https://github.com/Flatts3000/relay/issues/4) unpatched host, [#11](https://github.com/Flatts3000/relay/issues/11) long-lived IAM key, [#15](https://github.com/Flatts3000/relay/issues/15) superseded mailbox path still live |
+| Verification                     | [#5](https://github.com/Flatts3000/relay/issues/5) CI disabled, [#6](https://github.com/Flatts3000/relay/issues/6) test coverage                                                                                                                                                                              |
+| Architecture and documentation   | [#7](https://github.com/Flatts3000/relay/issues/7) Terraform does not match deployment, [#8](https://github.com/Flatts3000/relay/issues/8) docs corrected, [#9](https://github.com/Flatts3000/relay/issues/9) stale MVP plan                                                                                  |
+| Compliance and measurement       | [#12](https://github.com/Flatts3000/relay/issues/12) GDPR and COPPA, [#13](https://github.com/Flatts3000/relay/issues/13) success metrics                                                                                                                                                                     |
+| Security review record           | [#14](https://github.com/Flatts3000/relay/issues/14) record the independent cryptography review                                                                                                                                                                                                               |
 
-- **Status:** Not implemented
-- **Priority:** Medium
-- **Description:** Need to define and implement success metrics for the Relay platform and pilot program
-- **Potential Metrics:**
-  - Number of verified groups
-  - Funding request volume and approval rates
-  - Time-to-funding averages
-  - Anonymous help request engagement (aggregate only)
-- **Constraints:**
-  - Must not track individual-level data
-  - Must not log anonymous user activity
-  - Aggregate reporting only
+## Previously tracked here
+
+The two items this file used to carry are now [#12](https://github.com/Flatts3000/relay/issues/12) (GDPR and COPPA evaluation) and [#13](https://github.com/Flatts3000/relay/issues/13) (aggregate success metrics). Both are still open. The earlier text referred to the "anonymous mailbox feature," which the encrypted broadcast model replaced. See [#15](https://github.com/Flatts3000/relay/issues/15) for the state of that migration, which was never completed.

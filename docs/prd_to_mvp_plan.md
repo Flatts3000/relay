@@ -1,5 +1,11 @@
 # PRD to MVP Implementation Plan
 
+> **Status note, added 2026-08-28.** This is a historical planning document, not a current tracker. Its checkboxes were never maintained: none are checked, yet Phases 2 through 10 largely shipped. The codebase contains the database schema and API foundation, group registry, verification and attestation, funding requests with status history, aggregate reports, the public directory, encrypted broadcasts (commit `26d8e17`), onboarding invites, and an admin console. `security_audit.md` is the Phase 10 audit.
+>
+> Phase 1 is the significant exception. The Fargate, RDS, ALB, and WAF architecture described below was never deployed; production is a single EC2 instance running Docker Compose. See [deployment.md](deployment.md) for what actually runs. The CloudWatch alarms in section 1.8 do not exist.
+>
+> Reconciling the per-item checklist against the code is tracked in [#9](https://github.com/Flatts3000/relay/issues/9). Until that is done, treat the checkbox state below as meaningless rather than as evidence that work is outstanding.
+
 This document outlines the implementation plan to deliver Relay's MVP as defined in the [Product Requirements Document](product_requirements_document.md).
 
 ## Overview

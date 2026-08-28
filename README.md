@@ -7,10 +7,19 @@ Coordination platform connecting mutual aid groups with fund hubs—safely, quic
 Relay is a minimal coordination layer that enables local mutual aid groups to connect with centralized fund hubs. It solves a coordination, discovery, and trust problem—not a fundraising problem.
 
 **This is not:**
+
 - A case-management system
 - A benefits application platform
 - A donor-facing marketplace
 - A surveillance-friendly database
+
+## Project Status
+
+**Paused. Not ready for use.** Last active development was February 2026.
+
+A demonstration deployment exists at relayfunds.org, but its API is currently returning errors on every route, so the application is not functional. There is no pilot running and no production data.
+
+Anyone evaluating or forking this project should read the [open issues](https://github.com/Flatts3000/relay/issues) first. The most significant are the production outage (#1), 20 unpatched dependency advisories (#3), disabled CI (#5), and a superseded anonymous-intake path that is still wired up (#15).
 
 ## Features
 
@@ -22,26 +31,40 @@ Relay is a minimal coordination layer that enables local mutual aid groups to co
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React + Vite + TypeScript + Tailwind CSS |
-| Backend | Node.js + Express + TypeScript |
-| Database | PostgreSQL |
-| Infrastructure | AWS (Fargate, RDS) + Terraform |
-| CI/CD | GitHub Actions |
+| Layer          | Technology                               |
+| -------------- | ---------------------------------------- |
+| Frontend       | React + Vite + TypeScript + Tailwind CSS |
+| Backend        | Node.js + Express + TypeScript           |
+| Database       | PostgreSQL                               |
+| E2E encryption | TweetNaCl.js                             |
+| i18n           | react-i18next (English, Spanish)         |
+
+Infrastructure is documented separately, because what is deployed differs from what `/infra` describes:
+
+| Layer    | Deployed today                                | Described in `/infra`               |
+| -------- | --------------------------------------------- | ----------------------------------- |
+| Compute  | Single EC2 instance running Docker Compose    | AWS Fargate                         |
+| Database | PostgreSQL container on a local Docker volume | AWS RDS with customer-managed KMS   |
+| Edge     | Caddy on the instance                         | Application Load Balancer + AWS WAF |
+| Secrets  | Environment file on the host                  | AWS Secrets Manager                 |
+| CI/CD    | None. GitHub Actions is disabled              | GitHub Actions                      |
+
+See [Deployment](docs/deployment.md) for what actually runs. The Terraform in `/infra` has never been applied and should be treated as an unrealized target, not a description of production. Reconciling the two is tracked in #7.
 
 ## Repository Structure
 
 ```
 /frontend    # React + Vite application
 /backend     # Express API server
-/infra       # Terraform configurations
+/deploy      # Scripts and Compose files for the deployment that actually runs
+/infra       # Terraform configurations (target architecture, never applied)
 /docs        # Project documentation
 ```
 
 ## Development
 
 Prerequisites:
+
 - Node.js 20+
 - Docker
 - PostgreSQL (local) or Docker Compose
@@ -59,6 +82,10 @@ npm run dev
 - [Product Requirements Document](docs/product_requirements_document.md)
 - [Problem Brief](docs/problem_brief.md)
 - [Pilot Proposal](docs/pilot_proposal.md)
+- [Deployment](docs/deployment.md)
+- [Encrypted Public Help Broadcast](docs/encrypted_public_help_broadcast.md)
+- [Onboarding](docs/onboarding.md)
+- [Security Audit](docs/security_audit.md)
 
 ## Privacy & Safety
 
