@@ -77,9 +77,30 @@ describe('broadcast invite lifecycle', () => {
 
     it('leaves a pending invite alone however old it is', async () => {
       const broadcast = await createTestBroadcast();
-      // Pending means no group has opened it yet, so the 10-minute window has
-      // not started. Only TTL expiry should remove this.
-      await createTestInvite(broadcast.id, groupA.id, { status: 'pending' });
+      // Genuinely old, so this tests the age claim and not just the status
+      // filter. Pending means no group has opened it, so the 10-minute window
+      // has not started; only TTL expiry should ever remove it.
+      await createTestInvite(broadcast.id, groupA.id, {
+        status: 'pending',
+        createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+      });
+
+      expect(await cleanupDecryptedInvites()).toBe(0);
+      expect(await inviteCount(broadcast.id)).toBe(1);
+    });
+
+    it('leaves a decrypted invite with no decryptedAt outside the 10-minute window', async () => {
+      const broadcast = await createTestBroadcast();
+      // cleanupDecryptedInvites requires status = 'decrypted' AND a non-null
+      // decryptedAt. An invite in decrypted status with a null timestamp
+      // therefore escapes the 10-minute window entirely and survives until the
+      // 7-day TTL - a thousandfold retention overrun on the guarantee this file
+      // exists to prove.
+      //
+      // markInviteDecrypted sets both columns together, so this is unreachable
+      // today, and nothing but that single call site enforces it. Pinned so the
+      // gap is visible rather than latent. See #33.
+      await createTestInvite(broadcast.id, groupA.id, { status: 'decrypted' });
 
       expect(await cleanupDecryptedInvites()).toBe(0);
       expect(await inviteCount(broadcast.id)).toBe(1);
@@ -128,7 +149,13 @@ describe('broadcast invite lifecycle', () => {
         expiresAt: new Date(Date.now() - 1000),
       });
 
-      expect(await broadcastExists(broadcast.id)).toBe(true);
+      // Confirm there was actually a payload to destroy, so the assertion below
+      // is about the ciphertext rather than about an empty row.
+      const [before] = await db
+        .select({ payload: broadcasts.ciphertextPayload })
+        .from(broadcasts)
+        .where(eq(broadcasts.id, broadcast.id));
+      expect(before?.payload?.length).toBeGreaterThan(0);
 
       await cleanupExpiredInvites();
 
@@ -166,7 +193,13 @@ describe('broadcast invite lifecycle', () => {
 
     it('writes exactly one tombstone when the broadcast is cleaned up', async () => {
       const broadcast = await createTestBroadcast({ region: 'Marion County' });
+      // Two invites, so the delete-and-maybe-cleanup helper runs twice in one
+      // sweep. The `remaining === 0` guard is the only thing stopping a second
+      // tombstone insert; with a single invite this assertion could not fail.
       await createTestInvite(broadcast.id, groupA.id, {
+        expiresAt: new Date(Date.now() - 1000),
+      });
+      await createTestInvite(broadcast.id, groupB.id, {
         expiresAt: new Date(Date.now() - 1000),
       });
 
@@ -202,6 +235,29 @@ describe('broadcast invite lifecycle', () => {
       // error runs in the privacy-preserving direction, which is why it went
       // unnoticed. Fixing #31 will make this fail; expect [groupA, groupB] then.
       expect(tombstone?.groupIds).toEqual([groupB.id]);
+    });
+
+    it('records only the last group via the scheduler path too', async () => {
+      const broadcast = await createTestBroadcast();
+      await createTestInvite(broadcast.id, groupA.id, {
+        expiresAt: new Date(Date.now() - 1000),
+      });
+      await createTestInvite(broadcast.id, groupB.id, {
+        expiresAt: new Date(Date.now() - 1000),
+      });
+
+      await cleanupExpiredInvites();
+
+      const [tombstone] = await db
+        .select()
+        .from(broadcastTombstones)
+        .where(eq(broadcastTombstones.originalBroadcastId, broadcast.id));
+
+      // Same #31 defect, pinned separately because the logic is duplicated in
+      // invite-cleanup.service.ts and invite.service.ts. This is the copy the
+      // 60-second scheduler runs in production. Without this, fixing #31 in
+      // invite.service.ts alone would leave the live path broken and green.
+      expect(tombstone?.groupIds).toHaveLength(1);
     });
   });
 
