@@ -51,10 +51,10 @@ resource "aws_db_instance" "main" {
   identifier = "${var.app_name}-${var.environment}-db"
 
   # Engine configuration
-  engine               = "postgres"
-  engine_version       = "16.4"
-  instance_class       = var.db_instance_class
-  allocated_storage    = 20
+  engine                = "postgres"
+  engine_version        = "16.4"
+  instance_class        = var.db_instance_class
+  allocated_storage     = 20
   max_allocated_storage = 100 # Enable storage autoscaling up to 100GB
 
   # Database configuration
