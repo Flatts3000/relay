@@ -51,32 +51,63 @@ CREATE INDEX IF NOT EXISTS "onboarding_invites_email_idx" ON "onboarding_invites
 -- 5. Add hub_id to verification_requests
 ALTER TABLE "verification_requests" ADD COLUMN IF NOT EXISTS "hub_id" uuid REFERENCES "hubs"("id");
 
+-- Steps 6-9 copy data out of columns that step 10 then drops, so on a second
+-- run those columns are gone and a bare INSERT fails with
+-- "column hub_id does not exist". Guarded on the source column still existing,
+-- which makes the whole migration re-runnable. That matters because a database
+-- where these were applied by hand has no drizzle migration record, so
+-- drizzle-kit migrate will run them again. See #26.
+--
+-- Uses dynamic SQL: a plain INSERT referencing users.hub_id would fail to parse
+-- at function-creation time once the column is dropped, whatever the guard says.
+
 -- 6. Migrate data: users.hub_id → hub_members (all existing users are owners)
-INSERT INTO "hub_members" ("user_id", "hub_id", "is_owner")
-SELECT "id", "hub_id", true
-FROM "users"
-WHERE "hub_id" IS NOT NULL AND "deleted_at" IS NULL
-ON CONFLICT DO NOTHING;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'hub_id') THEN
+    EXECUTE '
+      INSERT INTO "hub_members" ("user_id", "hub_id", "is_owner")
+      SELECT "id", "hub_id", true FROM "users"
+      WHERE "hub_id" IS NOT NULL AND "deleted_at" IS NULL
+      ON CONFLICT DO NOTHING';
+  END IF;
+END $$;
 
 -- 7. Migrate data: users.group_id → group_members (all existing users are owners)
-INSERT INTO "group_members" ("user_id", "group_id", "is_owner")
-SELECT "id", "group_id", true
-FROM "users"
-WHERE "group_id" IS NOT NULL AND "deleted_at" IS NULL
-ON CONFLICT DO NOTHING;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'group_id') THEN
+    EXECUTE '
+      INSERT INTO "group_members" ("user_id", "group_id", "is_owner")
+      SELECT "id", "group_id", true FROM "users"
+      WHERE "group_id" IS NOT NULL AND "deleted_at" IS NULL
+      ON CONFLICT DO NOTHING';
+  END IF;
+END $$;
 
 -- 8. Migrate data: groups.(hub_id, verification_status) → group_hub_memberships
-INSERT INTO "group_hub_memberships" ("group_id", "hub_id", "verification_status")
-SELECT "id", "hub_id", "verification_status"
-FROM "groups"
-WHERE "hub_id" IS NOT NULL AND "deleted_at" IS NULL
-ON CONFLICT DO NOTHING;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = 'public' AND table_name = 'groups' AND column_name = 'hub_id') THEN
+    EXECUTE '
+      INSERT INTO "group_hub_memberships" ("group_id", "hub_id", "verification_status")
+      SELECT "id", "hub_id", "verification_status" FROM "groups"
+      WHERE "hub_id" IS NOT NULL AND "deleted_at" IS NULL
+      ON CONFLICT DO NOTHING';
+  END IF;
+END $$;
 
 -- 9. Migrate data: set verification_requests.hub_id from groups.hub_id
-UPDATE "verification_requests" vr
-SET "hub_id" = g."hub_id"
-FROM "groups" g
-WHERE vr."group_id" = g."id" AND g."hub_id" IS NOT NULL;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_schema = 'public' AND table_name = 'groups' AND column_name = 'hub_id') THEN
+    EXECUTE '
+      UPDATE "verification_requests" vr
+      SET "hub_id" = g."hub_id"
+      FROM "groups" g
+      WHERE vr."group_id" = g."id" AND g."hub_id" IS NOT NULL';
+  END IF;
+END $$;
 
 -- 10. Drop removed columns and indexes
 DROP INDEX IF EXISTS "groups_hub_id_idx";
