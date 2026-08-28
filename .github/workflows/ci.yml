@@ -63,6 +63,23 @@ jobs:
     name: Test Backend
     runs-on: ubuntu-latest
 
+    # The backend suite is an integration suite: it talks to a real PostgreSQL.
+    # backend/.env.test points at localhost:5433, so the service is mapped there.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: relay_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -75,6 +92,17 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Apply schema to test database
+        run: npx tsx ../node_modules/drizzle-kit/bin.cjs push --force
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5433
+          DB_NAME: relay_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
 
       - name: Run tests
         run: npm run test:backend
@@ -144,7 +172,11 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.0
+          # 1.6.0 can no longer run terraform init: HashiCorp's provider signing
+          # key expired, and releases from that era fail verification with
+          # "openpgp: key expired" before any validation happens. 1.16 ships the
+          # current key.
+          terraform_version: 1.16.0
 
       - name: Terraform Init
         working-directory: ./infra
@@ -251,9 +283,20 @@ jobs:
           output: 'trivy-backend.sarif'
           severity: 'CRITICAL,HIGH'
 
-      - name: Upload Trivy scan results
+      # Uploaded separately, one category per image. Pointing sarif_file at '.'
+      # bundled both results into a single upload under one category, which code
+      # scanning stopped accepting in July 2025:
+      # https://github.blog/changelog/2025-07-21-code-scanning-will-stop-combining-multiple-sarif-runs-uploaded-in-the-same-sarif-file/
+      - name: Upload Trivy scan results (frontend)
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: '.'
-          category: 'container-scan'
+          sarif_file: 'trivy-frontend.sarif'
+          category: 'container-scan-frontend'
+
+      - name: Upload Trivy scan results (backend)
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend.sarif'
+          category: 'container-scan-backend'
