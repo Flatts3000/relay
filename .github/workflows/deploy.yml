@@ -57,7 +57,7 @@ jobs:
       - name: Verify deployment
         run: |
           for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.EC2_HOST }}/api/health/ready" 2>/dev/null || echo "000")
+            STATUS=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" "https://${{ secrets.EC2_HOST }}/api/health/ready" 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Deployment verified!"
               exit 0

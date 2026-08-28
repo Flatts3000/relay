@@ -12,8 +12,12 @@ export const authRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
-  // Skip rate limiting for health check
-  skip: (req) => req.path === '/api/health' || req.path === '/health',
+  // Skip rate limiting for health checks, readiness included. An exact match on
+  // '/api/health' left '/api/health/ready' rate limited, which matters because
+  // the deploy gate and any uptime monitor poll readiness: ~100 ordinary API
+  // requests in a 15 minute window would make a healthy deploy fail
+  // verification with 429s, or page an on-call falsely.
+  skip: (req) => req.path.startsWith('/api/health') || req.path.startsWith('/health'),
 });
 
 /**

@@ -49,6 +49,19 @@ describe('Health API', () => {
       expect(response.body.database).toBe('unavailable');
     });
 
+    it('reports 503 rather than hanging when the database never answers', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      // A socket that stays open while the server stops responding: the query
+      // never settles, so without an explicit bound the handler would hang
+      // forever holding a pool connection.
+      vi.spyOn(db, 'execute').mockReturnValue(new Promise(() => {}) as never);
+
+      const response = await request(app).get('/api/health/ready');
+
+      expect(response.status).toBe(503);
+      expect(response.body.status).toBe('unavailable');
+    }, 10000);
+
     it('does not leak connection details in the response body', async () => {
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
       vi.spyOn(db, 'execute').mockRejectedValue(

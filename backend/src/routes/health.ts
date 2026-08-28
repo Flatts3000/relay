@@ -31,9 +31,30 @@ healthRouter.get('/', (_req, res) => {
  * process is alive. This is the endpoint an uptime check or a deploy
  * verification step should watch.
  */
+/** A readiness check that hangs is a readiness check that failed. */
+const READINESS_TIMEOUT_MS = 2000;
+
 healthRouter.get('/ready', async (_req, res) => {
   try {
-    await db.execute(sql`SELECT 1`);
+    // connectionTimeoutMillis in db/index.ts bounds only acquiring a connection.
+    // Once one is checked out, a server that accepts the socket but stops
+    // answering - a partition with no RST, a Postgres stuck in recovery - would
+    // leave this pending forever, never reaching the catch below, while holding
+    // a pool connection. A monitor polling on an interval would then exhaust the
+    // 20-connection pool and starve real traffic. Bound it explicitly.
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Readiness query exceeded ${READINESS_TIMEOUT_MS}ms`)),
+        READINESS_TIMEOUT_MS
+      );
+    });
+
+    try {
+      await Promise.race([db.execute(sql`SELECT 1`), timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
 
     res.json({
       status: 'ok',
