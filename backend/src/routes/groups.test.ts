@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
+import { and, eq } from 'drizzle-orm';
 import { app } from '../app.js';
+import { db } from '../db/index.js';
+import { auditLog, groupHubMemberships } from '../db/schema/index.js';
 import {
   createTestHub,
   createTestGroup,
@@ -71,6 +74,43 @@ describe('Groups API', () => {
 
       expect(listed.status).toBe(200);
       expect(listed.body.groups.map((g: { id: string }) => g.id)).toContain(created.body.group.id);
+
+      const memberships = await db
+        .select()
+        .from(groupHubMemberships)
+        .where(
+          and(
+            eq(groupHubMemberships.groupId, created.body.group.id),
+            eq(groupHubMemberships.hubId, hub.id)
+          )
+        );
+
+      expect(memberships).toHaveLength(1);
+      expect(memberships[0]?.verificationStatus).toBe('pending');
+    });
+
+    it('should write the audit entry in the same transaction as the group', async () => {
+      const { sessionToken } = await createHubAdminWithSession(hub.id);
+
+      const created = await request(app)
+        .post('/api/groups')
+        .set('Authorization', `Bearer ${sessionToken}`)
+        .send({
+          name: 'Audited Group',
+          serviceArea: 'Eastside',
+          aidCategories: ['rent'],
+          contactEmail: 'audited@test.org',
+        });
+
+      expect(created.status).toBe(201);
+
+      const entries = await db
+        .select()
+        .from(auditLog)
+        .where(and(eq(auditLog.entityType, 'group'), eq(auditLog.entityId, created.body.group.id)));
+
+      expect(entries).toHaveLength(1);
+      expect(entries[0]?.action).toBe('create');
     });
 
     it('should reject group creation without authentication', async () => {

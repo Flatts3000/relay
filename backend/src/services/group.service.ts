@@ -60,21 +60,28 @@ export async function createGroup(
       verificationStatus: 'pending',
     });
 
-    return created;
-  });
+    // Audited inside the transaction as well. Writing it afterwards would let
+    // the group and membership commit while the audit insert fails, leaving the
+    // caller with an error for a group that actually exists - and a retry then
+    // produces a duplicate.
+    await logAuditEvent(
+      {
+        userId,
+        action: 'create',
+        entityType: 'group',
+        entityId: created.id,
+        metadata: {
+          name: input.name,
+          serviceArea: input.serviceArea,
+          aidCategories: input.aidCategories,
+          hubId,
+        },
+        req,
+      },
+      tx
+    );
 
-  await logAuditEvent({
-    userId,
-    action: 'create',
-    entityType: 'group',
-    entityId: group.id,
-    metadata: {
-      name: input.name,
-      serviceArea: input.serviceArea,
-      aidCategories: input.aidCategories,
-      hubId,
-    },
-    req,
+    return created;
   });
 
   return toGroupResponse(group, 'pending');
