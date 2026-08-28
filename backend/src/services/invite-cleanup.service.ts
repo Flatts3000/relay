@@ -10,8 +10,12 @@ let cleanupTimer: ReturnType<typeof setInterval> | null = null;
 /**
  * Delete decrypted invites older than 10 minutes.
  * This enforces the 10-minute auto-delete window after a group decrypts an invite.
+ *
+ * Exported so the deletion guarantees can be tested directly rather than by
+ * waiting on the 60 second scheduler. These are the privacy promises the
+ * project makes, so they need to be asserted, not assumed.
  */
-async function cleanupDecryptedInvites(): Promise<number> {
+export async function cleanupDecryptedInvites(): Promise<number> {
   const cutoff = new Date(Date.now() - TEN_MINUTES_MS);
 
   const expired = await db
@@ -38,8 +42,9 @@ async function cleanupDecryptedInvites(): Promise<number> {
 
 /**
  * Delete invites that have exceeded their TTL (7 days by default).
+ * Exported for testing, as above.
  */
-async function cleanupExpiredInvites(): Promise<number> {
+export async function cleanupExpiredInvites(): Promise<number> {
   const now = new Date();
 
   const expired = await db

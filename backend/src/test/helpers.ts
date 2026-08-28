@@ -7,7 +7,12 @@ import {
   hubMembers,
   groupMembers,
   groupHubMemberships,
+  broadcasts,
+  broadcastInvites,
+  broadcastCategoryEnum,
 } from '../db/schema/index.js';
+
+type BroadcastCategory = (typeof broadcastCategoryEnum.enumValues)[number];
 import { generateToken, generateExpiresAt } from '../utils/crypto.js';
 
 export interface TestHub {
@@ -154,4 +159,63 @@ export async function createGroupCoordinatorWithSession(
   });
   const sessionToken = await createTestSession(user.id);
   return { user, sessionToken };
+}
+
+// --- Broadcast fixtures -----------------------------------------------------
+
+export interface TestBroadcast {
+  id: string;
+  region: string;
+  categories: BroadcastCategory[];
+}
+
+/**
+ * Create a broadcast carrying real ciphertext bytes, so a test can read the
+ * payload back before cleanup and confirm there was something to destroy.
+ */
+export async function createTestBroadcast(
+  overrides: { region?: string; categories?: BroadcastCategory[]; expiresAt?: Date } = {}
+): Promise<TestBroadcast> {
+  const [row] = await db
+    .insert(broadcasts)
+    .values({
+      ciphertextPayload: Buffer.from('ciphertext-that-relay-cannot-read'),
+      nonce: Buffer.from('nonce-0123456789'),
+      region: overrides.region ?? 'Test County',
+      categories: overrides.categories ?? ['food'],
+      ...(overrides.expiresAt ? { expiresAt: overrides.expiresAt } : {}),
+    })
+    .returning();
+
+  return {
+    id: row!.id,
+    region: row!.region,
+    categories: row!.categories as BroadcastCategory[],
+  };
+}
+
+export async function createTestInvite(
+  broadcastId: string,
+  groupId: string,
+  overrides: {
+    status?: 'pending' | 'decrypted' | 'expired';
+    decryptedAt?: Date;
+    expiresAt?: Date;
+    createdAt?: Date;
+  } = {}
+): Promise<string> {
+  const [row] = await db
+    .insert(broadcastInvites)
+    .values({
+      broadcastId,
+      groupId,
+      wrappedKey: Buffer.from('wrapped-content-key'),
+      status: overrides.status ?? 'pending',
+      ...(overrides.decryptedAt ? { decryptedAt: overrides.decryptedAt } : {}),
+      ...(overrides.expiresAt ? { expiresAt: overrides.expiresAt } : {}),
+      ...(overrides.createdAt ? { createdAt: overrides.createdAt } : {}),
+    })
+    .returning({ id: broadcastInvites.id });
+
+  return row!.id;
 }
