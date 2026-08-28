@@ -63,46 +63,10 @@ export function anonymousKeyGenerator(req: Request): string {
   // Hash the /56 prefix rather than the exact address. A single IPv6 client is
   // routinely handed a /64 and can source every request from a different
   // address in it, which would mint a fresh bucket each time and defeat the
-  // 5-per-hour broadcast and mailbox limits completely. ipKeyGenerator is the
+  // 5-per-hour broadcast limit completely. ipKeyGenerator is the
   // library's own defence against this; IPv4 addresses pass through unchanged.
   return hashIpWithRotatingSalt(ipKeyGenerator(ip));
 }
-
-/**
- * Rate limiter for anonymous routes (/api/mailbox/*).
- *
- * CRITICAL PRIVACY REQUIREMENTS:
- * 1. Uses short window (5 minutes) to minimize data retention
- * 2. IP addresses are hashed immediately, never stored raw
- * 3. Hash salt rotates every 5 minutes
- * 4. After window expires, all association data is gone
- *
- * This provides abuse protection while maintaining anonymity.
- */
-export const anonymousRateLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes (short window for privacy)
-  max: 30, // 30 requests per 5 minutes
-  standardHeaders: false, // Don't leak rate limit info
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
-  keyGenerator: anonymousKeyGenerator,
-  // Don't include request ID or any other identifying info in response
-  skipFailedRequests: false,
-  skipSuccessfulRequests: false,
-});
-
-/**
- * Strict rate limiter for mailbox creation.
- * Prevents abuse of mailbox creation.
- */
-export const mailboxCreationRateLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 5 mailbox creations per hour
-  standardHeaders: false,
-  legacyHeaders: false,
-  message: { error: 'Too many mailbox creation attempts, please try again later.' },
-  keyGenerator: anonymousKeyGenerator,
-});
 
 /**
  * Strict rate limiter for broadcast creation.

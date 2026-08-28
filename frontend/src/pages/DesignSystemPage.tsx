@@ -574,7 +574,7 @@ export function DesignSystemPage() {
         <div className="space-y-3 mb-6">
           <Alert type="success">Success — your changes have been saved.</Alert>
           <Alert type="error">Error — something went wrong. Please try again.</Alert>
-          <Alert type="warning">Warning — your mailbox will expire in 2 days.</Alert>
+          <Alert type="warning">Warning — this broadcast expires in 2 days.</Alert>
           <Alert type="info">Info — groups in your area have been notified.</Alert>
         </div>
 

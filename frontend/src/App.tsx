@@ -20,12 +20,9 @@ import {
   NewFundingRequestPage,
   FundingRequestsListPage,
   FundingRequestDetailPage,
-  ViewMailboxPage,
   BroadcastSubmitPage,
   GroupInboxPage,
   InviteDetailPage,
-  HelpRequestsListPage,
-  HelpRequestDetailPage,
   ReportsDashboardPage,
   PrivacyPage,
   TermsPage,
@@ -237,8 +234,6 @@ export default function App() {
 
       {/* Anonymous help request routes - NO authentication */}
       <Route path="/help" element={<BroadcastSubmitPage />} />
-      {/* Legacy mailbox routes (kept during migration) */}
-      <Route path="/help/mailbox/:id" element={<ViewMailboxPage />} />
 
       {/* Group coordinator broadcast inbox routes */}
       <Route
@@ -257,28 +252,6 @@ export default function App() {
           <ProtectedRoute allowedRoles={['group_coordinator']}>
             <Layout>
               <InviteDetailPage />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Group coordinator help request routes (legacy mailbox) */}
-      <Route
-        path="/help-requests"
-        element={
-          <ProtectedRoute allowedRoles={['group_coordinator']}>
-            <Layout>
-              <HelpRequestsListPage />
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/help-requests/:mailboxId"
-        element={
-          <ProtectedRoute allowedRoles={['group_coordinator']}>
-            <Layout>
-              <HelpRequestDetailPage />
             </Layout>
           </ProtectedRoute>
         }
