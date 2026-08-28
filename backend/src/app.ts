@@ -23,6 +23,17 @@ import { onboardingRouter } from './routes/onboarding.js';
 
 export const app = express();
 
+// Production runs behind exactly one reverse proxy (Caddy, see deploy/Caddyfile),
+// so req.ip must be derived one hop back from X-Forwarded-For. Without this,
+// req.ip was Caddy's container address for every request on earth, which meant
+// every rate limiter keyed on it shared a single global bucket: one noisy client
+// locked out everybody, and no attacker was individually limited.
+//
+// Deliberately 1, never `true`. Trusting the whole chain would let any client
+// send their own X-Forwarded-For and pick their own rate limit bucket, which is
+// worse than not limiting at all because it looks like it works.
+app.set('trust proxy', 1);
+
 // NOTE: middleware registered directly on `app` below is NOT wrapped by
 // asyncRouter, which only covers the route modules. Express 4 does not forward
 // rejected promises from async middleware, so an async function registered here

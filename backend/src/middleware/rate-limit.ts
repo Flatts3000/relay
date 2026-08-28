@@ -54,10 +54,11 @@ function hashIpWithRotatingSalt(ip: string): string {
  * Exported for reuse by broadcast and other anonymous rate limiters.
  */
 export function anonymousKeyGenerator(req: Request): string {
-  const ip =
-    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-    req.socket.remoteAddress ||
-    'unknown';
+  // req.ip, not a hand-parsed X-Forwarded-For. Taking the leftmost XFF entry
+  // takes whatever the client sent, so anyone could pick their own bucket and
+  // walk straight through these limits. With `trust proxy` set to 1 hop in
+  // app.ts, Express derives this from the entry the proxy actually appended.
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
 
   return hashIpWithRotatingSalt(ip);
 }

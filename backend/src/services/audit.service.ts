@@ -24,11 +24,16 @@ export async function logAuditEvent(
   { userId, action, entityType, entityId, metadata, req }: AuditParams,
   executor: Executor = db
 ): Promise<void> {
-  const ipAddress = req
-    ? (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      req.socket.remoteAddress ||
-      null
-    : null;
+  // req.ip rather than a hand-parsed header, for the same reason as the rate
+  // limiter: the leftmost X-Forwarded-For entry is whatever the client sent, so
+  // the old value was client-controlled and therefore useless as an audit
+  // record. `trust proxy` is set to 1 hop in app.ts.
+  //
+  // Note this only ever runs on authenticated routes - auditMiddleware is
+  // mounted after the anonymous routers in app.ts specifically so anonymous
+  // traffic is never audited. Whether coordinator IPs should be retained at
+  // all, and for how long, is the retention question in #12.
+  const ipAddress = req ? (req.ip ?? req.socket.remoteAddress ?? null) : null;
 
   const userAgent = req ? req.headers['user-agent']?.slice(0, 500) : null;
 
