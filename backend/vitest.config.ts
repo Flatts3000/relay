@@ -10,6 +10,11 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
     setupFiles: ['./src/test/setup.ts'],
+    // These are integration tests sharing one database, and teardown truncates
+    // the whole schema. Vitest runs test files in parallel by default, which
+    // would have one file wiping another file's fixtures mid-run and contending
+    // on ACCESS EXCLUSIVE locks. Run files serially instead.
+    fileParallelism: false,
     env: {
       NODE_ENV: 'test',
     },

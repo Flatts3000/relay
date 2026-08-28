@@ -28,7 +28,7 @@
     "prepare": "husky"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "repository": {
     "type": "git",
@@ -46,7 +46,8 @@
     },
     "@esbuild-kit/core-utils": {
       "esbuild": ">=0.25.0"
-    }
+    },
+    "drizzle-orm": "$drizzle-orm"
   },
   "devDependencies": {
     "drizzle-orm": "^0.45.2",

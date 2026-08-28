@@ -23,6 +23,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      // Vitest 4 removed coverage.all, which defaulted to true in v1 and pulled
+      // in every source file. Without an explicit include, only files touched by
+      // a test are instrumented - and with no test files at all that is nothing,
+      // so the thresholds below would compare against 0/0 and silently pass.
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/**',
         'src/test/**',

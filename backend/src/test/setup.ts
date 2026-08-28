@@ -4,9 +4,23 @@ import { sql } from 'drizzle-orm';
 
 // Test database setup
 beforeAll(async () => {
-  // Ensure test environment
-  if (process.env['NODE_ENV'] !== 'test') {
-    throw new Error('Tests must run with NODE_ENV=test');
+  // Refuse to run against anything that is not a test database.
+  //
+  // Checking NODE_ENV here would be useless: vitest.config.ts hardcodes
+  // env: { NODE_ENV: 'test' }, so the check can never fail. It also would not
+  // protect the right thing. dotenv does not override variables already present
+  // in the environment, so a developer with DB_NAME or DB_PORT exported in their
+  // shell runs this suite against whatever that points at - and teardown below
+  // truncates every table it finds. Assert on the database actually connected to.
+  const result = await db.execute<{ current_database: string }>(sql`SELECT current_database()`);
+  const dbName = result.rows[0]?.current_database;
+
+  if (!dbName || !/_test$/.test(dbName)) {
+    throw new Error(
+      `Refusing to run tests against database "${dbName}". ` +
+        'The test database name must end in "_test". ' +
+        'Check DB_NAME/DB_PORT in your environment - an exported value overrides .env.test.'
+    );
   }
 });
 
