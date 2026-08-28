@@ -3,6 +3,19 @@ import { app } from './app.js';
 import { config } from './config.js';
 import { startInviteCleanup, stopInviteCleanup } from './services/invite-cleanup.service.js';
 
+// Async route rejections are forwarded to the error handler by asyncRouter, so
+// reaching here means something outside the request path failed - a background
+// job, or a handler registered without asyncRouter. Log it loudly rather than
+// letting Node terminate the process with no explanation, which is how an
+// outage becomes undiagnosable after the fact.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
 const server = app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
   console.log(`Environment: ${config.nodeEnv}`);

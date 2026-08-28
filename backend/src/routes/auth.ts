@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import {
   findUserByEmail,
@@ -11,7 +11,7 @@ import { authenticate } from '../middleware/auth.js';
 import { logLogin, logLogout } from '../services/audit.service.js';
 import { config } from '../config.js';
 
-export const authRouter = Router();
+export const authRouter = asyncRouter();
 
 const loginRequestSchema = z.object({
   email: z.string().email().max(255),

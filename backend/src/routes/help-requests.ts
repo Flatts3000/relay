@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { authenticate, requireGroupCoordinator } from '../middleware/auth.js';
 import {
   listHelpRequestsQuerySchema,
@@ -12,7 +12,7 @@ import {
   getGroupTombstones,
 } from '../services/mailbox.service.js';
 
-export const helpRequestsRouter = Router();
+export const helpRequestsRouter = asyncRouter();
 
 // All routes require group coordinator authentication
 helpRequestsRouter.use(authenticate);

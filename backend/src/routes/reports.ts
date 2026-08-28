@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { authenticate, requireHubAdmin } from '../middleware/auth.js';
 import { dateRangeQuerySchema, exportQuerySchema } from '../validations/report.validation.js';
 import {
@@ -9,7 +9,7 @@ import {
   convertToCSV,
 } from '../services/report.service.js';
 
-export const reportsRouter = Router();
+export const reportsRouter = asyncRouter();
 
 // All routes require hub admin authentication
 reportsRouter.use(authenticate);

@@ -1,9 +1,10 @@
-import { Router, json } from 'express';
+import { json } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { broadcastCreationRateLimiter } from '../middleware/rate-limit.js';
 import { createBroadcast } from '../services/broadcast.service.js';
 
-export const broadcastsRouter = Router();
+export const broadcastsRouter = asyncRouter();
 
 const BROADCAST_CATEGORIES = [
   'food',

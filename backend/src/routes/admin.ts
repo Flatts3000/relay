@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { asyncRouter } from '../utils/async-router.js';
 import { z } from 'zod';
 import { authenticate, requireStaffAdmin } from '../middleware/auth.js';
 import * as adminService from '../services/admin.service.js';
@@ -15,7 +15,7 @@ import {
   declineFundingSchema,
 } from '../validations/admin.validation.js';
 
-export const adminRouter = Router();
+export const adminRouter = asyncRouter();
 
 // All admin routes require authentication + staff_admin role
 adminRouter.use(authenticate, requireStaffAdmin);
@@ -213,14 +213,12 @@ adminRouter.patch('/verification/:id/approve', async (req, res) => {
     const result = await adminService.approveVerificationRequest(id, req.user!.id, req);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
-      res
-        .status(status)
-        .json({
-          error:
-            result.error === 'not_found'
-              ? 'Verification request not found'
-              : 'Request is not in pending status',
-        });
+      res.status(status).json({
+        error:
+          result.error === 'not_found'
+            ? 'Verification request not found'
+            : 'Request is not in pending status',
+      });
       return;
     }
     res.json({ message: 'Verification request approved' });
@@ -240,14 +238,12 @@ adminRouter.patch('/verification/:id/deny', async (req, res) => {
     const result = await adminService.denyVerificationRequest(id, req.user!.id, reason, req);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
-      res
-        .status(status)
-        .json({
-          error:
-            result.error === 'not_found'
-              ? 'Verification request not found'
-              : 'Request is not in pending status',
-        });
+      res.status(status).json({
+        error:
+          result.error === 'not_found'
+            ? 'Verification request not found'
+            : 'Request is not in pending status',
+      });
       return;
     }
     res.json({ message: 'Verification request denied' });
@@ -300,14 +296,10 @@ adminRouter.patch('/funding-requests/:id/approve', async (req, res) => {
     const result = await adminService.adminApproveFundingRequest(id, req.user!.id, req);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
-      res
-        .status(status)
-        .json({
-          error:
-            result.error === 'not_found'
-              ? 'Funding request not found'
-              : 'Invalid status transition',
-        });
+      res.status(status).json({
+        error:
+          result.error === 'not_found' ? 'Funding request not found' : 'Invalid status transition',
+      });
       return;
     }
     res.json({ message: 'Funding request approved' });
@@ -327,14 +319,10 @@ adminRouter.patch('/funding-requests/:id/decline', async (req, res) => {
     const result = await adminService.adminDeclineFundingRequest(id, req.user!.id, reason, req);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
-      res
-        .status(status)
-        .json({
-          error:
-            result.error === 'not_found'
-              ? 'Funding request not found'
-              : 'Invalid status transition',
-        });
+      res.status(status).json({
+        error:
+          result.error === 'not_found' ? 'Funding request not found' : 'Invalid status transition',
+      });
       return;
     }
     res.json({ message: 'Funding request declined' });
@@ -353,14 +341,10 @@ adminRouter.patch('/funding-requests/:id/send-funds', async (req, res) => {
     const result = await adminService.adminMarkFundsSent(id, req.user!.id, req);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
-      res
-        .status(status)
-        .json({
-          error:
-            result.error === 'not_found'
-              ? 'Funding request not found'
-              : 'Invalid status transition',
-        });
+      res.status(status).json({
+        error:
+          result.error === 'not_found' ? 'Funding request not found' : 'Invalid status transition',
+      });
       return;
     }
     res.json({ message: 'Funds marked as sent' });
@@ -379,14 +363,10 @@ adminRouter.patch('/funding-requests/:id/acknowledge', async (req, res) => {
     const result = await adminService.adminAcknowledgeFunding(id, req.user!.id, req);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
-      res
-        .status(status)
-        .json({
-          error:
-            result.error === 'not_found'
-              ? 'Funding request not found'
-              : 'Invalid status transition',
-        });
+      res.status(status).json({
+        error:
+          result.error === 'not_found' ? 'Funding request not found' : 'Invalid status transition',
+      });
       return;
     }
     res.json({ message: 'Funding acknowledged' });
