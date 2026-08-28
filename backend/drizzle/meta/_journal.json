@@ -26,7 +26,28 @@
     {
       "idx": 3,
       "version": "7",
-      "when": 1787955429308,
+      "when": 1787958016243,
+      "tag": "0003_add_broadcasts",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787958016244,
+      "tag": "0004_add_staff_admin",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787958016245,
+      "tag": "0005_onboarding_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787958016246,
       "tag": "0006_drop_mailbox_model",
       "breakpoints": true
     }

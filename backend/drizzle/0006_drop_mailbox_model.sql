@@ -15,14 +15,10 @@
 -- reproduces the pattern rather than eliminating it. That is tracked in #29.
 -- This migration removes one instance of it, not the category of problem.
 --
--- This IS journaled, unlike 0003-0005. Everything dropped here is created by
--- 0001 and indexed by 0002, both journaled, and 0003-0005 reference neither the
--- mailbox tables nor deletion_type - so applying this at idx 3 is safe and does
--- not depend on the unjournaled migrations. Leaving it unjournaled would strand
--- the tombstone rows in every deployed database forever, now that the service
--- code that could delete them is gone. When #26 repairs the journal, 0003-0005
--- will land at idx 4-6, out of filename order; drizzle applies by journal order,
--- so that is fine.
+-- Journaled at idx 6, after 0003-0005, which #26 journaled at idx 3-5. Note
+-- that drizzle decides what to apply from the journal's `when` timestamp and
+-- never from idx, so those timestamps must strictly increase; CI enforces that
+-- via scripts/check-migration-journal.js.
 
 DROP TABLE IF EXISTS "mailbox_messages";
 --> statement-breakpoint
