@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { createHash } from 'crypto';
 import type { Request } from 'express';
 
@@ -56,11 +56,16 @@ function hashIpWithRotatingSalt(ip: string): string {
 export function anonymousKeyGenerator(req: Request): string {
   // req.ip, not a hand-parsed X-Forwarded-For. Taking the leftmost XFF entry
   // takes whatever the client sent, so anyone could pick their own bucket and
-  // walk straight through these limits. With `trust proxy` set to 1 hop in
-  // app.ts, Express derives this from the entry the proxy actually appended.
+  // walk straight through these limits. With trust proxy configured in app.ts,
+  // Express derives this from the entry the proxy actually appended.
   const ip = req.ip || req.socket.remoteAddress || 'unknown';
 
-  return hashIpWithRotatingSalt(ip);
+  // Hash the /56 prefix rather than the exact address. A single IPv6 client is
+  // routinely handed a /64 and can source every request from a different
+  // address in it, which would mint a fresh bucket each time and defeat the
+  // 5-per-hour broadcast and mailbox limits completely. ipKeyGenerator is the
+  // library's own defence against this; IPv4 addresses pass through unchanged.
+  return hashIpWithRotatingSalt(ipKeyGenerator(ip));
 }
 
 /**
