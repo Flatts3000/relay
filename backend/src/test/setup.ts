@@ -1,5 +1,5 @@
 import { beforeAll, afterAll, afterEach } from 'vitest';
-import { db } from '../db/index.js';
+import { db, closePool } from '../db/index.js';
 import { sql } from 'drizzle-orm';
 
 // Test database setup
@@ -11,25 +11,36 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  // Clean up test data between tests
-  // Tables are cleaned in reverse order of dependencies
-  await db.execute(sql`DELETE FROM audit_log`);
-  await db.execute(sql`DELETE FROM mailbox_tombstones`);
-  await db.execute(sql`DELETE FROM mailbox_messages`);
-  await db.execute(sql`DELETE FROM mailboxes`);
-  await db.execute(sql`DELETE FROM funding_request_status_history`);
-  await db.execute(sql`DELETE FROM funding_requests`);
-  await db.execute(sql`DELETE FROM peer_attestations`);
-  await db.execute(sql`DELETE FROM verification_requests`);
-  await db.execute(sql`DELETE FROM sessions`);
-  await db.execute(sql`DELETE FROM auth_tokens`);
-  await db.execute(sql`DELETE FROM users`);
-  await db.execute(sql`DELETE FROM groups`);
-  await db.execute(sql`DELETE FROM hubs`);
+  // Clean up test data between tests.
+  //
+  // This truncates every table in the public schema rather than deleting from a
+  // hand-maintained list. The previous list-based version had gone stale: tables
+  // added after it was written (hub_members, group_members, group_hub_memberships,
+  // onboarding_invites, broadcasts, broadcast_invites) were never added, so the
+  // DELETE on users failed a foreign key constraint and every test errored in
+  // teardown. Discovering the table set at runtime means schema changes cannot
+  // silently break isolation again.
+  //
+  // CASCADE resolves ordering, so no dependency ordering is maintained here.
+  await db.execute(sql`
+    DO $$
+    DECLARE
+      target text;
+    BEGIN
+      SELECT string_agg(format('%I.%I', schemaname, tablename), ', ')
+        INTO target
+        FROM pg_tables
+       WHERE schemaname = 'public'
+         AND tablename <> '__drizzle_migrations';
+
+      IF target IS NOT NULL THEN
+        EXECUTE 'TRUNCATE TABLE ' || target || ' RESTART IDENTITY CASCADE';
+      END IF;
+    END $$;
+  `);
 });
 
 afterAll(async () => {
-  // Close database connection
-  // Note: drizzle-orm/pg doesn't expose a direct close method
-  // The connection will be closed when the process exits
+  // Release the connection pool so the test process can exit cleanly.
+  await closePool();
 });
