@@ -37,20 +37,40 @@ describe('Groups API', () => {
         serviceArea: 'Downtown',
         aidCategories: ['rent', 'utilities'],
         contactEmail: 'newgroup@test.org',
+        verificationStatus: 'pending',
       });
       expect(response.body.group.id).toBeDefined();
 
-      // KNOWN DEFECT, tracked in #16. createGroup() inserts the group but never
-      // writes the group_hub_memberships row, so the new group is orphaned from
-      // the hub and neither field below is populated. These assertions pin the
-      // current broken behaviour deliberately, so that the happy-path assertions
-      // above stay enforced rather than being swallowed by a blanket it.fails.
-      // Fixing #16 will make these two fail: replace them at that point with
-      //   verificationStatus: 'pending',
-      //   hubId: hub.id,
-      // in the toMatchObject above.
+      // hubId is deliberately absent from the response. Since the multi-hub
+      // refactor a group belongs to many hubs, so the hub relationship lives on
+      // group_hub_memberships and is not a field on the group itself.
       expect(response.body.group.hubId).toBeUndefined();
-      expect(response.body.group.verificationStatus).toBeUndefined();
+    });
+
+    it('should record the hub membership so the new group is visible to its hub', async () => {
+      const { sessionToken } = await createHubAdminWithSession(hub.id);
+
+      const created = await request(app)
+        .post('/api/groups')
+        .set('Authorization', `Bearer ${sessionToken}`)
+        .send({
+          name: 'Membership Check Group',
+          serviceArea: 'Riverside',
+          aidCategories: ['food'],
+          contactEmail: 'membership@test.org',
+        });
+
+      expect(created.status).toBe(201);
+
+      // The regression this guards (#16): the group row was written without its
+      // group_hub_memberships row, so the group existed but its hub could not
+      // see it and it could never be verified.
+      const listed = await request(app)
+        .get('/api/groups')
+        .set('Authorization', `Bearer ${sessionToken}`);
+
+      expect(listed.status).toBe(200);
+      expect(listed.body.groups.map((g: { id: string }) => g.id)).toContain(created.body.group.id);
     });
 
     it('should reject group creation without authentication', async () => {

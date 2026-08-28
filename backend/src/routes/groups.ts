@@ -34,7 +34,7 @@ groupsRouter.post('/', authenticate, requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const group = await createGroup(input, user.id, req);
+    const group = await createGroup(input, user.id, user.hubId, req);
 
     res.status(201).json({ group });
   } catch (err) {

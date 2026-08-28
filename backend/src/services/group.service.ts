@@ -34,19 +34,34 @@ function toGroupResponse(group: Group, verificationStatus?: VerificationStatus):
 export async function createGroup(
   input: CreateGroupInput,
   userId: string,
+  hubId: string,
   req: Request
 ): Promise<GroupResponse> {
-  const result = await db
-    .insert(groups)
-    .values({
-      name: input.name,
-      serviceArea: input.serviceArea,
-      aidCategories: input.aidCategories,
-      contactEmail: input.contactEmail,
-    })
-    .returning();
+  // The group and its hub membership are written together. Verification status
+  // lives on the membership, not on the group, so a group without one is
+  // invisible to its hub's listings and can never be verified. Neither row is
+  // useful without the other, so neither is allowed to exist alone.
+  const group = await db.transaction(async (tx) => {
+    const result = await tx
+      .insert(groups)
+      .values({
+        name: input.name,
+        serviceArea: input.serviceArea,
+        aidCategories: input.aidCategories,
+        contactEmail: input.contactEmail,
+      })
+      .returning();
 
-  const group = result[0]!;
+    const created = result[0]!;
+
+    await tx.insert(groupHubMemberships).values({
+      groupId: created.id,
+      hubId,
+      verificationStatus: 'pending',
+    });
+
+    return created;
+  });
 
   await logAuditEvent({
     userId,
@@ -57,11 +72,12 @@ export async function createGroup(
       name: input.name,
       serviceArea: input.serviceArea,
       aidCategories: input.aidCategories,
+      hubId,
     },
     req,
   });
 
-  return toGroupResponse(group);
+  return toGroupResponse(group, 'pending');
 }
 
 /**
