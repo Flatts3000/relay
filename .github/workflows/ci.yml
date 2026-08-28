@@ -175,15 +175,18 @@ jobs:
             psql -h localhost -p 5433 -U postgres -d relay_migrate -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
-      - name: Verify the migrated schema matches the schema definition
+      - name: Dump the schema built by migrations
         run: |
           set -euo pipefail
           export PGPASSWORD=postgres
-          psql -h localhost -p 5433 -U postgres -d relay_migrate -tAc             "SELECT table_name||'.'||column_name FROM information_schema.columns              WHERE table_schema='public' AND table_name<>'__drizzle_migrations' ORDER BY 1" > /tmp/from-migrations.txt
+          psql -h localhost -p 5433 -U postgres -d relay_migrate -tAc             "SELECT table_name||'.'||column_name||':'||data_type FROM information_schema.columns              WHERE table_schema='public' AND table_name<>'__drizzle_migrations' ORDER BY 1"             > "$RUNNER_TEMP/from-migrations.txt"
           psql -h localhost -p 5433 -U postgres -c "CREATE DATABASE relay_from_schema"
-          npx tsx node_modules/drizzle-kit/bin.cjs push --force --config backend/drizzle.config.ts
-          psql -h localhost -p 5433 -U postgres -d relay_from_schema -tAc             "SELECT table_name||'.'||column_name FROM information_schema.columns              WHERE table_schema='public' ORDER BY 1" > /tmp/from-schema.txt
-          diff /tmp/from-migrations.txt /tmp/from-schema.txt
+
+      # drizzle-kit resolves the config's schema path relative to the working
+      # directory, not to the config file, so this has to run from backend/.
+      - name: Build the same schema from the schema definition
+        run: npx tsx ../node_modules/drizzle-kit/bin.cjs push --force
+        working-directory: backend
         env:
           NODE_ENV: test
           DB_HOST: localhost
@@ -191,6 +194,16 @@ jobs:
           DB_NAME: relay_from_schema
           DB_USER: postgres
           DB_PASSWORD: postgres
+
+      # If these disagree, the migration chain and the schema definition have
+      # drifted, which is how a deploy can succeed and still leave the running
+      # code without the tables it expects.
+      - name: Compare them
+        run: |
+          set -euo pipefail
+          export PGPASSWORD=postgres
+          psql -h localhost -p 5433 -U postgres -d relay_from_schema -tAc             "SELECT table_name||'.'||column_name||':'||data_type FROM information_schema.columns              WHERE table_schema='public' ORDER BY 1" > "$RUNNER_TEMP/from-schema.txt"
+          diff "$RUNNER_TEMP/from-migrations.txt" "$RUNNER_TEMP/from-schema.txt"
 
   build:
     name: Build
