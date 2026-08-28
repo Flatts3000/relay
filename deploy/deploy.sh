@@ -6,7 +6,10 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/opt/relay}"
 COMPOSE_FILE="${APP_DIR}/deploy/docker-compose.prod.yml"
 ENV_FILE="${APP_DIR}/deploy/.env.prod"
-HEALTH_URL="http://localhost:80/api/health"
+# Readiness, not liveness. This gate is what triggers the rollback below, so
+# checking an endpoint that answers 200 whenever the process is up meant a
+# deploy with a broken database config passed and was never rolled back.
+HEALTH_URL="http://localhost:80/api/health/ready"
 MAX_RETRIES=30
 RETRY_INTERVAL=2
 
@@ -63,7 +66,7 @@ docker compose -f "$COMPOSE_FILE" exec -T backend npx drizzle-kit migrate
 # Health check
 echo "Checking health..."
 for i in $(seq 1 $MAX_RETRIES); do
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
+  HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
   if [ "$HTTP_CODE" = "200" ]; then
     echo "Health check passed!"
     break
