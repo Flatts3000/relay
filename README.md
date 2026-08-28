@@ -49,7 +49,7 @@ Infrastructure is documented separately, because what is deployed differs from w
 | Secrets  | Environment file on the host                  | AWS Secrets Manager                 |
 | CI/CD    | None. GitHub Actions is disabled              | GitHub Actions                      |
 
-See [Deployment](docs/deployment.md) for what actually runs. The Terraform in `/infra` has never been applied and should be treated as an unrealized target, not a description of production. Reconciling the two is tracked in #7.
+The single-host deployment is the chosen architecture, decided 2026-08-28. See [Deployment](docs/deployment.md) for what runs and how. The Terraform in `/infra` has never been applied and is kept only as a design sketch should the deployment ever outgrow one host.
 
 ## Repository Structure
 

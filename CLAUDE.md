@@ -83,7 +83,9 @@ This is an open source project. Data integrity and security are paramount.
 
 ## Infrastructure Security (AWS)
 
-These are the **target** controls, defined in `/infra`. Most are not in place, because `/infra` has never been applied and production is a single EC2 instance running Docker Compose. Do not assume any of these protect the running system. See [docs/deployment.md](docs/deployment.md) for what actually runs and [#7](https://github.com/Flatts3000/relay/issues/7) for the decision on which architecture to keep.
+These are **aspirational** controls, sketched in `/infra`, which has never been applied. The single-host EC2 deployment is the chosen architecture (decided 2026-08-28), so most of these are not in place and are not scheduled to be. Do not assume any of them protect the running system. See [docs/deployment.md](docs/deployment.md) for what actually runs.
+
+The gaps that matter on the deployment we do run are tracked individually and should be closed there, not by adopting the stack below.
 
 | Control    | Target                                                 | Status                                                                                                              |
 | ---------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
