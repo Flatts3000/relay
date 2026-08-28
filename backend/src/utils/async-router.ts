@@ -18,6 +18,17 @@ import { Router, type RequestHandler, type IRouter } from 'express';
 const VERBS = ['get', 'post', 'put', 'patch', 'delete', 'all', 'use'] as const;
 
 /**
+ * Express treats `next(falsy)` as "no error, carry on", so a handler that
+ * rejects with `undefined` or `null` would fall through to the 404 handler and
+ * return a misleading "Not found" with nothing logged. Substitute a real error.
+ */
+function toError(reason: unknown): Error {
+  return reason instanceof Error
+    ? reason
+    : new Error(`Route handler rejected with a non-error value: ${String(reason)}`);
+}
+
+/**
  * Error-handling middleware is identified by arity: Express only treats a
  * four-argument function as an error handler, so those must pass through
  * untouched or they stop being recognised as such.
@@ -32,11 +43,15 @@ function wrapHandler(handler: unknown): unknown {
   const wrapped: RequestHandler = (req, res, next) => {
     try {
       const result = original(req, res, next) as unknown;
-      if (result instanceof Promise) {
-        result.catch(next);
+
+      // Duck-typed rather than `instanceof Promise`, so thenables that are not
+      // native promises - a query builder returned directly, a promise from
+      // another realm - are still caught.
+      if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
+        (result as PromiseLike<unknown>).then(undefined, (err: unknown) => next(toError(err)));
       }
     } catch (err) {
-      next(err);
+      next(toError(err));
     }
   };
 
@@ -51,18 +66,36 @@ function wrapHandler(handler: unknown): unknown {
  * A Router whose handlers forward async rejections to the error middleware.
  * Drop-in replacement for `Router()`.
  */
-export function asyncRouter(): IRouter {
-  const router = Router();
+function wrapArgs(args: unknown[]): unknown[] {
+  return args.map((arg) => (Array.isArray(arg) ? arg.map(wrapHandler) : wrapHandler(arg)));
+}
 
+/** Patch the verb methods of a router or a route in place. */
+function patchVerbs<T extends object>(target: T): T {
   for (const verb of VERBS) {
-    const original = router[verb].bind(router) as (...args: unknown[]) => IRouter;
+    const existing = (target as Record<string, unknown>)[verb];
+    if (typeof existing !== 'function') continue;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (router as any)[verb] = (...args: unknown[]): IRouter =>
-      original(
-        ...args.map((arg) => (Array.isArray(arg) ? arg.map(wrapHandler) : wrapHandler(arg)))
-      );
+    const original = (existing as (...args: unknown[]) => unknown).bind(target);
+    (target as Record<string, unknown>)[verb] = (...args: unknown[]): unknown =>
+      original(...wrapArgs(args));
   }
+  return target;
+}
+
+/**
+ * A Router whose handlers forward async rejections to the error middleware.
+ * Drop-in replacement for `Router()`.
+ */
+export function asyncRouter(): IRouter {
+  const router = patchVerbs(Router());
+
+  // router.route() returns a fresh Route object with its own verb methods. Left
+  // alone it would hand back an unpatched Route and silently reintroduce the
+  // bug, which is a nasty trap given Express's own docs recommend route() for
+  // grouping verbs on a path.
+  const originalRoute = router.route.bind(router);
+  router.route = (path: Parameters<IRouter['route']>[0]) => patchVerbs(originalRoute(path));
 
   return router;
 }

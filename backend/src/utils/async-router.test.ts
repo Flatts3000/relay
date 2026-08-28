@@ -107,6 +107,53 @@ describe('asyncRouter', () => {
     expect(response.status).toBe(500);
   });
 
+  it('catches rejections from handlers registered via router.route()', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const app = buildApp((router) => {
+      router.route('/grouped').get(async () => {
+        throw new Error('route() failure');
+      });
+    });
+
+    const response = await request(app).get('/grouped');
+
+    expect(response.status).toBe(500);
+  });
+
+  it('converts a falsy rejection into a real error instead of continuing the chain', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const app = buildApp((router) => {
+      router.get('/falsy', async () => {
+        throw undefined;
+      });
+    });
+
+    const response = await request(app).get('/falsy');
+
+    // next(undefined) would read as "no error" and fall through to the 404
+    // handler, reporting Not found for what was actually a failure.
+    expect(response.status).toBe(500);
+  });
+
+  it('catches rejections from non-native thenables', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const app = buildApp((router) => {
+      router.get('/thenable', () => ({
+        then: (_resolve: unknown, reject: (reason: unknown) => void) => {
+          reject(new Error('thenable failure'));
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any;
+    });
+
+    const response = await request(app).get('/thenable');
+
+    expect(response.status).toBe(500);
+  });
+
   it('does not swallow an error handler registered on the router', async () => {
     const app = buildApp((router) => {
       router.get('/handled', async () => {
