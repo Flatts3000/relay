@@ -52,6 +52,29 @@ for (let i = 0; i < indexes.length; i++) {
   }
 }
 
+// The invariant that actually decides whether a migration runs.
+//
+// drizzle never looks at idx. PgDialect.migrate reads the single highest
+// created_at already in __drizzle_migrations and applies a migration only when
+// its journal `when` exceeds that value:
+//
+//   if (!lastDbMigration || Number(lastDbMigration.created_at) < migration.folderMillis)
+//
+// So a `when` that does not increase is silently skipped on any database that
+// has already migrated past it - the exact failure this script exists to catch,
+// arriving through a different door. It is invisible on a fresh database,
+// because lastDbMigration is undefined there and everything applies regardless.
+for (let i = 1; i < entries.length; i++) {
+  const prev = entries[i - 1];
+  const curr = entries[i];
+  if (curr.when <= prev.when) {
+    problems.push(
+      `"${curr.tag}" has when=${curr.when}, not greater than "${prev.tag}" (${prev.when}). ` +
+        'drizzle would skip it on an already-migrated database.'
+    );
+  }
+}
+
 if (problems.length > 0) {
   console.error('Migration journal is inconsistent:\n');
   for (const p of problems) console.error(`  - ${p}`);
@@ -60,4 +83,7 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
-console.log(`Migration journal OK: ${files.length} migrations, all journaled and in order.`);
+console.log(
+  `Migration journal OK: ${files.length} migrations, all journaled, ` +
+    'sequential, and strictly increasing in `when`.'
+);
