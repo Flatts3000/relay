@@ -49,10 +49,15 @@ jobs:
             cd /opt/relay
             /opt/relay/deploy/deploy.sh
 
+      # Verifies readiness, not liveness. /api/health answers 200 whenever the
+      # process is up and checks no dependency, so verifying against it reported
+      # "Deployment verified!" for an API where every database-backed route was
+      # failing. /api/health/ready executes a query and returns 503 when it
+      # cannot. See #18.
       - name: Verify deployment
         run: |
           for i in $(seq 1 10); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.EC2_HOST }}/api/health" 2>/dev/null || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.EC2_HOST }}/api/health/ready" 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Deployment verified!"
               exit 0
