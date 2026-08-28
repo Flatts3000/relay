@@ -89,21 +89,28 @@ describe('broadcast invite lifecycle', () => {
       expect(await inviteCount(broadcast.id)).toBe(1);
     });
 
-    it('leaves a decrypted invite with no decryptedAt outside the 10-minute window', async () => {
+    it('cannot create a decrypted invite with no decryptedAt', async () => {
       const broadcast = await createTestBroadcast();
-      // cleanupDecryptedInvites requires status = 'decrypted' AND a non-null
-      // decryptedAt. An invite in decrypted status with a null timestamp
-      // therefore escapes the 10-minute window entirely and survives until the
-      // 7-day TTL - a thousandfold retention overrun on the guarantee this file
-      // exists to prove.
-      //
-      // markInviteDecrypted sets both columns together, so this is unreachable
-      // today, and nothing but that single call site enforces it. Pinned so the
-      // gap is visible rather than latent. See #33.
-      await createTestInvite(broadcast.id, groupA.id, { status: 'decrypted' });
 
-      expect(await cleanupDecryptedInvites()).toBe(0);
-      expect(await inviteCount(broadcast.id)).toBe(1);
+      // Previously this state was merely unwritten: cleanupDecryptedInvites
+      // requires status = 'decrypted' AND a non-null decryptedAt, so such a row
+      // escaped the 10-minute window entirely and survived to the 7-day TTL, a
+      // thousandfold overrun on the guarantee this file exists to prove. Only
+      // markInviteDecrypted's single UPDATE kept it from happening.
+      //
+      // Migration 0007 makes it unrepresentable. See #33.
+      // drizzle wraps driver errors, so the constraint name is on the cause
+      // rather than the top-level message.
+      let caught: unknown;
+      try {
+        await createTestInvite(broadcast.id, groupA.id, { status: 'decrypted' });
+      } catch (err) {
+        caught = err;
+      }
+
+      expect(caught).toBeDefined();
+      const cause = (caught as { cause?: { constraint?: string } }).cause;
+      expect(cause?.constraint).toBe('broadcast_invites_decrypted_at_required');
     });
   });
 

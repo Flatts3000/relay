@@ -50,6 +50,13 @@
       "when": 1787958016246,
       "tag": "0006_drop_mailbox_model",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787958016247,
+      "tag": "0007_invite_decrypted_at_constraint",
+      "breakpoints": true
     }
   ]
 }
