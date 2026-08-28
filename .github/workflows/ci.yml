@@ -172,7 +172,11 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.0
+          # 1.6.0 can no longer run terraform init: HashiCorp's provider signing
+          # key expired, and releases from that era fail verification with
+          # "openpgp: key expired" before any validation happens. 1.16 ships the
+          # current key.
+          terraform_version: 1.16.0
 
       - name: Terraform Init
         working-directory: ./infra
@@ -279,9 +283,20 @@ jobs:
           output: 'trivy-backend.sarif'
           severity: 'CRITICAL,HIGH'
 
-      - name: Upload Trivy scan results
+      # Uploaded separately, one category per image. Pointing sarif_file at '.'
+      # bundled both results into a single upload under one category, which code
+      # scanning stopped accepting in July 2025:
+      # https://github.blog/changelog/2025-07-21-code-scanning-will-stop-combining-multiple-sarif-runs-uploaded-in-the-same-sarif-file/
+      - name: Upload Trivy scan results (frontend)
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          sarif_file: '.'
-          category: 'container-scan'
+          sarif_file: 'trivy-frontend.sarif'
+          category: 'container-scan-frontend'
+
+      - name: Upload Trivy scan results (backend)
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend.sarif'
+          category: 'container-scan-backend'
