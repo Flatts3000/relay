@@ -22,19 +22,33 @@ export function GroupDirectoryPage() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
 
+  // Debounced, because loadDirectory depends on `search` and the effect below
+  // re-fires on every change: without this, typing "brooklyn mutual aid" is
+  // nineteen requests to a rate-limited public endpoint, and a few searches
+  // would lock the visitor out of the directory entirely.
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const loadDirectory = useCallback(async () => {
     setIsLoading(true);
     setError('');
 
     try {
-      const results = await fetchPublicDirectory(search || undefined, categoryFilter || undefined);
+      const results = await fetchPublicDirectory(
+        debouncedSearch || undefined,
+        categoryFilter || undefined
+      );
       setEntries(results);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('somethingWentWrong'));
     } finally {
       setIsLoading(false);
     }
-  }, [search, categoryFilter, t]);
+  }, [debouncedSearch, categoryFilter, t]);
 
   useEffect(() => {
     loadDirectory();

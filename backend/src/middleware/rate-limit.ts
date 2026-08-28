@@ -69,21 +69,41 @@ export function anonymousKeyGenerator(req: Request): string {
 }
 
 /**
- * Rate limiter for anonymous browsing (/api/directory/*).
+ * Rate limiters for the anonymous directory. Two instances, deliberately.
  *
- * Generous on purpose. Legitimate directory use is bursty - someone in
- * difficulty filtering by region and category - and the whole point of the
- * directory is that they find a group quickly. This sits well above normal
- * browsing and far below scraping.
+ * They must not share a bucket. GET /api/directory is a hard prerequisite of
+ * submitting a help broadcast - BroadcastSubmitPage fetches matching groups and
+ * aborts if that fails - while GET /api/directory/groups is ordinary browsing.
+ * A single router-level limiter let someone browse the directory, exhaust the
+ * budget, then be unable to ask for help for the next five minutes. Separate
+ * limiter instances mean separate stores, so browsing can never starve the
+ * crisis path.
  *
- * PRIVACY: keys on anonymousKeyGenerator, so the address is hashed with a salt
- * that rotates every 5 minutes and is never stored raw. CLAUDE.md forbids
- * tracking who browses the directory; this is ephemeral use, not tracking.
+ * Limits are set for shared egress. anonymousKeyGenerator keys on the hashed
+ * client address, and the people this is built for disproportionately sit
+ * behind one IP: shelter and library wifi, clinics, and mobile carriers using
+ * CGNAT. A budget that looks generous per person is not generous per building,
+ * so these are set well above what one user needs.
+ *
+ * PRIVACY: the address is hashed with a salt rotating every 5 minutes and never
+ * stored raw. Note that rotation also bounds the key's life, so the effective
+ * policy is per absolute 5-minute slot rather than a sliding window, and a
+ * caller straddling a boundary can get two slots back to back. Acceptable here:
+ * these limits exist to stop scraping, not to be exact.
  */
-export const anonymousBrowseRateLimiter = rateLimit({
+export const directoryLookupRateLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,
-  max: 60,
+  max: 60, // one request per broadcast attempt; 60 is far above any real need
   standardHeaders: false, // Don't leak rate limit info
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+  keyGenerator: anonymousKeyGenerator,
+});
+
+export const directoryBrowseRateLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 240, // searching is interactive; see the debounce in GroupDirectoryPage
+  standardHeaders: false,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
   keyGenerator: anonymousKeyGenerator,

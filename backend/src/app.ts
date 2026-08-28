@@ -94,7 +94,8 @@ app.use(express.json({ limit: '10kb' }));
 // Request logging
 app.use(requestLogger);
 
-// ANONYMOUS ROUTES - NO rate limiting, NO logging, NO audit
+// ANONYMOUS ROUTES - NO logging, NO audit. Rate limited per route with
+// privacy-preserving hashed keys, never by the IP-keyed authRateLimiter.
 // These routes have their own privacy-preserving rate limiting
 app.use('/api/broadcasts', broadcastsRouter);
 app.use('/api/directory', directoryRouter);

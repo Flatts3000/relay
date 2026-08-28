@@ -1,11 +1,11 @@
 import { asyncRouter } from '../utils/async-router.js';
-import { anonymousBrowseRateLimiter } from '../middleware/rate-limit.js';
+import {
+  directoryLookupRateLimiter,
+  directoryBrowseRateLimiter,
+} from '../middleware/rate-limit.js';
 import { getDirectoryEntries, getPublicDirectoryEntries } from '../services/directory.service.js';
 
 export const directoryRouter = asyncRouter();
-
-// Both routes are unauthenticated and hit the database on every request.
-directoryRouter.use(anonymousBrowseRateLimiter);
 
 /**
  * GET /api/directory
@@ -18,7 +18,7 @@ directoryRouter.use(anonymousBrowseRateLimiter);
  *
  * CRITICAL: No authentication, no cookies, no IP logging, no audit.
  */
-directoryRouter.get('/', async (req, res) => {
+directoryRouter.get('/', directoryLookupRateLimiter, async (req, res) => {
   const region = typeof req.query['region'] === 'string' ? req.query['region'] : undefined;
   const categoriesParam =
     typeof req.query['categories'] === 'string' ? req.query['categories'] : undefined;
@@ -41,7 +41,7 @@ directoryRouter.get('/', async (req, res) => {
  */
 const VALID_AID_CATEGORIES = new Set(['rent', 'food', 'utilities', 'other']);
 
-directoryRouter.get('/groups', async (req, res) => {
+directoryRouter.get('/groups', directoryBrowseRateLimiter, async (req, res) => {
   const rawSearch =
     typeof req.query['search'] === 'string' ? req.query['search'].trim() : undefined;
   const rawCategory = typeof req.query['category'] === 'string' ? req.query['category'] : undefined;
