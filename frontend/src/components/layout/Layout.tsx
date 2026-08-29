@@ -1,65 +1,84 @@
 import { type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import {
+  faGauge,
+  faEnvelope,
+  faDollarSign,
+  faUserGroup,
+  faShieldHalved,
+  faHandshakeAngle,
+  faGear,
+  faChartColumn,
+} from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../contexts';
-import { Button, LanguageSwitcher } from '../ui';
+import { ConsoleLayout, type ConsoleNavItem } from './ConsoleLayout';
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+/**
+ * The signed-in shell for group coordinators and hub admins.
+ *
+ * The nav is derived from the role rather than hardcoded, so a page only appears
+ * for someone whose ProtectedRoute would actually let them in. Anything gated on
+ * `isOwner` follows the same rule, which is why settings is conditional here
+ * rather than filtered inside the shell.
+ */
 export function Layout({ children }: LayoutProps) {
-  const { t } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
+  const { t } = useTranslation('common');
+  const { user } = useAuth();
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
+  const navItems: ConsoleNavItem[] = [];
 
-  const getRoleLabel = (role: string) => {
-    if (role === 'hub_admin') return t('roles.hubAdmin');
-    if (role === 'staff_admin') return t('roles.staffAdmin');
-    return t('roles.groupCoordinator');
-  };
+  if (user?.role === 'group_coordinator') {
+    navItems.push(
+      { key: 'dashboard', path: '/dashboard', label: t('navigation.dashboard'), icon: faGauge },
+      { key: 'inbox', path: '/inbox', label: t('navigation.helpInbox'), icon: faEnvelope },
+      { key: 'requests', path: '/requests', label: t('navigation.funding'), icon: faDollarSign },
+      { key: 'profile', path: '/profile', label: t('navigation.groupProfile'), icon: faUserGroup },
+      {
+        key: 'verification',
+        path: '/verification/request',
+        label: t('navigation.verification'),
+        icon: faShieldHalved,
+      },
+      {
+        key: 'attestations',
+        path: '/verification/attestations',
+        label: t('navigation.attestations'),
+        icon: faHandshakeAngle,
+      }
+    );
+    if (user.isOwner) {
+      navItems.push({
+        key: 'settings',
+        path: '/settings/group',
+        label: t('navigation.settings'),
+        icon: faGear,
+      });
+    }
+  } else if (user?.role === 'hub_admin') {
+    navItems.push(
+      { key: 'groups', path: '/groups', label: t('navigation.groups'), icon: faUserGroup },
+      {
+        key: 'verification',
+        path: '/verification',
+        label: t('navigation.verificationQueue'),
+        icon: faShieldHalved,
+      },
+      { key: 'requests', path: '/requests', label: t('navigation.funding'), icon: faDollarSign },
+      { key: 'reports', path: '/reports', label: t('navigation.reports'), icon: faChartColumn }
+    );
+    if (user.isOwner) {
+      navItems.push({
+        key: 'settings',
+        path: '/settings/hub',
+        label: t('navigation.settings'),
+        icon: faGear,
+      });
+    }
+  }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link to="/" className="flex items-center">
-              <img src="/logo.png" alt={t('appName')} className="h-8" />
-            </Link>
-
-            <div className="flex items-center gap-4">
-              <LanguageSwitcher />
-
-              {isAuthenticated && user && (
-                <>
-                  {user.isOwner && (
-                    <Link
-                      to={user.role === 'hub_admin' ? '/settings/hub' : '/settings/group'}
-                      className="text-sm text-gray-600 hover:text-gray-900"
-                    >
-                      {t('navigation.settings')}
-                    </Link>
-                  )}
-                  <span className="text-sm text-gray-600 hidden sm:inline">
-                    {user.email} ({getRoleLabel(user.role)})
-                  </span>
-                  <Button variant="secondary" onClick={handleLogout}>
-                    {t('navigation.logout')}
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</main>
-    </div>
-  );
+  return <ConsoleLayout navItems={navItems}>{children}</ConsoleLayout>;
 }
