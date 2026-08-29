@@ -5,6 +5,8 @@ import { app } from '../app.js';
 import { db } from '../db/index.js';
 import { authTokens } from '../db/schema/index.js';
 import { createTestUser, createTestHub, createHubAdminWithSession } from '../test/helpers.js';
+import * as emailService from '../services/email.service.js';
+import { config } from '../config.js';
 
 /**
  * The login surface is the one place an unauthenticated stranger can probe, so
@@ -81,16 +83,28 @@ describe('Auth API', () => {
     });
 
     it('still answers generically when sending the email fails', async () => {
-      await createTestUser({ email: 'mailfail@test.org' });
+      const user = await createTestUser({ email: 'mailfail@test.org' });
       vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      // Actually make it fail. Under test the provider is 'console', which
+      // always resolves, so without this stub the test passed whether or not
+      // the route handled the error at all.
+      vi.spyOn(emailService, 'sendMagicLinkEmail').mockRejectedValue(new Error('provider down'));
 
       const response = await request(app)
         .post('/api/auth/login')
         .send({ email: 'mailfail@test.org' });
 
-      // A provider outage must not become an oracle either.
+      // A provider outage must not become an oracle either. Without the
+      // try/catch in the route this would be a 500 for a known address while an
+      // unknown one still returned 200 - the exact existence signal the generic
+      // message exists to withhold.
       expect(response.status).toBe(200);
       expect(response.body.message).toBe(GENERIC);
+
+      // And the token is still issued, so the user is not left unable to log in
+      // once the provider recovers and they request another link.
+      const issued = await db.select().from(authTokens).where(eq(authTokens.userId, user.id));
+      expect(issued).toHaveLength(1);
     });
   });
 
@@ -189,6 +203,30 @@ describe('Auth API', () => {
         expect(response.status).toBe(200);
       }
     }, 20000);
+  });
+
+  // MUST BE LAST. This drains the /login bucket, which is module-level with a
+  // 15-minute window and no reset hook, so every /login test above it would
+  // start seeing 429s. /verify has its own limiter instance and is unaffected.
+  describe('login rate limiting', () => {
+    it('still limits /login in its new per-route location', async () => {
+      // The strict limiter moved from the router mount onto /login and /verify.
+      // Without this, deleting it from the handler arguments would leave all
+      // tests green while magic-link issuance became bounded only by the far
+      // looser general limiter.
+      const max = config.authLoginRateLimitMax;
+      let sawLimit = false;
+
+      for (let i = 0; i < max + 5 && !sawLimit; i++) {
+        const response = await request(app)
+          .post('/api/auth/login')
+          .send({ email: 'flood@test.org' });
+
+        if (response.status === 429) sawLimit = true;
+      }
+
+      expect(sawLimit).toBe(true);
+    }, 30000);
   });
 
   describe('role enforcement', () => {

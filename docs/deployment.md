@@ -37,7 +37,7 @@ The deployed Caddyfile was verified identical to the one in this repository on 2
 
 ## Configuration
 
-Runtime configuration lives in `deploy/.env.prod` on the host, which is not in version control. `deploy/.env.prod.example` documents the required keys: database credentials, `CORS_ORIGIN`, `FRONTEND_URL`, `TRUST_PROXY_HOPS`, Resend API key for transactional email, and `STAFF_ADMIN_EMAILS`.
+Runtime configuration lives in `deploy/.env.prod` on the host, which is not in version control. `deploy/.env.prod.example` documents the required keys: database credentials, `CORS_ORIGIN`, `FRONTEND_URL`, `TRUST_PROXY_HOPS`, Resend API key for transactional email, and `STAFF_ADMIN_EMAILS`. `AUTH_LOGIN_RATE_LIMIT_MAX` is optional and defaults to 10.
 
 It holds **no AWS credentials**. The instance role supplies those, scoped to the backup bucket, so there is no long-lived AWS secret on the host.
 

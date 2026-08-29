@@ -10,10 +10,18 @@ const configSchema = z.object({
   // for Caddy; the root docker-compose publishes the backend directly and must
   // stay at 0.
   trustProxyHops: z.coerce.number().int().min(0).default(0),
-  // Requests per 15 minutes to /api/auth/login and /verify, per hashed
-  // client. Configurable so the test suite can exercise the login flow
-  // more than ten times without tripping a production-shaped limit.
-  authLoginRateLimitMax: z.coerce.number().int().positive().default(10),
+  // Requests per 15 minutes to /api/auth/login and to /verify, counted
+  // separately, keyed on the client address. Configurable so the test suite can
+  // exercise the login flow without tripping a production-shaped limit.
+  //
+  // The preprocess matters: z.coerce.number() turns '' into 0, which fails
+  // positive() and throws at import time - so a blank value in .env.prod would
+  // stop the backend booting and Compose would restart it in a loop. An empty
+  // value should mean "unset".
+  authLoginRateLimitMax: z.preprocess(
+    (v) => (v === '' || v === undefined ? undefined : v),
+    z.coerce.number().int().positive().default(10)
+  ),
   frontendUrl: z.string().default('http://localhost:3000'),
   database: z.object({
     host: z.string().default('localhost'),
