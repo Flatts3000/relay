@@ -73,11 +73,13 @@ export const broadcastInvites = pgTable(
     broadcastIdIdx: index('broadcast_invites_broadcast_id_idx').on(table.broadcastId),
     groupStatusIdx: index('broadcast_invites_group_status_idx').on(table.groupId, table.status),
     expiresAtIdx: index('broadcast_invites_expires_at_idx').on(table.expiresAt),
-    // A decrypted invite with no timestamp escapes the 10-minute deletion
-    // sweep and survives to the 7-day TTL. See #33 and migration 0007.
+    // Biconditional. Either half alone leaves an invite that the 10-minute
+    // sweep skips - it filters on status = 'decrypted' AND a non-null timestamp
+    // - so the row survives to the 7-day TTL still holding the wrapped content
+    // key. See #33 and migration 0007.
     decryptedAtRequired: check(
       'broadcast_invites_decrypted_at_required',
-      sql`${table.status} <> 'decrypted' OR ${table.decryptedAt} IS NOT NULL`
+      sql`(${table.status} = 'decrypted') = (${table.decryptedAt} IS NOT NULL)`
     ),
   })
 );

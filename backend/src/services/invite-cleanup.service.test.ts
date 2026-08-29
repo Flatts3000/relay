@@ -112,6 +112,28 @@ describe('broadcast invite lifecycle', () => {
       const cause = (caught as { cause?: { constraint?: string } }).cause;
       expect(cause?.constraint).toBe('broadcast_invites_decrypted_at_required');
     });
+
+    it('cannot create a pending invite that carries a decryptedAt', async () => {
+      const broadcast = await createTestBroadcast();
+
+      // The mirror case, and the same failure: the sweep filters on
+      // status = 'decrypted', so a pending row carrying a timestamp is skipped
+      // and survives to the 7-day TTL still holding the wrapped content key.
+      // The constraint is a biconditional for this reason.
+      let caught: unknown;
+      try {
+        await createTestInvite(broadcast.id, groupA.id, {
+          status: 'pending',
+          decryptedAt: new Date(),
+        });
+      } catch (err) {
+        caught = err;
+      }
+
+      expect(caught).toBeDefined();
+      const cause = (caught as { cause?: { constraint?: string } }).cause;
+      expect(cause?.constraint).toBe('broadcast_invites_decrypted_at_required');
+    });
   });
 
   describe('TTL expiry', () => {
