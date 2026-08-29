@@ -2,6 +2,7 @@ import { eq, and, gt, lt, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { users, authTokens, sessions } from '../db/schema/index.js';
 import { generateToken, generateExpiresAt, hashToken } from '../utils/crypto.js';
+import type { Executor } from '../db/executor.js';
 import { getHubMembershipForUser, getGroupMembershipForUser } from './membership.service.js';
 import type { User } from '../db/schema/index.js';
 
@@ -148,11 +149,22 @@ export async function validateSession(sessionToken: string): Promise<Authenticat
   };
 }
 
-export async function createSessionForUser(userId: string): Promise<string> {
+/**
+ * Create a session for a user.
+ *
+ * Callers creating the user in the same breath must pass their transaction. The
+ * default `db` runs on a separate pooled connection that cannot see an
+ * uncommitted `users` row, so the foreign key on `sessions.user_id` fails and
+ * the caller's whole transaction rolls back. See #52.
+ */
+export async function createSessionForUser(
+  userId: string,
+  executor: Executor = db
+): Promise<string> {
   const sessionToken = generateToken();
   const sessionExpiresAt = generateExpiresAt(SESSION_EXPIRY_MINUTES);
 
-  await db.insert(sessions).values({
+  await executor.insert(sessions).values({
     userId,
     token: hashToken(sessionToken),
     expiresAt: sessionExpiresAt,

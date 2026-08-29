@@ -10,9 +10,11 @@ import {
   broadcasts,
   broadcastInvites,
   broadcastCategoryEnum,
+  onboardingInvites,
 } from '../db/schema/index.js';
 
 type BroadcastCategory = (typeof broadcastCategoryEnum.enumValues)[number];
+import { randomUUID } from 'crypto';
 import { generateToken, generateExpiresAt, hashToken } from '../utils/crypto.js';
 
 export interface TestHub {
@@ -220,4 +222,43 @@ export async function createTestInvite(
     .returning({ id: broadcastInvites.id });
 
   return row!.id;
+}
+
+// --- Onboarding fixtures ----------------------------------------------------
+
+/**
+ * Insert an onboarding invite directly. Returns the raw token, which is what an
+ * invitee would receive by email.
+ */
+export async function createTestOnboardingInvite(
+  invitedById: string,
+  overrides: {
+    email?: string;
+    role?: 'staff_admin' | 'hub_admin' | 'group_coordinator';
+    targetHubId?: string;
+    targetGroupId?: string;
+    expiresAt?: Date;
+    acceptedAt?: Date;
+  } = {}
+): Promise<{ token: string; email: string }> {
+  const token = generateToken();
+  // randomUUID rather than a clock: two invites created in the same millisecond
+  // would otherwise share an address, and users.email is UNIQUE, so accepting
+  // both would surface as a confusing 400 from the accept route rather than a
+  // fixture error. Lowercased because the production create path does the same,
+  // and a fixture that skips it would let a case-sensitivity bug hide.
+  const email = (overrides.email ?? `invitee-${randomUUID()}@test.org`).toLowerCase();
+
+  await db.insert(onboardingInvites).values({
+    email,
+    role: overrides.role ?? 'staff_admin',
+    targetHubId: overrides.targetHubId ?? null,
+    targetGroupId: overrides.targetGroupId ?? null,
+    invitedById,
+    token,
+    expiresAt: overrides.expiresAt ?? generateExpiresAt(48 * 60),
+    ...(overrides.acceptedAt ? { acceptedAt: overrides.acceptedAt } : {}),
+  });
+
+  return { token, email };
 }
