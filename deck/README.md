@@ -28,9 +28,15 @@ file several times larger.
 **Every number in it is measured from the repository or the running deployment.**
 Nothing is illustrative, rounded up, or projected.
 
-Where a fact is not yet known - the funding ask, who to contact - it is marked
-with a dashed amber `.todo` chip rather than filled in with something plausible.
-Those chips are meant to be seen, and to be replaced before the deck is sent.
+Where a fact is not yet known it is marked with a dashed amber `.todo` chip
+rather than filled in with something plausible. Those chips are meant to be seen,
+and to be replaced before the deck is sent. **There are currently none** - the
+last one, the contact, was filled in on 2026-08-29.
+
+One thing deliberately left out rather than written for him: a first-person line
+on why Jason built this. That is the single strongest addition available to a
+co-founder deck, and it is not something anyone else can draft without inventing
+a motive.
 
 This matters more here than it would elsewhere. The deck goes to people deciding
 whether to trust the project with the safety of undocumented residents and people

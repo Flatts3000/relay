@@ -204,6 +204,11 @@ h1,h2,h3,h4,p{margin:0}
 .quote{border-left:2px solid var(--teal-dim);padding:2px 0 2px clamp(14px,1.6vw,22px)}
 .quote p{font-family:var(--serif);font-size:clamp(1.25rem,2.3vw,1.9rem);line-height:1.28;color:var(--ink);letter-spacing:-.005em}
 .quote cite{display:block;margin-top:12px;font-style:normal;font-family:var(--mono);font-size:.66rem;letter-spacing:.05em;color:var(--ink-3)}
+.byline{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-top:12px;padding-top:14px;border-top:1px solid var(--line)}
+.byline b{font-family:var(--sans);font-weight:600;font-size:1.02rem;color:var(--ink)}
+.byline span{font-size:.9rem;color:var(--ink-3)}
+.byline a{font-family:var(--mono);font-size:.86rem;color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-dim)}
+.byline a:hover{color:var(--ink)}
 .money{display:flex;flex-direction:column;gap:9px}
 .line{display:grid;grid-template-columns:1fr auto;gap:2px 16px;align-items:baseline;padding-bottom:9px;border-bottom:1px solid var(--line)}
 .line:last-child{border-bottom:none}
@@ -548,10 +553,14 @@ const slides = [
           <p style="margin-top:10px">Everything about the organisation is still open, which is the argument for coming in now rather than later.</p>
         </div>
       </div>
-      <div class="row" style="margin-top:8px">
+      <div class="row" style="margin-top:10px;align-items:center">
         <span class="chip"><b>relayfunds.org</b></span>
         <span class="chip"><b>github.com/Flatts3000/relay</b></span>
-        <span class="todo">contact + who is behind this to be added</span>
+      </div>
+      <div class="byline">
+        <b>Jason Flatford</b>
+        <span>Built Relay. The one contributor on slide 14.</span>
+        <a href="mailto:flatts.scg@gmail.com">flatts.scg@gmail.com</a>
       </div>
     </div>
   </section>`,
