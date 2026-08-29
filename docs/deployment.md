@@ -8,15 +8,15 @@ This document exists because `/infra` describes a different architecture that ha
 
 A single AWS EC2 instance running Docker Compose.
 
-| Property         | Value                                                                                                                                           |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Instance         | `i-06f4c5282dd5fb288` (`relay-prod`)                                                                                                            |
-| Type             | `t4g.small`, arm64                                                                                                                              |
-| Region           | us-east-1                                                                                                                                       |
-| Launched         | 2026-02-24                                                                                                                                      |
-| Public IP        | 18.232.209.241                                                                                                                                  |
-| Instance profile | `relay-prod-ssm` (`AmazonSSMManagedInstanceCore`). Backups still use a static IAM key, see [#11](https://github.com/Flatts3000/relay/issues/11) |
-| Domain           | relayfunds.org, A record to the instance IP                                                                                                     |
+| Property         | Value                                                                                              |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| Instance         | `i-06f4c5282dd5fb288` (`relay-prod`)                                                               |
+| Type             | `t4g.small`, arm64                                                                                 |
+| Region           | us-east-1                                                                                          |
+| Launched         | 2026-02-24                                                                                         |
+| Public IP        | 18.232.209.241                                                                                     |
+| Instance profile | `relay-prod-ssm` - `AmazonSSMManagedInstanceCore` plus scoped S3 write access to the backup bucket |
+| Domain           | relayfunds.org, A record to the instance IP                                                        |
 
 There is no load balancer, no RDS instance, no Fargate cluster, no WAF, and no ECR repository. The instance is directly internet-facing on ports 80 and 443.
 
@@ -37,7 +37,9 @@ The deployed Caddyfile was verified identical to the one in this repository on 2
 
 ## Configuration
 
-Runtime configuration lives in `deploy/.env.prod` on the host, which is not in version control. `deploy/.env.prod.example` documents the required keys: database credentials, `CORS_ORIGIN`, `FRONTEND_URL`, Resend API key for transactional email, `STAFF_ADMIN_EMAILS`, and AWS credentials for backups.
+Runtime configuration lives in `deploy/.env.prod` on the host, which is not in version control. `deploy/.env.prod.example` documents the required keys: database credentials, `CORS_ORIGIN`, `FRONTEND_URL`, `TRUST_PROXY_HOPS`, Resend API key for transactional email, and `STAFF_ADMIN_EMAILS`.
+
+It holds **no AWS credentials**. The instance role supplies those, scoped to the backup bucket, so there is no long-lived AWS secret on the host.
 
 AWS Secrets Manager is not used by the deployed application, despite being referenced in `CLAUDE.md` and `/infra`.
 
