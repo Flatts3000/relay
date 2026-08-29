@@ -13,6 +13,26 @@ jobs:
   ci:
     name: CI Checks
     runs-on: ubuntu-latest
+
+    # The backend suite is an integration suite that talks to a real database,
+    # and backend/.env.test points at localhost:5433. Without this service the
+    # Test step below fails on connection refused, which would block every
+    # deploy - safely, but for entirely the wrong reason.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: relay_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -28,6 +48,17 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      - name: Apply schema to the test database
+        run: npx tsx ../node_modules/drizzle-kit/bin.cjs push --force
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5433
+          DB_NAME: relay_test
+          DB_USER: postgres
+          DB_PASSWORD: postgres
 
       - name: Test
         run: npm test
