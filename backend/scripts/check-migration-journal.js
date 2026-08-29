@@ -11,6 +11,11 @@
  *
  * A file on disk that no deploy will ever run is the failure mode this guards.
  * See issue #26.
+ *
+ * It also checks the snapshot that drizzle-kit generate diffs against. Snapshots
+ * are not read by migrate - they cannot break a deploy - but a stale one makes
+ * generate emit a migration that re-creates everything added since, which fails
+ * on any database that already has it. See issue #37.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -75,6 +80,56 @@ for (let i = 1; i < entries.length; i++) {
   }
 }
 
+// The baseline `drizzle-kit generate` diffs against.
+//
+// generate loads the newest snapshot in meta/ and compares the live schema to
+// it. Snapshots were written for 0000-0002 and then stopped, because 0003
+// onward were hand-written, so generate was diffing against a baseline eight
+// migrations out of date. The effect is not subtle: it asks
+//
+//   Is broadcast_category enum created or renamed from another enum?
+//
+// which is not a question about intent, it is the snapshot guessing - and the
+// migration it goes on to emit re-creates the broadcast tables, the staff-admin
+// enum value, the onboarding tables and the check constraints, so running it
+// against any migrated database fails with "already exists".
+//
+// migrate does not read snapshots at all, so this can never block a deploy. It
+// only has to be true of the newest migration, since that is the only snapshot
+// generate loads.
+const snapshots = readdirSync(join(drizzleDir, 'meta'))
+  .filter((f) => /^\d{4}_snapshot\.json$/.test(f))
+  .sort();
+
+const latest = entries[entries.length - 1];
+
+if (latest) {
+  const expected = `${String(latest.idx).padStart(4, '0')}_snapshot.json`;
+  if (!snapshots.includes(expected)) {
+    problems.push(
+      `meta/${expected} is missing, so drizzle-kit generate would diff against ` +
+        `${snapshots[snapshots.length - 1] ?? 'nothing'} instead of the current schema ` +
+        'and emit a migration that re-creates everything added since'
+    );
+  }
+}
+
+// Snapshots form a linked list through prevId, and drizzle refuses to run with a
+// broken one: two snapshots claiming the same parent abort generate outright
+// with a collision error. Worth catching here rather than the next time somebody
+// tries to add a migration.
+const seenPrev = new Map();
+for (const file of snapshots) {
+  const snap = JSON.parse(readFileSync(join(drizzleDir, 'meta', file), 'utf8'));
+  if (seenPrev.has(snap.prevId)) {
+    problems.push(
+      `meta/${file} and meta/${seenPrev.get(snap.prevId)} both claim prevId ${snap.prevId}; ` +
+        'drizzle-kit generate aborts on that collision'
+    );
+  }
+  seenPrev.set(snap.prevId, file);
+}
+
 if (problems.length > 0) {
   console.error('Migration journal is inconsistent:\n');
   for (const p of problems) console.error(`  - ${p}`);
@@ -85,5 +140,6 @@ if (problems.length > 0) {
 
 console.log(
   `Migration journal OK: ${files.length} migrations, all journaled, ` +
-    'sequential, and strictly increasing in `when`.'
+    'sequential, and strictly increasing in `when`; ' +
+    `generate baseline present (${snapshots.length} snapshot(s)).`
 );
