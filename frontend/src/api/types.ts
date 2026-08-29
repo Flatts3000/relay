@@ -490,7 +490,10 @@ export interface OnboardingInvite {
   targetHubId: string | null;
   targetGroupId: string | null;
   invitedById: string;
-  token: string;
+  // No token field. The list endpoints never return one, and the create
+  // endpoint returns the invite without it, because the stored value is a hash
+  // that the accept route rejects. Declaring it non-optional invited a "copy
+  // invite link" button that compiles and hands out nothing.
   expiresAt: string;
   acceptedAt: string | null;
   createdAt: string;

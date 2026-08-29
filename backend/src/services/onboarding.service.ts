@@ -50,11 +50,19 @@ export interface CreateInviteInput {
 
 // ---------- Create invite ----------
 
+/**
+ * An invite as it is safe to hand back to a caller: everything but the token.
+ *
+ * The stored token is a hash that the accept route rejects, so publishing it
+ * would be handing out a string that looks like a credential and is not one.
+ */
+export type SafeOnboardingInvite = Omit<OnboardingInvite, 'token'>;
+
 export async function createOnboardingInvite(
   input: CreateInviteInput,
   inviterId: string,
   req: Request
-): Promise<OnboardingInvite> {
+): Promise<SafeOnboardingInvite> {
   // Check for existing active invite with same email+role+target
   const existing = await db
     .select()
@@ -150,7 +158,19 @@ export async function createOnboardingInvite(
       contextName
     );
   } catch (emailError) {
+    // Discard the invite rather than swallowing the failure.
+    //
+    // Returning 201 here was survivable while the raw token was stored and
+    // echoed back, because an admin could recover the link from the row. Now the
+    // token exists only in the message that failed to send, so a swallowed
+    // failure strands a credential nobody holds: the invitee gets nothing, and
+    // the duplicate guard rejects every retry for the full 72 hours because the
+    // dead invite is still unexpired and unaccepted.
     console.error('Failed to send onboarding invite email:', emailError);
+    await db.delete(onboardingInvites).where(eq(onboardingInvites.id, invite!.id));
+    throw new Error(
+      'Could not send the invitation email. No invite was created; please try again.'
+    );
   }
 
   await logAuditEvent({
@@ -167,7 +187,22 @@ export async function createOnboardingInvite(
     req,
   });
 
-  return invite!;
+  // Deliberately without the token. The stored value is a hash the accept route
+  // rejects, so returning it publishes a string that looks like a credential and
+  // is not one - and would put undefined-shaped bugs into any client that tried
+  // to build an invitation link from it.
+  const safeInvite: SafeOnboardingInvite = {
+    id: invite!.id,
+    email: invite!.email,
+    role: invite!.role,
+    targetHubId: invite!.targetHubId,
+    targetGroupId: invite!.targetGroupId,
+    invitedById: invite!.invitedById,
+    expiresAt: invite!.expiresAt,
+    acceptedAt: invite!.acceptedAt,
+    createdAt: invite!.createdAt,
+  };
+  return safeInvite;
 }
 
 // ---------- Get invite by token ----------

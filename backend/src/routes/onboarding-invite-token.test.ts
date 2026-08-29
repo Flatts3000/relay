@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import request from 'supertest';
 import { eq } from 'drizzle-orm';
 import { app } from '../app.js';
 import { db } from '../db/index.js';
 import { onboardingInvites, users } from '../db/schema/index.js';
 import { hashToken } from '../utils/crypto.js';
+import * as emailService from '../services/email.service.js';
 import {
   createTestHub,
   createTestGroup,
@@ -25,6 +26,10 @@ import {
  * missed.
  */
 describe('Onboarding invite token storage', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('never stores the token in a replayable form', async () => {
     const hub = await createTestHub();
     const admin = await createTestUser({ email: `inviter-${Date.now()}@test.org`, hubId: hub.id });
@@ -132,7 +137,94 @@ describe('Onboarding invite token storage', () => {
       .set('Authorization', `Bearer ${session}`);
 
     expect(response.status).toBe(200);
-    expect(JSON.stringify(response.body)).not.toContain(token);
+    // Assert there is something to leak before asserting nothing leaked: the
+    // route falls through to an empty array when the caller has no groupId, and
+    // "no invites" would otherwise satisfy every assertion below.
+    expect(response.body.invites.length).toBeGreaterThan(0);
+
+    const serialised = JSON.stringify(response.body);
+    expect(serialised).not.toContain(token);
+    // The hash as well as the raw value: reverting this query to a bare select()
+    // would publish the hash, and a raw-token-only check would stay green.
+    expect(serialised).not.toContain(hashToken(token));
+  });
+
+  it('does not return the token from the create endpoint either', async () => {
+    const hub = await createTestHub();
+    const { sessionToken } = await createHubAdminWithSession(hub.id);
+
+    const response = await request(app)
+      .post('/api/onboarding/invites')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send({ email: `created-${Date.now()}@test.org`, role: 'hub_admin', targetHubId: hub.id });
+
+    expect(response.status).toBe(201);
+    expect(response.body.id).toBeDefined();
+
+    // The create response used to carry the raw token, which made it a working
+    // invitation link. It now carries the stored hash, which the accept route
+    // rejects - so publishing it hands out a string that looks like a credential
+    // and is not one.
+    expect(response.body.token).toBeUndefined();
+
+    const [row] = await db
+      .select()
+      .from(onboardingInvites)
+      .where(eq(onboardingInvites.id, response.body.id));
+    expect(JSON.stringify(response.body)).not.toContain(row!.token);
+  });
+
+  it('creates no invite when the invitation email cannot be sent', async () => {
+    const hub = await createTestHub();
+    const { sessionToken } = await createHubAdminWithSession(hub.id);
+    const email = `bounced-${Date.now()}@test.org`;
+
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(emailService, 'sendOnboardingInviteEmail').mockRejectedValue(new Error('smtp down'));
+
+    const response = await request(app)
+      .post('/api/onboarding/invites')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send({ email, role: 'hub_admin', targetHubId: hub.id });
+
+    // The failure has to surface. The raw token now exists only inside the
+    // message that failed to send, so a swallowed error would leave a credential
+    // nobody holds - and the duplicate guard would reject every retry for the
+    // full 72 hours because the dead invite is unexpired and unaccepted.
+    expect(response.status).toBe(400);
+
+    const rows = await db
+      .select()
+      .from(onboardingInvites)
+      .where(eq(onboardingInvites.email, email));
+    expect(rows).toHaveLength(0);
+  });
+
+  it('lets the inviter retry immediately after a failed send', async () => {
+    const hub = await createTestHub();
+    const { sessionToken } = await createHubAdminWithSession(hub.id);
+    const email = `retry-${Date.now()}@test.org`;
+    const body = { email, role: 'hub_admin', targetHubId: hub.id };
+
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const send = vi.spyOn(emailService, 'sendOnboardingInviteEmail');
+
+    send.mockRejectedValueOnce(new Error('smtp down'));
+    await request(app)
+      .post('/api/onboarding/invites')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(body)
+      .expect(400);
+
+    send.mockResolvedValueOnce(undefined as never);
+    const second = await request(app)
+      .post('/api/onboarding/invites')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(body);
+
+    // The whole point of deleting the stranded row: without it this is a 400
+    // 'An active invite already exists for this email and role' for 72 hours.
+    expect(second.status).toBe(201);
   });
 
   it('rejects an invite that was already accepted', async () => {
