@@ -85,10 +85,17 @@ jobs:
       # "Deployment verified!" for an API where every database-backed route was
       # failing. /api/health/ready executes a query and returns 503 when it
       # cannot. See #18.
+      #
+      # Against the domain, not secrets.EC2_HOST. That secret holds the instance
+      # address for SSH, and https:// to a bare IP fails the TLS handshake
+      # outright - Caddy serves a certificate for relayfunds.org and rejects the
+      # mismatched connection, so even -k cannot rescue it. Verifying through the
+      # real hostname is also the better test: it exercises DNS, the certificate,
+      # Caddy and the app the way a visitor would.
       - name: Verify deployment
         run: |
           for i in $(seq 1 10); do
-            STATUS=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" "https://${{ secrets.EC2_HOST }}/api/health/ready" 2>/dev/null || echo "000")
+            STATUS=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" "https://relayfunds.org/api/health/ready" 2>/dev/null || echo "000")
             if [ "$STATUS" = "200" ]; then
               echo "Deployment verified!"
               exit 0
