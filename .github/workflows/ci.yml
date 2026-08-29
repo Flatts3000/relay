@@ -99,8 +99,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Apply schema to test database
-        run: npx tsx ../node_modules/drizzle-kit/bin.cjs push --force
+      # Built by running the migrations, not by pushing the schema definitions.
+      #
+      # `push` derives the schema from the TypeScript definitions; production
+      # gets whatever the SQL in drizzle/ produces. Where the two disagree the
+      # suite was testing a schema nobody runs. That is not hypothetical: a CHECK
+      # constraint added in a migration and not mirrored in the schema existed in
+      # production and nowhere any test could see it, and `push` is separately
+      # known to leave a *changed* CHECK constraint alone while reporting success
+      # (#37), so a long-lived database silently keeps the weaker one.
+      #
+      # Running migrate here makes the tested schema the deployed schema. The
+      # database is fresh every run, so there is no already-pushed state for it
+      # to trip over.
+      - name: Apply migrations to test database
+        run: npm run db:migrate
         working-directory: backend
         env:
           NODE_ENV: test
@@ -113,14 +126,39 @@ jobs:
       - name: Run tests
         run: npm run test:backend
 
+      # The only thing that can tell us the generate baseline is still current is
+      # generate itself. With an accurate snapshot it writes nothing and says
+      # "No schema changes"; with a stale one it emits a migration re-creating
+      # everything added since - which is what #37 was.
+      #
+      # A stale baseline can also make it prompt about an ambiguous rename. stdin
+      # is closed, so that fails rather than hangs, which is the outcome we want.
+      - name: Check the generate baseline is current
+        run: |
+          npx tsx ../node_modules/drizzle-kit/bin.cjs generate --name ci_staleness_probe < /dev/null
+          if ! git diff --quiet --exit-code -- drizzle; then
+            echo "::error::drizzle-kit generate wrote changes, so meta/ is stale."
+            echo "The newest snapshot no longer reflects the schema; regenerate it."
+            git --no-pager diff --stat -- drizzle
+            exit 1
+          fi
+        working-directory: backend
+
   migrations:
     name: Migrations
     runs-on: ubuntu-latest
 
-    # Nothing else in CI runs the migration SQL - test-backend builds its schema
-    # with `drizzle-kit push`, straight from the schema definition. So the files
-    # in drizzle/ were never executed anywhere before a production deploy, which
-    # is how three of them sat unapplied for six months (#26).
+    # Applies the migrations to a fresh database, re-applies them to check they
+    # are idempotent, and diffs the resulting columns against what
+    # `drizzle-kit push` builds.
+    #
+    # Note the limits of that diff: it compares table.column:data_type from
+    # information_schema and nothing else, so nullability, defaults, indexes,
+    # CHECK constraints and enum values are NOT compared. A constraint present in
+    # one path and absent from the other still passes this job - which is exactly
+    # the bug class that motivated #37, so do not read a green run here as
+    # "the two paths agree". The idempotency re-apply is the part nothing else
+    # covers.
     services:
       postgres:
         image: postgres:16-alpine

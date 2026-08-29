@@ -60,6 +60,24 @@ function daysAgo(n: number): Date {
 }
 
 async function seed() {
+  // Refuse rather than failing halfway through on a unique-email violation.
+  // The seed is additive, not idempotent, so a second run used to die with a raw
+  // constraint error partway through and leave the database half-populated.
+  const [existing] = await db.select({ id: users.id }).from(users).limit(1);
+  if (existing) {
+    console.error(
+      [
+        'Refusing to seed: this database already has users.',
+        'The seed is additive, not idempotent. Start from an empty database:',
+        '  docker compose -f docker-compose.dev.yml down -v',
+        '  docker compose -f docker-compose.dev.yml up -d',
+        '  npm run db:migrate --workspace=backend',
+      ].join('\n')
+    );
+    await closePool();
+    process.exit(1);
+  }
+
   console.log('Seeding development data for UX review...');
 
   const [hub] = await db

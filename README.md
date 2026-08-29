@@ -73,9 +73,61 @@ Prerequisites:
 # Install dependencies
 npm install
 
+# Start the databases
+docker compose -f docker-compose.dev.yml up -d
+
+# Apply the schema (see below - use migrate, not push)
+npm run db:migrate --workspace=backend
+
 # Start development servers
 npm run dev
 ```
+
+### Database schema
+
+**Use `npm run db:migrate`, not `db:push`.** Both appear to bring a database up
+to date and only one of them is what production gets.
+
+`push` diffs the live database against the TypeScript schema definitions and
+applies the difference. It does not update a CHECK constraint whose expression
+has changed: with the constraint already present it leaves the old one in place
+and reports success. A long-lived development database therefore keeps the
+weaker constraint while production, built by `migrate`, gets the intended one -
+and a test suite passes against the weaker one. CI runs the migrations for
+exactly this reason, so this is about local trust.
+
+If your database was built with `push` and `migrate` now fails with
+`type ... already exists`, it has no migration history to continue from. Recreate
+it:
+
+```bash
+docker compose -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.dev.yml up -d
+npm run db:migrate --workspace=backend
+```
+
+Hand-written migrations need a matching entry in `drizzle/meta/_journal.json`,
+and the newest migration needs a `meta/NNNN_snapshot.json` so `drizzle-kit
+generate` diffs against the current schema rather than a stale one.
+`npm run db:check-journal` verifies both and runs in CI.
+
+Seeding, for a database with something in it to look at:
+
+```bash
+npx tsx backend/src/db/seed-audit.ts
+```
+
+### Ports
+
+The dev servers default to 3000 (frontend) and 4000 (backend), matching
+`.env.example`, `docker-compose.yml` and the URLs in magic-link emails. To run on
+different ports, export them - Vite does not read the repo-root `.env`:
+
+```bash
+FRONTEND_PORT=3021 BACKEND_URL=http://localhost:8004 npm run dev:frontend
+```
+
+and set `PORT`, `CORS_ORIGIN` and `FRONTEND_URL` in `.env` to match.
 
 ## Documentation
 

@@ -63,10 +63,11 @@ export const groups = pgTable(
   },
   (table) => ({
     serviceAreaIdx: index('groups_service_area_idx').on(table.serviceArea),
-    // Declared here as well as in migration 0009 because CI builds the test
-    // schema with `drizzle-kit push`, straight from these definitions, and never
-    // runs the migration SQL. A constraint that lives only in the migration
-    // exists in production and nowhere any test can see it.
+    // Declared here as well as in migration 0009, and both are needed. The test
+    // suite now builds its schema by running the migrations, so the SQL is what
+    // gets tested - but the `migrations` CI job also builds a database from
+    // these definitions with `drizzle-kit push` and compares the two, and
+    // `push` only knows what is declared here.
     keyMaterialComplete: check(
       'groups_key_material_complete',
       sql`(${table.publicKey} IS NULL) = (${table.keySalt} IS NULL)`

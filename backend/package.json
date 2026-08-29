@@ -20,7 +20,7 @@
     "db:push": "npx tsx ../node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "npx tsx ../node_modules/drizzle-kit/bin.cjs studio",
     "db:seed": "tsx src/db/seed.ts",
-    "db:check-journal": "node scripts/check-migration-journal.js"
+    "db:check-journal": "node scripts/check-migration-journal.js && npx tsx ../node_modules/drizzle-kit/bin.cjs check"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.983.0",
