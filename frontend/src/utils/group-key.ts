@@ -79,9 +79,18 @@ export async function deriveGroupKeypair(
   const bits = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
-      // Uint8Array is copied into a fresh ArrayBuffer: a view over a larger
-      // buffer would otherwise salt with whatever else that buffer holds.
-      salt: new Uint8Array(salt).buffer as ArrayBuffer,
+      // The typed array, not its .buffer.
+      //
+      // `.buffer` discards the view's offset and length, so a Uint8Array over a
+      // slice of a larger buffer would have salted with the whole thing. It also
+      // fails outside a browser: under jsdom the resulting ArrayBuffer belongs
+      // to the window realm and Node's WebCrypto rejects it as "not instance of
+      // ArrayBuffer, Buffer, TypedArray, or DataView".
+      //
+      // Passing the view fixes both, since WebCrypto honours offset and length
+      // on a TypedArray. The copy is then belt and braces - it costs 16 bytes
+      // and removes any question of the caller mutating the salt mid-derivation.
+      salt: new Uint8Array(salt),
       iterations: PBKDF2_ITERATIONS,
       hash: 'SHA-256',
     },

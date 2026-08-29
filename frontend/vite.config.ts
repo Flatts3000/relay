@@ -45,11 +45,49 @@ export default defineConfig({
         'src/main.tsx',
         'src/vite-env.d.ts',
       ],
+      // Per-file rather than global.
+      //
+      // A global figure here would be meaningless: two of roughly a hundred
+      // frontend files have tests, so any honest global number is ~2% and any
+      // aspirational one fails every run - which is how the previous 60 came to
+      // be ignored entirely, since nothing invoked `test:coverage`.
+      //
+      // What matters is that the client-side encryption path does not regress.
+      // These two modules hold the product's central privacy claim, are at 100%
+      // on all four metrics, and are enforced at 95 so a single defensive branch
+      // does not fail the build while a genuine gap still does.
+      //
+      // Add entries here as other areas gain tests, and add a global floor once
+      // there is a real one to hold. See #6.
       thresholds: {
-        statements: 60,
-        branches: 60,
-        functions: 60,
-        lines: 60,
+        // A global floor low enough to be honest about a frontend with two
+        // tested files, and high enough to be a canary.
+        //
+        // It exists because a per-file glob that matches nothing passes
+        // silently: Vitest builds an empty coverage map and istanbul reports
+        // 100% for a total of zero. So renaming either module below, or a typo
+        // in its key, would remove the only enforced gate in this workspace with
+        // no signal whatsoever. If that happens the global figure collapses
+        // towards zero and this catches it.
+        //
+        // Measured 2026-08-29 at 1.90 / 0.56 / 1.79 / 1.97.
+        statements: 1.5,
+        branches: 0.4,
+        functions: 1.4,
+        lines: 1.5,
+
+        'src/utils/broadcast-crypto.ts': {
+          statements: 95,
+          branches: 95,
+          functions: 95,
+          lines: 95,
+        },
+        'src/utils/group-key.ts': {
+          statements: 95,
+          branches: 95,
+          functions: 95,
+          lines: 95,
+        },
       },
     },
   },
