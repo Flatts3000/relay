@@ -1,3 +1,8 @@
+// Load the root .env first. Without it drizzle-kit read nothing but its own
+// fallbacks and quietly pointed at localhost:5432/relay, so `npm run
+// db:migrate` either failed to authenticate or, worse, migrated whatever
+// unrelated database happened to be listening there.
+import './src/env.js';
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({

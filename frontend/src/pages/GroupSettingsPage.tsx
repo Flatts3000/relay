@@ -10,6 +10,7 @@ import {
 } from '../api/onboarding';
 import type { TeamMember, OnboardingInvite } from '../api/types';
 import { Button, Input, Alert, ConfirmModal } from '../components/ui';
+import { BroadcastKeySection } from '../components/groups/BroadcastKeySection';
 
 export function GroupSettingsPage() {
   const { t } = useTranslation('common');
@@ -175,6 +176,8 @@ export function GroupSettingsPage() {
           </ul>
         )}
       </section>
+
+      <BroadcastKeySection />
 
       {/* Invite Staff */}
       <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">

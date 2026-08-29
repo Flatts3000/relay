@@ -3,9 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock, faClock } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import { Alert, Button } from '../components/ui';
 import { fetchInvites, fetchCiphertext, markDecrypted, deleteInvite } from '../api/invites';
 import { unwrapKey, decryptPayload, decodeBase64 } from '../utils/broadcast-crypto';
+import { useGroupKey } from '../contexts';
 import type { Invite } from '../api/types';
 
 const AUTO_DELETE_MS = 10 * 60 * 1000; // 10 minutes
@@ -29,8 +31,11 @@ export function InviteDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Decryption state
-  const [secretKeyInput, setSecretKeyInput] = useState('');
+  // Decryption state. The key itself lives in GroupKeyContext, in memory for
+  // the tab, so moving between requests in the inbox does not re-prompt.
+  const { secretKey, isUnlocked, isUnlocking, unlock } = useGroupKey();
+  const [passphrase, setPassphrase] = useState('');
+  const [needsKeySetup, setNeedsKeySetup] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [decryptError, setDecryptError] = useState('');
   const [decryptedContent, setDecryptedContent] = useState<DecryptedContent | null>(null);
@@ -91,8 +96,31 @@ export function InviteDetailPage() {
     }, 1000);
   }, [handleAutoDelete]);
 
+  const handleUnlock = async () => {
+    setDecryptError('');
+    const result = await unlock(passphrase);
+
+    if (result.ok) {
+      setPassphrase('');
+      return;
+    }
+
+    if (result.reason === 'no-key') {
+      // Nothing to unlock: the group has never set a passphrase, so the only
+      // useful thing to say is where to set one.
+      setNeedsKeySetup(true);
+      return;
+    }
+
+    setDecryptError(
+      result.reason === 'wrong-passphrase'
+        ? t('help:inbox.unlock.wrongPassphrase')
+        : t('help:inbox.unlock.error')
+    );
+  };
+
   const handleDecrypt = async () => {
-    if (!invite || !inviteId) return;
+    if (!invite || !inviteId || !secretKey) return;
 
     setIsDecrypting(true);
     setDecryptError('');
@@ -102,9 +130,8 @@ export function InviteDetailPage() {
       const { ciphertextPayload, nonce } = await fetchCiphertext(inviteId);
 
       // 2. Unwrap the content key using group's secret key
-      const groupSecretKey = decodeBase64(secretKeyInput.trim());
       const wrappedKey = decodeBase64(invite.wrappedKey);
-      const contentKey = unwrapKey(wrappedKey, groupSecretKey);
+      const contentKey = unwrapKey(wrappedKey, secretKey);
 
       if (!contentKey) {
         setDecryptError(t('help:inbox.unlock.error'));
@@ -169,6 +196,10 @@ export function InviteDetailPage() {
   if (error && !invite) {
     return (
       <div>
+        {/* The heading belongs on this branch too. A request that has already
+            been dealt with, or whose invite expired, renders here - and it was
+            a page with an error message and no title. */}
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('help:detail.title')}</h1>
         <Alert type="error" className="mb-4">
           {error}
         </Alert>
@@ -184,6 +215,9 @@ export function InviteDetailPage() {
       <Button variant="secondary" onClick={() => navigate('/inbox')} className="mb-6">
         {t('help:detail.backToList')}
       </Button>
+
+      {/* The page had two h2s and no h1, so it began mid-hierarchy. */}
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('help:detail.title')}</h1>
 
       {/* Not yet decrypted — show unlock form */}
       {!decryptedContent && invite && (
@@ -204,32 +238,67 @@ export function InviteDetailPage() {
             </p>
           </div>
 
-          <p className="text-sm text-gray-600 mb-4">{t('help:inbox.unlock.description')}</p>
-
-          {decryptError && (
-            <Alert type="error" className="mb-4">
-              {decryptError}
+          {needsKeySetup ? (
+            <Alert type="warning">
+              {t('help:inbox.unlock.noKey')}{' '}
+              <Link to="/settings/group" className="font-medium underline">
+                {t('help:inbox.unlock.noKeyAction')}
+              </Link>
             </Alert>
-          )}
+          ) : (
+            <>
+              <p className="text-sm text-gray-600 mb-4">{t('help:inbox.unlock.description')}</p>
 
-          <div className="space-y-4">
-            <input
-              type="password"
-              value={secretKeyInput}
-              onChange={(e) => setSecretKeyInput(e.target.value)}
-              placeholder={t('help:inbox.unlock.placeholder')}
-              className="w-full px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-sm"
-              autoComplete="off"
-            />
-            <Button
-              onClick={handleDecrypt}
-              disabled={!secretKeyInput.trim() || isDecrypting}
-              isLoading={isDecrypting}
-              className="w-full"
-            >
-              {t('help:inbox.unlock.submit')}
-            </Button>
-          </div>
+              {decryptError && (
+                <Alert type="error" className="mb-4">
+                  {decryptError}
+                </Alert>
+              )}
+
+              <div className="space-y-4">
+                {isUnlocked ? (
+                  <Button
+                    onClick={handleDecrypt}
+                    disabled={isDecrypting}
+                    isLoading={isDecrypting}
+                    className="w-full"
+                  >
+                    {t('help:inbox.unlock.submit')}
+                  </Button>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleUnlock();
+                    }}
+                    className="space-y-4"
+                  >
+                    <input
+                      type="password"
+                      value={passphrase}
+                      onChange={(e) => setPassphrase(e.target.value)}
+                      placeholder={t('help:inbox.unlock.placeholder')}
+                      className="w-full px-4 py-3 min-h-[44px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      autoComplete="current-password"
+                    />
+                    <Button
+                      type="submit"
+                      disabled={!passphrase.trim() || isUnlocking}
+                      isLoading={isUnlocking}
+                      className="w-full"
+                    >
+                      {t('help:inbox.unlock.unlockSubmit')}
+                    </Button>
+                    {isUnlocking && (
+                      <p className="text-xs text-gray-500 text-center">
+                        {t('help:inbox.unlock.deriving')}
+                      </p>
+                    )}
+                  </form>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 

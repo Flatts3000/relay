@@ -78,13 +78,14 @@ export interface PublicDirectoryEntry {
 /**
  * Get public directory entries for verified groups.
  * No publicKey requirement (unlike broadcast directory).
- * Searchable by name/serviceArea, filterable by aidCategory.
+ * Searchable by name/serviceArea, filterable by aidCategory and by region.
  *
  * CRITICAL: Public, anonymous endpoint. No auth, no cookies, no tracking.
  */
 export async function getPublicDirectoryEntries(
   search?: string,
-  category?: string
+  category?: string,
+  region?: string
 ): Promise<PublicDirectoryEntry[]> {
   const conditions = [
     sql`EXISTS (SELECT 1 FROM group_hub_memberships ghm WHERE ghm.group_id = ${groups.id} AND ghm.verification_status = 'verified')`,
@@ -99,6 +100,14 @@ export async function getPublicDirectoryEntries(
 
   if (category) {
     conditions.push(sql`${category} = ANY(${groups.aidCategories})`);
+  }
+
+  // Region is matched against service area alone, unlike `search`, which also
+  // matches the group name. Someone looking for help in Duluth wants groups that
+  // serve Duluth, not a group elsewhere with Duluth in its name - and browsing by
+  // region is the way the directory is meant to be used.
+  if (region) {
+    conditions.push(ilike(groups.serviceArea, `%${region}%`));
   }
 
   const results = await db

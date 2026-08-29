@@ -95,10 +95,15 @@ export async function listHubs(query: ListQuery) {
       name: hubs.name,
       contactEmail: hubs.contactEmail,
       createdAt: hubs.createdAt,
+      // hubs.id is written out in full rather than interpolated. Drizzle emits
+      // the interpolated form unqualified as "id", and the subquery joins
+      // groups, which has an id of its own - so Postgres rejected the whole
+      // query with 'column reference "id" is ambiguous' and this endpoint
+      // returned 500 on every call.
       groupCount: sql<number>`(
         SELECT COUNT(*) FROM group_hub_memberships ghm
         INNER JOIN groups g ON ghm.group_id = g.id
-        WHERE ghm.hub_id = ${hubs.id} AND g.deleted_at IS NULL
+        WHERE ghm.hub_id = "hubs"."id" AND g.deleted_at IS NULL
       )::int`,
     })
     .from(hubs)

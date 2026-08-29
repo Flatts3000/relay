@@ -1,4 +1,4 @@
-import { eq, and, isNull, count } from 'drizzle-orm';
+import { eq, and, isNull, count, inArray } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import {
   verificationRequests,
@@ -550,10 +550,24 @@ export async function getAttestationsForRequest(
  * Get pending attestation requests for a group (requests they can attest to)
  */
 export async function getPendingAttestationRequests(
-  groupId: string,
-  hubId: string
+  groupId: string
 ): Promise<VerificationRequestResponse[]> {
-  // Get all pending peer attestation requests for this hub
+  // The hubs are resolved from the attesting group rather than passed in.
+  //
+  // This used to take a hubId that callers read off the session. Only hub staff
+  // ever have one - hub_members is the sole source and only hub admins are
+  // written to it - so for a group coordinator, the only role permitted to
+  // attest, it was always null and the route rejected every request with a 400.
+  // The relationship that matters is the attesting group's own membership.
+  const hubs = await db
+    .select({ hubId: groupHubMemberships.hubId })
+    .from(groupHubMemberships)
+    .where(eq(groupHubMemberships.groupId, groupId));
+
+  const hubIds = hubs.map((h) => h.hubId);
+  if (hubIds.length === 0) return [];
+
+  // Get all pending peer attestation requests for those hubs
   // that this group hasn't already attested to
   const results = await db
     .select({
@@ -565,7 +579,7 @@ export async function getPendingAttestationRequests(
     .innerJoin(groups, eq(verificationRequests.groupId, groups.id))
     .where(
       and(
-        eq(verificationRequests.hubId, hubId),
+        inArray(verificationRequests.hubId, hubIds),
         eq(verificationRequests.method, 'peer_attestation'),
         eq(verificationRequests.status, 'pending'),
         isNull(groups.deletedAt)

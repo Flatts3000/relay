@@ -76,6 +76,10 @@ export function LoginPage() {
 
         <div className="text-center mb-8">
           <img src="/logo.png" alt={t('common:appName')} className="h-12 mx-auto mb-4" />
+          {/* The logo was carrying the page's identity on its own, leaving the
+              page with no h1 at all - so heading navigation skipped straight
+              past it. */}
+          <h1 className="text-xl font-bold text-gray-900 mb-1">{t('auth:signIn')}</h1>
           <p className="text-gray-600">{t('auth:signInDescription')}</p>
         </div>
 

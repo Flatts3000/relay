@@ -8,7 +8,8 @@
     "refresh": "Actualizar"
   },
   "detail": {
-    "backToList": "Volver a solicitudes de ayuda"
+    "backToList": "Volver a solicitudes de ayuda",
+    "title": "Solicitud de ayuda"
   },
   "errors": {
     "regionRequired": "Por favor ingrese su área/región",
@@ -45,6 +46,12 @@
       "contactRequired": "Por favor ingrese su información de contacto",
       "noGroups": "No se encontraron grupos en su área para las categorías seleccionadas. Intente ampliar su selección.",
       "submitFailed": "Error al enviar la solicitud. Por favor intente de nuevo."
+    },
+    "next": {
+      "title": "Qué pasa después",
+      "step1": "Tu mensaje se cifra en este dispositivo y se envía a grupos de ayuda mutua verificados que atienden la zona que elegiste.",
+      "step2": "En la siguiente pantalla recibirás una palabra clave. Anótala: un grupo te la repetirá para que sepas que el contacto es auténtico.",
+      "step3": "Un grupo te contactará como pediste. Si nadie te contacta en unos días, puedes enviar otra solicitud."
     }
   },
   "broadcastCategories": {
@@ -69,11 +76,16 @@
     "expires": "Expira",
     "viewRequest": "Ver solicitud",
     "unlock": {
-      "title": "Desbloquear clave del grupo",
-      "description": "Ingrese la clave privada de su grupo para descifrar esta solicitud.",
-      "placeholder": "Pegue la clave privada de su grupo (base64)",
+      "title": "Desbloquear esta solicitud",
+      "description": "Ingresa la contraseña de solicitudes de ayuda de tu grupo para abrir este mensaje.",
+      "placeholder": "La contraseña de tu grupo",
       "submit": "Descifrar",
-      "error": "Error al descifrar. Verifique su clave e intente de nuevo."
+      "error": "Error al descifrar. Verifique su clave e intente de nuevo.",
+      "wrongPassphrase": "Esa contraseña no coincide con la clave de tu grupo. Revísala e inténtalo de nuevo.",
+      "noKey": "Tu grupo aún no ha elegido una contraseña para las solicitudes de ayuda, así que esta no se puede abrir.",
+      "noKeyAction": "Elige una en la configuración del grupo",
+      "unlockSubmit": "Desbloquear",
+      "deriving": "Comprobando tu contraseña. Esto tarda unos segundos."
     },
     "decrypted": {
       "title": "Solicitud de ayuda descifrada",

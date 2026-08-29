@@ -1,6 +1,7 @@
 import { eq, and, isNull, ilike, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { groups, groupHubMemberships, type Group, type NewGroup } from '../db/schema/index.js';
+import { discardInvitesForGroup } from './invite-cleanup.service.js';
 import { logAuditEvent } from './audit.service.js';
 import type { Request } from 'express';
 import type {
@@ -10,12 +11,17 @@ import type {
   GroupResponse,
   AidCategory,
   VerificationStatus,
+  BroadcastKeyInput,
 } from '../validations/group.validation.js';
 
 /**
  * Transform a database group record into an API response
  */
-function toGroupResponse(group: Group, verificationStatus?: VerificationStatus): GroupResponse {
+function toGroupResponse(
+  group: Group,
+  verificationStatus?: VerificationStatus,
+  includeKeyMaterial = false
+): GroupResponse {
   return {
     id: group.id,
     name: group.name,
@@ -23,6 +29,13 @@ function toGroupResponse(group: Group, verificationStatus?: VerificationStatus):
     aidCategories: group.aidCategories as AidCategory[],
     contactEmail: group.contactEmail,
     ...(verificationStatus && { verificationStatus }),
+    // Off by default. The salt is not a secret, but only a coordinator of this
+    // group has any use for it, and the hub and staff views have no business
+    // carrying it around.
+    ...(includeKeyMaterial && {
+      keySalt: group.keySalt ? group.keySalt.toString('base64') : null,
+      broadcastPublicKey: group.publicKey ? group.publicKey.toString('base64') : null,
+    }),
     createdAt: group.createdAt.toISOString(),
     updatedAt: group.updatedAt.toISOString(),
   };
@@ -90,7 +103,11 @@ export async function createGroup(
 /**
  * Get a group by ID, optionally including verification status for a specific hub
  */
-export async function getGroupById(groupId: string, hubId?: string): Promise<GroupResponse | null> {
+export async function getGroupById(
+  groupId: string,
+  hubId?: string,
+  includeKeyMaterial = false
+): Promise<GroupResponse | null> {
   const result = await db
     .select()
     .from(groups)
@@ -100,17 +117,47 @@ export async function getGroupById(groupId: string, hubId?: string): Promise<Gro
   const group = result[0];
   if (!group) return null;
 
-  let verificationStatus: VerificationStatus | undefined;
+  const verificationStatus = await resolveVerificationStatus(groupId, hubId);
+
+  return toGroupResponse(group, verificationStatus, includeKeyMaterial);
+}
+
+/**
+ * Resolve a group's verification status.
+ *
+ * With a hub in context, the answer is that hub's view of the group. Without
+ * one, fall back to the group's own memberships.
+ *
+ * The fallback is what makes this correct for group coordinators. Verification
+ * lives on group_hub_memberships, but a coordinator is group staff and never
+ * hub staff, so hub_members holds no row for them and their session's hubId is
+ * structurally always null. Callers therefore passed undefined, the status came
+ * back undefined, and every "verified only" gate in the UI failed closed - most
+ * visibly the new funding request form, which told verified groups they were
+ * not verified while their own dashboard said otherwise.
+ *
+ * A group may in principle belong to more than one hub. Verified by any of them
+ * is verified for the purposes of these gates, so the strongest status wins
+ * rather than an arbitrary first row.
+ */
+async function resolveVerificationStatus(
+  groupId: string,
+  hubId?: string
+): Promise<VerificationStatus | undefined> {
+  const conditions = [eq(groupHubMemberships.groupId, groupId)];
   if (hubId) {
-    const [membership] = await db
-      .select({ verificationStatus: groupHubMemberships.verificationStatus })
-      .from(groupHubMemberships)
-      .where(and(eq(groupHubMemberships.groupId, groupId), eq(groupHubMemberships.hubId, hubId)))
-      .limit(1);
-    verificationStatus = membership?.verificationStatus as VerificationStatus | undefined;
+    conditions.push(eq(groupHubMemberships.hubId, hubId));
   }
 
-  return toGroupResponse(group, verificationStatus);
+  const memberships = await db
+    .select({ verificationStatus: groupHubMemberships.verificationStatus })
+    .from(groupHubMemberships)
+    .where(and(...conditions));
+
+  if (memberships.length === 0) return undefined;
+
+  const statuses = memberships.map((m) => m.verificationStatus as VerificationStatus);
+  return statuses.find((s) => s === 'verified') ?? statuses[0];
 }
 
 /**
@@ -291,4 +338,59 @@ export function canUserModifyGroup(
   targetGroupId: string
 ): boolean {
   return userRole === 'group_coordinator' && userGroupId === targetGroupId;
+}
+
+/**
+ * Register a group's broadcast key material.
+ *
+ * Both values arrive base64 from the browser, which derived the keypair from a
+ * coordinator passphrase and the salt. Only the public half is sent; the private
+ * half never leaves the device, so a Relay operator, a database dump and a
+ * subpoena all yield the same thing - a public key.
+ *
+ * Setting a new passphrase replaces both halves atomically. That deliberately
+ * makes every wrapped key already sitting in broadcast_invites for this group
+ * undecryptable, because those keys were wrapped to the old public key, so they
+ * are deleted in the same transaction rather than left to look pending until the
+ * TTL sweep reaches them.
+ */
+export async function setGroupBroadcastKey(
+  groupId: string,
+  input: BroadcastKeyInput,
+  userId: string,
+  req: Request
+): Promise<{ invitesDiscarded: number }> {
+  return db.transaction(async (tx) => {
+    // Routed through the cleanup service rather than deleting the rows here. A
+    // bulk delete leaves any broadcast whose only recipient was this group with
+    // zero invites and nothing that will ever revisit it, because both sweeps
+    // iterate broadcast_invites and none is keyed on broadcasts.expires_at - so
+    // its ciphertext would be retained indefinitely, untombstoned.
+    const discardedCount = await discardInvitesForGroup(tx, groupId);
+
+    await tx
+      .update(groups)
+      .set({
+        publicKey: Buffer.from(input.publicKey, 'base64'),
+        keySalt: Buffer.from(input.keySalt, 'base64'),
+        updatedAt: new Date(),
+      })
+      .where(eq(groups.id, groupId));
+
+    await logAuditEvent(
+      {
+        userId,
+        action: 'update',
+        entityType: 'group',
+        entityId: groupId,
+        // No key material in the audit trail. That a key was set is the fact
+        // worth keeping; which key it was is not.
+        metadata: { field: 'broadcastKey', invitesDiscarded: discardedCount },
+        req,
+      },
+      tx
+    );
+
+    return { invitesDiscarded: discardedCount };
+  });
 }

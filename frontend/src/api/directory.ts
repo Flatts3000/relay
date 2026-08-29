@@ -43,11 +43,13 @@ export async function fetchDirectory(
  */
 export async function fetchPublicDirectory(
   search?: string,
-  category?: string
+  category?: string,
+  region?: string
 ): Promise<PublicDirectoryEntry[]> {
   const params = new URLSearchParams();
   if (search) params.set('search', search);
   if (category) params.set('category', category);
+  if (region) params.set('region', region);
 
   const queryString = params.toString();
   const url = `${API_BASE}/api/directory/groups${queryString ? `?${queryString}` : ''}`;

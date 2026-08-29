@@ -154,9 +154,9 @@ export function OnboardingPage() {
   return (
     <PageShell>
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900">
           {t('onboarding.welcome', 'Welcome to Relay')}
-        </h1>
+        </h2>
         <p className="text-gray-600 mt-1">
           {t('onboarding.invitedAs', {
             defaultValue: 'You have been invited as {{role}}',
@@ -321,6 +321,8 @@ export function OnboardingPage() {
 }
 
 function PageShell({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation('common');
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <div className="max-w-md w-full">
@@ -329,6 +331,10 @@ function PageShell({ children }: { children: React.ReactNode }) {
         </div>
         <div className="text-center mb-8">
           <img src="/logo.png" alt="Relay" className="h-12 mx-auto mb-4" />
+          {/* In the shell rather than in the form, because the invalid-link and
+              expired-link branches render no form and previously produced a page
+              with no heading at all. */}
+          <h1 className="text-xl font-bold text-gray-900">{t('navigation.onboarding')}</h1>
         </div>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">{children}</div>
       </div>

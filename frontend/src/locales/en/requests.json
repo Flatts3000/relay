@@ -107,5 +107,21 @@
     "failedToAcknowledge": "Failed to acknowledge receipt",
     "notVerified": "Only verified groups can submit funding requests",
     "invalidStatus": "This action is not available for the current status"
+  },
+  "requestCount_one": "{{count}} request",
+  "requestCount_other": "{{count}} requests",
+  "sections": {
+    "awaitingHub_one": "Awaiting your decision ({{count}})",
+    "awaitingHub_other": "Awaiting your decision ({{count}})",
+    "awaitingGroup_one": "Waiting on the hub ({{count}})",
+    "awaitingGroup_other": "Waiting on the hub ({{count}})",
+    "settled_one": "Settled ({{count}})",
+    "settled_other": "Settled ({{count}})"
+  },
+  "totals": {
+    "awaiting": "Awaiting a decision",
+    "settled": "Already settled",
+    "urgent": "Marked urgent",
+    "urgentHint": "of those awaiting a decision"
   }
 }

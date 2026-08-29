@@ -71,7 +71,7 @@ export function SecurityPage() {
 function SecuritySection({ title, body }: { title: string; body: string }) {
   return (
     <div>
-      <h3 className="font-heading text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+      <h2 className="font-heading text-lg font-semibold text-gray-900 mb-2">{title}</h2>
       <p className="text-gray-700 leading-relaxed">{body}</p>
     </div>
   );

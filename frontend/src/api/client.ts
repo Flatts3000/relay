@@ -90,6 +90,13 @@ export async function patch<T>(endpoint: string, body: unknown): Promise<T> {
   });
 }
 
+export async function put<T>(endpoint: string, body: unknown): Promise<T> {
+  return apiFetch<T>(endpoint, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
 export async function del<T>(endpoint: string): Promise<T> {
   return apiFetch<T>(endpoint, { method: 'DELETE' });
 }

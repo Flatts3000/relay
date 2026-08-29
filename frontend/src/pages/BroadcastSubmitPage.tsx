@@ -46,6 +46,18 @@ export function BroadcastSubmitPage() {
   // Bot protection
   const mountTime = useRef(Date.now());
 
+  // The form is long enough that the error alert at the top is off screen by the
+  // time someone reaches the button, so a validation message would otherwise
+  // look like nothing happened at all.
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  const failValidation = (message: string) => {
+    setError(message);
+    requestAnimationFrame(() =>
+      errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    );
+  };
+
   const toggleCategory = (cat: BroadcastCategory) => {
     setSelectedCategories((prev) => {
       const next = new Set(prev);
@@ -63,19 +75,19 @@ export function BroadcastSubmitPage() {
     setError('');
 
     if (!region.trim()) {
-      setError(t('help:errors.regionRequired'));
+      failValidation(t('help:errors.regionRequired'));
       return;
     }
     if (selectedCategories.size === 0) {
-      setError(t('help:broadcast.errors.categoryRequired'));
+      failValidation(t('help:broadcast.errors.categoryRequired'));
       return;
     }
     if (!message.trim()) {
-      setError(t('help:broadcast.errors.messageRequired'));
+      failValidation(t('help:broadcast.errors.messageRequired'));
       return;
     }
     if (!contactInfo.trim()) {
-      setError(t('help:broadcast.errors.contactRequired'));
+      failValidation(t('help:broadcast.errors.contactRequired'));
       return;
     }
 
@@ -196,9 +208,11 @@ export function BroadcastSubmitPage() {
               <p className="text-sm text-gray-500 mb-6">{t('help:sharedComputerWarning')}</p>
 
               {error && (
-                <Alert type="error" className="mb-6">
-                  {error}
-                </Alert>
+                <div ref={errorRef}>
+                  <Alert type="error" className="mb-6">
+                    {error}
+                  </Alert>
+                </div>
               )}
 
               <form onSubmit={handleSubmit}>
@@ -279,21 +293,32 @@ export function BroadcastSubmitPage() {
                       {t('help:broadcast.contactHelper')}
                     </p>
                   </div>
+                </div>
 
-                  {/* Privacy warning */}
-                  <p className="text-sm text-amber-700">{t('help:broadcast.privacyWarning')}</p>
+                {/* What happens after sending. Someone in difficulty is being
+                    asked to write down how to reach them and then hand it to
+                    strangers; not saying what follows is the largest unanswered
+                    question on the page. */}
+                <div className="mt-6 bg-primary-50 border border-primary-100 rounded-lg p-4">
+                  <h2 className="text-sm font-semibold text-primary-900 mb-2">
+                    {t('help:broadcast.next.title')}
+                  </h2>
+                  <ol className="space-y-1.5 text-sm text-primary-800 list-decimal list-inside">
+                    <li>{t('help:broadcast.next.step1')}</li>
+                    <li>{t('help:broadcast.next.step2')}</li>
+                    <li>{t('help:broadcast.next.step3')}</li>
+                  </ol>
                 </div>
 
                 <div className="mt-6">
+                  {/* Enabled unless a submission is already in flight. It used to
+                      be disabled until all four fields were filled, which meant
+                      pressing it did nothing and said nothing - and made the
+                      per-field messages in handleSubmit unreachable, since the
+                      only way to reach them was to submit. */}
                   <Button
                     type="submit"
-                    disabled={
-                      !region.trim() ||
-                      selectedCategories.size === 0 ||
-                      !message.trim() ||
-                      !contactInfo.trim() ||
-                      isSubmitting
-                    }
+                    disabled={isSubmitting}
                     isLoading={isSubmitting}
                     className="w-full"
                   >

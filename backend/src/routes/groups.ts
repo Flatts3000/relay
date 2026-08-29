@@ -9,12 +9,14 @@ import {
   deleteGroup,
   canUserAccessGroup,
   canUserModifyGroup,
+  setGroupBroadcastKey,
 } from '../services/group.service.js';
 import {
   createGroupSchema,
   updateGroupSchema,
   groupIdParamSchema,
   listGroupsQuerySchema,
+  broadcastKeySchema,
 } from '../validations/group.validation.js';
 import { getGroupDashboard } from '../services/dashboard.service.js';
 
@@ -124,6 +126,64 @@ groupsRouter.get('/me/dashboard', authenticate, requireGroupCoordinator, async (
   }
 
   res.json(summary);
+});
+
+/**
+ * GET /api/groups/me - The signed-in coordinator's own group, with key material
+ *
+ * Separate from /:id because the coordinator's view is the only one that carries
+ * the broadcast key salt, and because a coordinator should not have to know
+ * their own group's uuid to read it.
+ */
+groupsRouter.get('/me', authenticate, requireGroupCoordinator, async (req, res) => {
+  const user = req.user!;
+
+  if (!user.groupId) {
+    res.status(400).json({ error: 'User is not associated with a group' });
+    return;
+  }
+
+  const group = await getGroupById(user.groupId, undefined, true);
+
+  if (!group) {
+    res.status(404).json({ error: 'Group not found' });
+    return;
+  }
+
+  res.json({ group });
+});
+
+/**
+ * PUT /api/groups/me/broadcast-key - Register this group's broadcast key
+ *
+ * The body carries a public key and the salt it was derived with, both base64.
+ * The coordinator's passphrase and the private key never leave their browser -
+ * if they did, Relay could decrypt help requests, and the guarantee that a
+ * subpoena yields nothing useful would be false.
+ */
+groupsRouter.put('/me/broadcast-key', authenticate, requireGroupCoordinator, async (req, res) => {
+  try {
+    const user = req.user!;
+
+    if (!user.groupId) {
+      res.status(400).json({ error: 'User is not associated with a group' });
+      return;
+    }
+
+    const input = broadcastKeySchema.parse(req.body);
+    const result = await setGroupBroadcastKey(user.groupId, input, user.id, req);
+
+    res.json(result);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      res.status(400).json({
+        error: 'Validation failed',
+        details: err.issues.map((i) => i.message),
+      });
+      return;
+    }
+    throw err;
+  }
 });
 
 /**

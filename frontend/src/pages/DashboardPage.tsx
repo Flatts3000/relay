@@ -3,8 +3,11 @@ import { Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts';
 import { getDashboardSummary } from '../api/dashboard';
+import { getSummaryReport } from '../api/reports';
+import { getVerificationRequests } from '../api/verification';
+import { getFundingRequests } from '../api/requests';
 import { Alert } from '../components/ui';
-import type { DashboardSummary } from '../api/types';
+import type { DashboardSummary, SummaryReport } from '../api/types';
 
 export function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -26,9 +29,8 @@ export function DashboardPage() {
     return <Navigate to="/admin" replace />;
   }
 
-  // Hub admins go straight to groups list
   if (user.role === 'hub_admin') {
-    return <Navigate to="/groups" replace />;
+    return <HubAdminDashboard />;
   }
 
   if (user.role === 'group_coordinator') {
@@ -50,6 +52,144 @@ const linkButtonPrimary =
   'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-3 text-base min-h-[44px] bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500';
 const linkButtonSecondary =
   'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-3 text-base min-h-[44px] bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500';
+
+/**
+ * A hub admin's landing page.
+ *
+ * They used to be redirected straight to /groups - a roster - even though their
+ * job is reviewing and routing money. The two things actually waiting on them,
+ * pending verifications and submitted funding requests, were each two unlinked
+ * URLs away, and nothing anywhere said how many there were.
+ *
+ * Built from endpoints that already existed; it adds no new API surface.
+ */
+function HubAdminDashboard() {
+  const { t } = useTranslation('common');
+  const [pendingVerifications, setPendingVerifications] = useState<number | null>(null);
+  const [awaiting, setAwaiting] = useState<{ count: number; amount: number } | null>(null);
+  const [summary, setSummary] = useState<SummaryReport | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      // Settled individually: a hub with no reports data should still be told
+      // how many groups are waiting on verification.
+      const [verifications, requests, report] = await Promise.allSettled([
+        getVerificationRequests({ status: 'pending' }),
+        getFundingRequests({ status: 'submitted' }),
+        getSummaryReport(),
+      ]);
+
+      if (verifications.status === 'fulfilled') {
+        setPendingVerifications(verifications.value.requests.length);
+      }
+      if (requests.status === 'fulfilled') {
+        setAwaiting({
+          count: requests.value.requests.length,
+          amount: requests.value.requests.reduce((total, r) => total + parseFloat(r.amount), 0),
+        });
+      }
+      if (report.status === 'fulfilled') {
+        setSummary(report.value);
+      }
+      setIsLoading(false);
+    }
+    load();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+      </div>
+    );
+  }
+
+  const money = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+
+  const needsAttention = (pendingVerifications ?? 0) > 0 || (awaiting?.count ?? 0) > 0;
+
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900">{t('hubDashboard.title')}</h1>
+      <p className="text-gray-600 mb-6">{t('hubDashboard.subtitle')}</p>
+
+      {/* What is waiting on this person, first and largest. Everything else on
+          the page is a record of work already done. */}
+      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <Link
+          to="/requests"
+          className={`block rounded-lg border p-5 transition-colors ${
+            (awaiting?.count ?? 0) > 0
+              ? 'bg-amber-50 border-amber-200 hover:border-amber-300'
+              : 'bg-white border-gray-200 hover:border-gray-300'
+          }`}
+        >
+          <p className="text-sm font-medium text-gray-600">{t('hubDashboard.awaitingDecision')}</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{awaiting?.count ?? 0}</p>
+          <p className="text-sm text-gray-600 mt-1">
+            {money(awaiting?.amount ?? 0)} {t('hubDashboard.requested')}
+          </p>
+        </Link>
+
+        <Link
+          to="/verification"
+          className={`block rounded-lg border p-5 transition-colors ${
+            (pendingVerifications ?? 0) > 0
+              ? 'bg-amber-50 border-amber-200 hover:border-amber-300'
+              : 'bg-white border-gray-200 hover:border-gray-300'
+          }`}
+        >
+          <p className="text-sm font-medium text-gray-600">
+            {t('hubDashboard.pendingVerifications')}
+          </p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">{pendingVerifications ?? 0}</p>
+          <p className="text-sm text-gray-600 mt-1">{t('hubDashboard.groupsWaiting')}</p>
+        </Link>
+      </div>
+
+      {!needsAttention && (
+        <Alert type="success" className="mb-8">
+          {t('hubDashboard.allClear')}
+        </Alert>
+      )}
+
+      {summary && (
+        <>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
+            {t('hubDashboard.activity')}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3 mb-8">
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <p className="text-sm text-gray-500">{t('hubDashboard.totalMoved')}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {money(parseFloat(summary.totals.totalAmount))}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <p className="text-sm text-gray-500">{t('hubDashboard.approved')}</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.totals.approvedRequests}</p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <p className="text-sm text-gray-500">{t('hubDashboard.totalRequests')}</p>
+              <p className="text-2xl font-bold text-gray-900">{summary.totals.totalRequests}</p>
+            </div>
+          </div>
+        </>
+      )}
+
+      <div className="flex flex-wrap gap-3">
+        <Link to="/groups" className={linkButtonSecondary}>
+          {t('navigation.groups')}
+        </Link>
+        <Link to="/reports" className={linkButtonSecondary}>
+          {t('navigation.reports')}
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 function GroupCoordinatorDashboard() {
   const { t } = useTranslation('common');

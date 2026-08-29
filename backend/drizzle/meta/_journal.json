@@ -64,6 +64,13 @@
       "when": 1787958016248,
       "tag": "0008_clear_plaintext_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787958016249,
+      "tag": "0009_group_key_salt",
+      "breakpoints": true
     }
   ]
 }

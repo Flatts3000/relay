@@ -1,6 +1,7 @@
 import { eq, and, lt, sql, isNotNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { broadcasts, broadcastInvites, broadcastTombstones } from '../db/schema/broadcasts.js';
+import type { Executor } from '../db/executor.js';
 
 const TEN_MINUTES_MS = 10 * 60 * 1000;
 const CLEANUP_INTERVAL_MS = 60 * 1000; // Run every minute
@@ -71,7 +72,47 @@ async function deleteInviteAndMaybeCleanupBroadcast(
   inviteId: string,
   broadcastId: string
 ): Promise<void> {
-  await db.transaction(async (tx) => {
+  await db.transaction((tx) => deleteInviteWithin(tx, inviteId, broadcastId));
+}
+
+/**
+ * Discard every invite a group holds, tombstoning and deleting any broadcast
+ * left with no recipients.
+ *
+ * Exists because rotating a group's broadcast key has to throw away invites
+ * wrapped to the old public key, and doing that with a bulk delete would strand
+ * the parent broadcast. Both sweeps iterate broadcast_invites and nothing is
+ * keyed on broadcasts.expires_at, so a broadcast whose only recipient's invites
+ * vanished underneath it would keep its ciphertext, region and categories
+ * forever, with no tombstone - the opposite of "encrypted material deleted as
+ * soon as all invites are resolved".
+ *
+ * Takes the caller's transaction rather than opening its own, so the discard and
+ * the key change commit together.
+ */
+export async function discardInvitesForGroup(tx: Executor, groupId: string): Promise<number> {
+  const invites = await tx
+    .select({ id: broadcastInvites.id, broadcastId: broadcastInvites.broadcastId })
+    .from(broadcastInvites)
+    .where(eq(broadcastInvites.groupId, groupId));
+
+  for (const invite of invites) {
+    await deleteInviteWithin(tx, invite.id, invite.broadcastId);
+  }
+
+  return invites.length;
+}
+
+/**
+ * The body of the above, without the transaction, so it can run inside one the
+ * caller already owns.
+ */
+async function deleteInviteWithin(
+  tx: Executor,
+  inviteId: string,
+  broadcastId: string
+): Promise<void> {
+  {
     // Collect all group IDs for this broadcast BEFORE deleting (for tombstone)
     const allInvites = await tx
       .select({ groupId: broadcastInvites.groupId })
@@ -115,7 +156,7 @@ async function deleteInviteAndMaybeCleanupBroadcast(
         await tx.delete(broadcasts).where(eq(broadcasts.id, broadcast.id));
       }
     }
-  });
+  }
 }
 
 /**

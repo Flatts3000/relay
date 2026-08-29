@@ -377,4 +377,67 @@ describe('Groups API', () => {
       expect(response.body.group.serviceArea).toBe(group.serviceArea);
     });
   });
+  /**
+   * Verification status lives on group_hub_memberships, not on the group, so
+   * reading it needs a hub in context. A group coordinator has none: they are
+   * group staff, hub_members holds no row for them, and their session's hubId is
+   * structurally always null. The status therefore came back undefined for the
+   * one role that reads it, and the new funding request form - which gates on
+   * `!== 'verified'` - told every verified group it was not verified while their
+   * own dashboard said it was.
+   */
+  describe('verification status for a group coordinator', () => {
+    it('reports a verified group as verified', async () => {
+      const ownHub = await createTestHub({ name: 'Own Hub', contactEmail: 'own@test.org' });
+      const verified = await createTestGroup(ownHub.id, {
+        name: 'Verified Group',
+        contactEmail: 'verified@test.org',
+        verificationStatus: 'verified',
+      });
+      const { sessionToken } = await createGroupCoordinatorWithSession(ownHub.id, verified.id);
+
+      const response = await request(app)
+        .get(`/api/groups/${verified.id}`)
+        .set('Authorization', `Bearer ${sessionToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.group.verificationStatus).toBe('verified');
+    });
+
+    it('reports a pending group as pending rather than omitting the field', async () => {
+      const ownHub = await createTestHub({ name: 'Own Hub 2', contactEmail: 'own2@test.org' });
+      const pending = await createTestGroup(ownHub.id, {
+        name: 'Pending Group',
+        contactEmail: 'pending@test.org',
+        verificationStatus: 'pending',
+      });
+      const { sessionToken } = await createGroupCoordinatorWithSession(ownHub.id, pending.id);
+
+      const response = await request(app)
+        .get(`/api/groups/${pending.id}`)
+        .set('Authorization', `Bearer ${sessionToken}`);
+
+      expect(response.status).toBe(200);
+      // An absent field and a pending one are the same thing to a `!== 'verified'`
+      // check, so this must assert the value, not merely that the gate closes.
+      expect(response.body.group.verificationStatus).toBe('pending');
+    });
+
+    it('reports it on the coordinator list view too', async () => {
+      const ownHub = await createTestHub({ name: 'Own Hub 3', contactEmail: 'own3@test.org' });
+      const verified = await createTestGroup(ownHub.id, {
+        name: 'Listed Group',
+        contactEmail: 'listed@test.org',
+        verificationStatus: 'verified',
+      });
+      const { sessionToken } = await createGroupCoordinatorWithSession(ownHub.id, verified.id);
+
+      const response = await request(app)
+        .get('/api/groups')
+        .set('Authorization', `Bearer ${sessionToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.groups[0].verificationStatus).toBe('verified');
+    });
+  });
 });
