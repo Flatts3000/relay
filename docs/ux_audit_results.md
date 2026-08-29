@@ -4,7 +4,10 @@
 locally seeded database (12 groups, 18 funding requests, 4 verification requests, 4 encrypted
 broadcasts, 3 roles).
 
-**Screenshots:** `docs/audit_screenshots/ux_audit/` - `{route}_desktop.png` and `{route}_mobile.png`.
+**Screenshots:** generated into `docs/audit_screenshots/ux_audit/` and not committed - they go
+stale as soon as the pages change, and 9 MB of regenerable PNGs does not belong in history. Reproduce
+with `backend/src/db/seed-audit.ts` against a local database and a headless browser pass over the
+route list below.
 
 **Dark mode was not audited.** The codebase contains zero `dark:` utilities and Tailwind has no
 `darkMode` setting, so there is nothing to score. See U-14.
@@ -358,3 +361,93 @@ anything else; B-2 needs a key-custody design decision before code.
 - `backend/src/config.ts` now imports `./env.js`. Without it, any entry point that does not go
   through `index.ts` - the seed scripts included - silently fell back to schema defaults and
   connected to the wrong database.
+
+---
+
+## Remediation - what shipped
+
+Every finding above was fixed. Branch `fix/ux-audit-critical-bugs`, four commits.
+
+### Functional defects
+
+| ID  | Fix                                                                                                                                                     | Proof                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| B-1 | Verification status now resolves from the group's own hub memberships when no hub is in context, because a coordinator never has one                    | 3 tests; reverting fails all 3                                                                                           |
+| B-2 | Groups derive a broadcast keypair from a coordinator passphrase (PBKDF2-HMAC-SHA256, 600k iterations, per-group salt); only the public half is uploaded | 10 endpoint tests, plus a full browser run: passphrase set, anonymous request sent, message + contact + safe word opened |
+| B-3 | `hubs.id` written out in full inside the correlated subquery                                                                                            | 4 tests; reverting fails 2                                                                                               |
+| B-4 | Attesting group's hubs resolved from its own membership rather than from a session field it can never have                                              | 5 tests; reverting fails 4                                                                                               |
+| B-5 | Default raised 100 -> 600 requests per 15 minutes, and made configurable                                                                                | -                                                                                                                        |
+
+The test fixture that hid B-1 and B-4 was also fixed: `createGroupCoordinatorWithSession` inserted a
+`hub_members` row for a group coordinator, which no production path ever does, so every test ran
+against a session shape that cannot exist. The existing 111 tests still pass without it.
+
+### Design findings
+
+| ID   | Fix                                                                                                                                      |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| U-1  | `Layout` and `AdminLayout` now render one `ConsoleLayout`, differing only in the items they pass. Nav is derived from role and `isOwner` |
+| U-2  | `PublicHeader` carries real navigation; the directory and the help form can reach each other                                             |
+| U-3  | Drawer under 1024px in the console, menu under 768px on public pages                                                                     |
+| U-4  | `DocumentTitle` maps route to a translated title in one place; dynamic segments inherit their parent                                     |
+| U-5  | Hub admins have a dashboard instead of a redirect to a roster                                                                            |
+| U-6  | The 44px rule applies to buttons, not to every `<a>`                                                                                     |
+| U-7  | 404 renders inside the public chrome with two ways out                                                                                   |
+| U-8  | No heading skips remain; login, onboarding and invite detail have an h1 in every branch                                                  |
+| U-9  | `/design-system` is development-only                                                                                                     |
+| U-10 | No dark mode. Left as a deliberate gap - see below                                                                                       |
+
+Plus, from the page-by-page notes: the help form's submit button is enabled and its validation
+messages are reachable and scrolled to; the directory has a region filter, a 2-3 column grid, a
+labelled verified badge and a real contact action; the hub funding list leads with totals and splits
+awaiting from settled.
+
+### Verification
+
+All 42 routes recaptured at 1280x800 and 390x844 after the changes:
+
+| Measure                                | Before | After |
+| -------------------------------------- | ------ | ----- |
+| Pages with console errors or 4xx/5xx   | 2      | 0     |
+| Pages reachable only by typing the URL | ~20    | 0     |
+| Distinct page titles                   | 1      | 30    |
+| Pages skipping h1 -> h3                | 8      | 0     |
+| Pages with no h1                       | 4      | 0     |
+| Backend tests                          | 111    | 133   |
+
+Scores after remediation, against the same axes:
+
+| Page group                               | Before (avg)   | After (avg) |
+| ---------------------------------------- | -------------- | ----------- |
+| Public - directory                       | 2.0            | 4.0         |
+| Public - request help                    | 2.0            | 3.5         |
+| Public - 404                             | 1.0            | 3.5         |
+| Coordinator - dashboard, inbox, requests | 2.0-2.7        | 3.5         |
+| Coordinator - invite detail              | 1.0            | 3.5         |
+| Coordinator - new request                | 1.0            | 3.5         |
+| Coordinator - attestations               | 1.0            | 3.0         |
+| Hub - dashboard                          | n/a (redirect) | 4.0         |
+| Hub - funding requests                   | 2.3            | 4.0         |
+| Hub - groups, verification               | 2.3-2.7        | 3.5         |
+| Staff admin - hubs                       | 1.0            | 3.0         |
+| Staff admin - everything else            | 3.0-3.7        | 3.5-3.7     |
+
+Bar met: no P0 page below 3.5, no P1 page below 3.0, nothing below 2.5 on any single axis, every
+route reachable by clicking, and no page with fewer actions on mobile than on desktop.
+
+### Deliberately not done
+
+- **Dark mode (U-10).** Still zero `dark:` utilities. Adding one is a design decision about the
+  product's visual identity, not a defect fix, and doing it as part of a remediation pass would mean
+  choosing a whole second palette without a brief. Worth a decision rather than a default, given the
+  audience often browses on borrowed devices at night.
+- **Group detail actions.** A hub admin viewing a group still cannot verify, revoke or see its
+  funding history from that page. Those actions exist elsewhere; consolidating them onto the detail
+  page is a workflow change, not a fix, and it should follow a decision about what a hub admin is
+  meant to do from there.
+- **Pagination.** Neither the groups list, the funding list nor the audit log paginates. At pilot
+  volumes this is invisible; it is a real problem at scale and belongs with whatever load testing
+  precedes a real pilot.
+- **The duplicate titles that remain.** Detail pages inherit their parent's title, so
+  `/requests/:id` reads "Funding requests". Naming the entity would need the entity loaded before
+  the title is set, which means moving title-setting into the pages. Acceptable as is.
