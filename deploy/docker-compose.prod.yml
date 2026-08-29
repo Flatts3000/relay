@@ -15,8 +15,23 @@ services:
         condition: service_healthy
       backend:
         condition: service_healthy
+    # Probes Caddy's local admin API rather than its public listener.
+    #
+    # The obvious check - wget --spider http://localhost:80 - could never pass
+    # and was actively harmful. Caddy 308-redirects plain HTTP to HTTPS, wget
+    # follows, and the TLS handshake fails because there is no certificate for
+    # "localhost". Worse, wget spawns an ssl_client child for that handshake and
+    # never reaps it, so every run left a zombie: the container was found with
+    # 143 zombie ssl_client processes and a failing streak of 141, which is what
+    # eventually produced "fork: Resource temporarily unavailable" and made the
+    # healthcheck fail for a second, unrelated-looking reason.
+    #
+    # The admin API is plain HTTP on loopback inside the container, so there is
+    # no redirect, no TLS, and no child process to leak. It answers only when
+    # Caddy has a loaded configuration, which is what we actually want to know.
     healthcheck:
-      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:80']
+      test:
+        ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:2019/config/']
       interval: 30s
       timeout: 5s
       retries: 3
