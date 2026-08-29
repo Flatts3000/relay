@@ -410,7 +410,7 @@ All 42 routes recaptured at 1280x800 and 390x844 after the changes:
 | -------------------------------------- | ------ | ----- |
 | Pages with console errors or 4xx/5xx   | 2      | 0     |
 | Pages reachable only by typing the URL | ~20    | 0     |
-| Distinct page titles                   | 1      | 30    |
+| Distinct page titles                   | 1      | 26    |
 | Pages skipping h1 -> h3                | 8      | 0     |
 | Pages with no h1                       | 4      | 0     |
 | Backend tests                          | 111    | 133   |
