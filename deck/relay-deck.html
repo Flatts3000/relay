@@ -189,7 +189,7 @@ h1,h2,h3,h4,p{margin:0}
 <main class="deck">
   <section class="slide" data-name="Relay">
     <div class="stack">
-      <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; BUILT AND DEPLOYED &middot; NOT YET PILOTED &middot; BEING GIVEN TO A NONPROFIT</div>
+      <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; BUILT AND DEPLOYED &middot; NOT YET PILOTED &middot; NOT FUNDRAISING</div>
       <h1 class="k h-xl">Infrastructure for <span class="hl">solidarity</span>, built to be useless to anyone who seizes it.</h1>
       <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
       <div class="row" style="margin-top:4px">
@@ -416,7 +416,7 @@ h1,h2,h3,h4,p{margin:0}
       <div class="cols three" style="margin-top:6px">
         <div class="card flag"><h3>Paused February 2026</h3><p>Development stopped after the tenth phase shipped, and restarted in August 2026 to repair the deployment and work the backlog down.</p></div>
         <div class="card flag"><h3>Single host, no alerting</h3><p>One EC2 instance running Docker Compose. An outage earlier this year was found by hand, not by a monitor.</p></div>
-        <div class="card flag"><h3>The nonprofit does not exist yet</h3><p>Mythic Works LLC is building Relay and will transfer it to a 501(c)(3) formed to hold it. That entity has not been created, so today Relay cannot take tax-deductible donations - see the last slide.</p></div>
+        <div class="card flag"><h3>The nonprofit is intended, not formed</h3><p>Mythic Works LLC is building Relay and means to transfer it to a 501(c)(3). That entity is not incorporated anywhere yet, which is one of the reasons this deck is not asking anyone for money.</p></div>
       </div>
       <p class="small muted" style="margin-top:2px">Every limitation above is a numbered issue in the public tracker, including the uncomfortable ones. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
     </div>
@@ -445,27 +445,6 @@ h1,h2,h3,h4,p{margin:0}
       </div>
     </div>
   </section>
-<section class="slide" data-name="What it costs">
-    <div class="stack">
-      <span class="eyebrow">What funding buys</span>
-      <h2 class="k h-lg">The software <span class="hl">is</span> the program.</h2>
-      <p class="lede">There is no separate charitable activity here to point at. A hosted, maintained, audited coordination layer is the entire intervention - so by the usual accounting Relay looks like pure overhead, and it is worth saying why that framing does not fit before anyone applies it.</p>
-      <div class="cols two" style="margin-top:6px;align-items:start">
-        <div class="money">
-          <div class="line"><span class="w">Hosting and infrastructure<em>Single host, database, TLS, backups, domain</em></span><span class="v todo">to set</span></div>
-          <div class="line"><span class="w">Engineering and maintenance<em>Security patching, dependency updates, the open backlog</em></span><span class="v todo">to set</span></div>
-          <div class="line"><span class="w">Pilot facilitation<em>Onboarding groups, support during the pilot, writing up what happened</em></span><span class="v todo">to set</span></div>
-          <div class="line"><span class="w">Independent security review<em>Repeat of the cryptography review, widened to the application</em></span><span class="v todo">to set</span></div>
-          <div class="line"><span class="w">Monitoring and alerting<em>Currently absent; an outage went undetected this year</em></span><span class="v todo">to set</span></div>
-        </div>
-        <div class="card">
-          <h3>What it does not buy</h3>
-          <p>No aid budget. Relay does not hold, route or distribute money, and would not be a good place to put any - the funds already exist and already have hubs. What is missing is the layer that connects them.</p>
-          <p style="margin-top:10px">Amounts are deliberately unset until the entity question is resolved, because the answer changes what can be received and from whom.</p>
-        </div>
-      </div>
-    </div>
-  </section>
 <section class="slide" data-name="Next">
     <div class="stack">
       <span class="eyebrow">Next</span>
@@ -473,17 +452,18 @@ h1,h2,h3,h4,p{margin:0}
       <div class="cols three" style="margin-top:6px">
         <div class="card"><h3>A fund hub</h3><p>Route one cycle of real requests through it and say where it gets in the way.</p></div>
         <div class="card"><h3>A mutual aid network</h3><p>Put three to five groups through onboarding, and judge whether it respects how they already work.</p></div>
-        <div class="card"><h3>A funder</h3><p>Public-interest technology rather than human services: an articulated threat model, a copyleft licence, a reviewed cryptographic design, and a public issue tracker. Several funders in that market grant to companies and individuals, which matters given the timing below.</p></div>
+        <div class="card accent"><h3>Anyone who knows one</h3><p>The single most useful thing right now is an introduction. This needs one hub and a handful of groups, not money.</p></div>
       </div>
       <div class="cols two" style="margin-top:8px;align-items:start">
         <div class="card accent">
-          <h3>Built by a company that is giving it away</h3>
-          <p>Mythic Works LLC is building Relay and will transfer it to a 501(c)(3) created to hold it. Nobody is positioned to extract value from this, and the AGPL-3.0 licence already makes that irreversible for the code itself - what transfers is copyright, the domain, the name, the infrastructure and the stewardship.</p>
+          <h3>Nobody is asking you for money</h3>
+          <p>Relay is not fundraising. Mythic Works LLC is building it and intends to transfer it to a 501(c)(3), which is not incorporated yet - and until there is a pilot worth pointing at, there is nothing worth raising against.</p>
+          <p style="margin-top:10px">The AGPL-3.0 licence already makes the give-away partly irreversible: the code cannot be closed by anyone, including its current owner.</p>
         </div>
-        <div class="card flag">
-          <h3>The timing, stated plainly</h3>
-          <p>That nonprofit does not exist yet, so Relay cannot accept tax-deductible donations today and most foundations cannot grant to it directly. <span class="todo">interim route to be set</span></p>
-          <p style="margin-top:10px">Because the same people sit on both sides, the transfer is a related-party transaction. An independent board and a conflict-of-interest policy are the usual answer, and a funder will ask.</p>
+        <div class="card">
+          <h3>What it runs on in the meantime</h3>
+          <p>A single small server and the time of the people building it. That is the whole cost base, and it is being carried directly rather than granted.</p>
+          <p style="margin-top:10px">When that changes, the natural market is public-interest technology funding rather than human services - a threat model, a copyleft licence, a reviewed cryptographic design and a public tracker are what that market selects on. Not today's conversation.</p>
         </div>
       </div>
       <div class="row" style="margin-top:8px">

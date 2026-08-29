@@ -39,8 +39,7 @@ conversation, and deserve to.
 
 That is also why slide 12 says plainly that no pilot has run and nobody has used
 the product, why slide 10 names the metadata Relay does store in the clear
-instead of leaving the encryption claim unqualified, and why slide 15 states that
-there is no charitable entity. For this audience the credibility comes from the
+instead of leaving the encryption claim unqualified, and why slide 14 states that the nonprofit is only intended. For this audience the credibility comes from the
 disclosure, not in spite of it.
 
 ## Who it is aimed at, and why it reads the way it does
@@ -60,11 +59,18 @@ helping the needy reads to the groups it depends on as the thing they organised
 against. The framing throughout is infrastructure for solidarity - Relay decides
 nothing and touches no distribution.
 
-**It is aimed at public-interest technology funders, not human services.** The
-threat model, copyleft licence, independent cryptography review and public issue
-tracker are what OTF, NLnet and the Common Good Cyber Fund select on, and what a
-human-services funder would ignore. That is why the subpoena slide is placed as a
-strength rather than a caveat.
+**It is not fundraising.** Decided 2026-08-29: no money is being sought until
+there is a pilot to point at and a 501(c)(3) to receive it. That removed the
+costs slide and the ask entirely, and it is stated on the title badge, because a
+deck that opens with "nobody is asking you for money" disarms the entity
+question, the overhead objection and the related-party question in one line. The
+single ask is an introduction to a hub.
+
+When fundraising does start, the natural market is public-interest technology
+rather than human services - the threat model, copyleft licence, independent
+cryptography review and public issue tracker are what OTF, NLnet and the Common
+Good Cyber Fund select on. That is noted on the last slide as future context, not
+as an ask.
 
 Slide 2's group is explicitly illustrative and labelled as such on the slide. It
 is drawn from `docs/problem_brief.md`, not from a real group - Relay has none
