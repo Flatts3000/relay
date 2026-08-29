@@ -57,7 +57,41 @@ There is no CI/CD pipeline. GitHub Actions is disabled at the repository level, 
 
 The bucket has SSE-S3 encryption and a full public access block. Retention works as intended: 91 dumps were present on 2026-08-28, the oldest dated 2026-05-30.
 
-No backup has ever been restored, and there is no size or row-count sanity check on the dump. See [#10](https://github.com/Flatts3000/relay/issues/10).
+Each dump is sanity-checked before upload: it must exceed a byte floor and define at least ten tables. `pg_dump` exiting 0 does not mean it produced a usable backup, and every dump this job had ever produced was the same ~3.3 KB, so nobody had a baseline against which a silent truncation would have stood out. A dump that fails the check is deleted and the job exits non-zero, leaving the previous good backup in place.
+
+### Restoring
+
+Verified working on 2026-08-29. To restore into a scratch database without touching the live one:
+
+```bash
+# on the host
+BK=$(ls -t /opt/relay/backups/relay_*.sql.gz | head -1)
+
+docker exec deploy-postgres-1 psql -U relay -d postgres -c 'CREATE DATABASE restore_test'
+gunzip -c "$BK" | docker exec -i deploy-postgres-1 psql -U relay -d restore_test -v ON_ERROR_STOP=1
+
+# check what came back
+docker exec deploy-postgres-1 psql -U relay -d restore_test -c '\dt'
+
+# clean up
+docker exec deploy-postgres-1 psql -U relay -d postgres -c 'DROP DATABASE restore_test'
+```
+
+To restore over the live database, stop the backend first so nothing writes during the restore, then target `relay` instead of `restore_test`. `ON_ERROR_STOP=1` matters: without it psql continues past failures and leaves a half-restored database that looks like it worked.
+
+Host access is through SSM rather than SSH - see the note under Access below.
+
+## Access
+
+The host has an IAM instance profile (`relay-prod-ssm`) granting `AmazonSSMManagedInstanceCore`, so it is reachable through Systems Manager without SSH keys:
+
+```bash
+aws ssm send-command --region us-east-1   --instance-ids i-06f4c5282dd5fb288   --document-name AWS-RunShellScript   --parameters 'commands=["docker ps"]'
+```
+
+Retrieve output with `aws ssm get-command-invocation --command-id <id> --instance-id i-06f4c5282dd5fb288`.
+
+There is also an SSH key at `deploy/relay-prod.pem` (gitignored), but SSM is preferred: no key distribution, and every command is recorded in CloudTrail.
 
 ## Monitoring
 
