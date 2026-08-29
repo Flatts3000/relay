@@ -12,16 +12,15 @@ import {
   cleanupExpiredTokens,
 } from './auth.service.js';
 import { createTestUser, createTestHub } from '../test/helpers.js';
+import { hashToken } from '../utils/crypto.js';
 
 /**
  * Authentication is the whole access control story for coordinator accounts:
  * there are no passwords, so a magic-link token and a session token are the
  * only things standing between an email address and someone else's group.
  *
- * Note these tests assert the CURRENT storage model, in which both token types
- * are held in the database in plaintext. That is a real weakness, filed as #48,
- * and deliberately not changed here - the point of writing these first is that
- * the change lands against tests rather than without them.
+ * Both token types are stored as a SHA-256 of the issued value (#48), so a copy
+ * of the database is not a set of working credentials.
  */
 describe('auth service', () => {
   describe('magic link tokens', () => {
@@ -58,7 +57,7 @@ describe('auth service', () => {
       await db
         .update(authTokens)
         .set({ expiresAt: new Date(Date.now() - 1000) })
-        .where(eq(authTokens.token, token));
+        .where(eq(authTokens.token, hashToken(token)));
 
       const result = await verifyMagicLinkToken(token);
 
@@ -103,7 +102,7 @@ describe('auth service', () => {
       await db
         .update(sessions)
         .set({ expiresAt: new Date(Date.now() - 1000) })
-        .where(eq(sessions.token, token));
+        .where(eq(sessions.token, hashToken(token)));
 
       expect(await validateSession(token)).toBeNull();
     });
@@ -128,11 +127,17 @@ describe('auth service', () => {
       const token = await createSessionForUser(user.id);
 
       const soon = new Date(Date.now() + 60 * 1000);
-      await db.update(sessions).set({ expiresAt: soon }).where(eq(sessions.token, token));
+      await db
+        .update(sessions)
+        .set({ expiresAt: soon })
+        .where(eq(sessions.token, hashToken(token)));
 
       await validateSession(token);
 
-      const [row] = await db.select().from(sessions).where(eq(sessions.token, token));
+      const [row] = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.token, hashToken(token)));
       expect(row!.expiresAt.getTime()).toBeGreaterThan(soon.getTime());
     });
 
@@ -178,34 +183,69 @@ describe('auth service', () => {
       await db
         .update(authTokens)
         .set({ expiresAt: new Date(Date.now() - 1000) })
-        .where(eq(authTokens.token, stale));
+        .where(eq(authTokens.token, hashToken(stale)));
 
       await cleanupExpiredTokens();
 
       const remaining = await db.select().from(authTokens).where(eq(authTokens.userId, user.id));
       const tokens = remaining.map((r) => r.token);
 
-      expect(tokens).toContain(live);
-      expect(tokens).not.toContain(stale);
+      // Rows hold hashes now, so compare against the hashes of the issued values.
+      expect(tokens).toContain(hashToken(live));
+      expect(tokens).not.toContain(hashToken(stale));
     });
   });
 
   describe('token storage', () => {
-    it('stores both token types in plaintext (see #48)', async () => {
-      const user = await createTestUser({ email: 'plaintext@test.org' });
+    it('never stores either token type in a replayable form', async () => {
+      const user = await createTestUser({ email: 'hashed@test.org' });
       const magic = await createMagicLinkToken(user.id);
       const session = await createSessionForUser(user.id);
 
-      const [tokenRow] = await db.select().from(authTokens).where(eq(authTokens.token, magic));
-      const [sessionRow] = await db.select().from(sessions).where(eq(sessions.token, session));
+      const allTokens = await db.select().from(authTokens);
+      const allSessions = await db.select().from(sessions);
 
-      // Pinned deliberately rather than asserted as correct. Anyone with read
-      // access to the database - including any of the 90 days of retained S3
-      // backups - gets directly replayable credentials. #48 changes this to
-      // store a SHA-256 of the token; when it does, these two assertions should
-      // invert to expect the stored value NOT to equal the issued one.
-      expect(tokenRow?.token).toBe(magic);
-      expect(sessionRow?.token).toBe(session);
+      // The point of #48: a copy of this database must not be a set of working
+      // credentials. Read access through a backup, a dump, or a legal order
+      // should yield hashes, not tokens that replay as a logged-in coordinator.
+      expect(allTokens.map((r) => r.token)).not.toContain(magic);
+      expect(allSessions.map((r) => r.token)).not.toContain(session);
+    });
+
+    it('stores the SHA-256 of each token', async () => {
+      const user = await createTestUser({ email: 'sha@test.org' });
+      const magic = await createMagicLinkToken(user.id);
+
+      const [row] = await db
+        .select()
+        .from(authTokens)
+        .where(eq(authTokens.token, hashToken(magic)));
+
+      expect(row).toBeDefined();
+      expect(row!.token).toBe(hashToken(magic));
+      expect(row!.token).toHaveLength(64);
+    });
+
+    it('still authenticates with the raw token the caller was given', async () => {
+      const user = await createTestUser({ email: 'roundtrip@test.org' });
+      const magic = await createMagicLinkToken(user.id);
+
+      // Hashing is only a storage change: the value handed to the user in the
+      // email must continue to work, and the hash itself must not.
+      const good = await verifyMagicLinkToken(magic);
+      expect(good.success).toBe(true);
+
+      const second = await createMagicLinkToken(user.id);
+      const withHash = await verifyMagicLinkToken(hashToken(second));
+      expect(withHash.success).toBe(false);
+    });
+
+    it('does not accept a session by its stored hash', async () => {
+      const user = await createTestUser({ email: 'sessionhash@test.org' });
+      const session = await createSessionForUser(user.id);
+
+      expect(await validateSession(session)).not.toBeNull();
+      expect(await validateSession(hashToken(session))).toBeNull();
     });
   });
 });

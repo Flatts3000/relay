@@ -57,6 +57,13 @@
       "when": 1787958016247,
       "tag": "0007_invite_decrypted_at_constraint",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787958016248,
+      "tag": "0008_clear_plaintext_tokens",
+      "breakpoints": true
     }
   ]
 }
