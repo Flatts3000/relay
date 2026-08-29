@@ -77,7 +77,7 @@ npm install
 docker compose -f docker-compose.dev.yml up -d
 
 # Apply the schema (see below - use migrate, not push)
-cd backend && npm run db:migrate
+npm run db:migrate --workspace=backend
 
 # Start development servers
 npm run dev
@@ -103,7 +103,7 @@ it:
 ```bash
 docker compose -f docker-compose.dev.yml down -v
 docker compose -f docker-compose.dev.yml up -d
-cd backend && npm run db:migrate
+npm run db:migrate --workspace=backend
 ```
 
 Hand-written migrations need a matching entry in `drizzle/meta/_journal.json`,
@@ -114,7 +114,7 @@ generate` diffs against the current schema rather than a stale one.
 Seeding, for a database with something in it to look at:
 
 ```bash
-cd backend && npx tsx src/db/seed-audit.ts
+npx tsx backend/src/db/seed-audit.ts
 ```
 
 ### Ports

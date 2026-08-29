@@ -12,10 +12,14 @@
  * A file on disk that no deploy will ever run is the failure mode this guards.
  * See issue #26.
  *
- * It also checks the snapshot that drizzle-kit generate diffs against. Snapshots
- * are not read by migrate - they cannot break a deploy - but a stale one makes
- * generate emit a migration that re-creates everything added since, which fails
- * on any database that already has it. See issue #37.
+ * It also sanity-checks the snapshots drizzle-kit generate diffs against.
+ * Snapshots are not read by migrate - they cannot break a deploy - but a stale or
+ * unreadable one makes generate emit a migration that re-creates everything added
+ * since, which fails on any database that already has it. See issue #37.
+ *
+ * Whether the newest snapshot is actually current is answered by running
+ * generate, which CI does; this script only covers what can be checked without
+ * it.
  */
 
 import { readdirSync, readFileSync } from 'node:fs';
@@ -80,55 +84,56 @@ for (let i = 1; i < entries.length; i++) {
   }
 }
 
-// The baseline `drizzle-kit generate` diffs against.
+// The files drizzle-kit will treat as snapshots.
 //
-// generate loads the newest snapshot in meta/ and compares the live schema to
-// it. Snapshots were written for 0000-0002 and then stopped, because 0003
-// onward were hand-written, so generate was diffing against a baseline eight
-// migrations out of date. The effect is not subtle: it asks
-//
-//   Is broadcast_category enum created or renamed from another enum?
-//
-// which is not a question about intent, it is the snapshot guessing - and the
-// migration it goes on to emit re-creates the broadcast tables, the staff-admin
-// enum value, the onboarding tables and the check constraints, so running it
-// against any migrated database fails with "already exists".
-//
-// migrate does not read snapshots at all, so this can never block a deploy. It
-// only has to be true of the newest migration, since that is the only snapshot
-// generate loads.
-const snapshots = readdirSync(join(drizzleDir, 'meta'))
-  .filter((f) => /^\d{4}_snapshot\.json$/.test(f))
-  .sort();
+// Its own filter is "everything in meta/ that does not start with _", sorted,
+// and it takes the last one as the baseline. Matching that exactly matters: a
+// stray 0010_snapshot.json.bak sorts after the real file, silently becomes the
+// baseline, and makes generate abort as malformed - while a stricter filter here
+// would still report everything fine.
+const metaDir = join(drizzleDir, 'meta');
+const metaFiles = readdirSync(metaDir).filter((f) => !f.startsWith('_'));
+const snapshots = metaFiles.slice().sort();
 
-const latest = entries[entries.length - 1];
-
-if (latest) {
-  const expected = `${String(latest.idx).padStart(4, '0')}_snapshot.json`;
-  if (!snapshots.includes(expected)) {
+for (const file of metaFiles) {
+  if (!/^\d{4}_snapshot\.json$/.test(file)) {
     problems.push(
-      `meta/${expected} is missing, so drizzle-kit generate would diff against ` +
-        `${snapshots[snapshots.length - 1] ?? 'nothing'} instead of the current schema ` +
-        'and emit a migration that re-creates everything added since'
+      `meta/${file} is not a snapshot but drizzle-kit reads it as one; ` +
+        'the lexicographically last file in meta/ becomes the generate baseline'
     );
   }
 }
 
-// Snapshots form a linked list through prevId, and drizzle refuses to run with a
-// broken one: two snapshots claiming the same parent abort generate outright
-// with a collision error. Worth catching here rather than the next time somebody
-// tries to add a migration.
-const seenPrev = new Map();
+if (snapshots.length === 0) {
+  problems.push(
+    'meta/ contains no snapshot, so drizzle-kit generate has no baseline to diff ' +
+      'against and would emit a migration re-creating the entire schema'
+  );
+}
+
+// Parsing is guarded because a malformed snapshot is a realistic merge outcome
+// on a file this size, and an uncaught SyntaxError would kill the script with a
+// stack trace, discarding every problem already collected.
 for (const file of snapshots) {
-  const snap = JSON.parse(readFileSync(join(drizzleDir, 'meta', file), 'utf8'));
-  if (seenPrev.has(snap.prevId)) {
-    problems.push(
-      `meta/${file} and meta/${seenPrev.get(snap.prevId)} both claim prevId ${snap.prevId}; ` +
-        'drizzle-kit generate aborts on that collision'
-    );
+  try {
+    JSON.parse(readFileSync(join(metaDir, file), 'utf8'));
+  } catch (err) {
+    problems.push(`meta/${file} is not valid JSON (${err.message})`);
   }
-  seenPrev.set(snap.prevId, file);
 }
+
+// Deliberately not re-implementing the prevId chain check here. `drizzle-kit
+// check` already does exactly that - same grouping, same collision report - and
+// exits non-zero, so db:check-journal runs it rather than a hand-rolled copy
+// that would drift from the tool it models.
+//
+// Nor does this script assert that the newest migration has a snapshot named
+// after it. generate writes a snapshot only when the schema actually changed, so
+// a data-only migration - 0010 is one - can never have a matching file, and
+// demanding one would be a check with no achievable remedy. What actually
+// matters is that the newest snapshot still reflects the current schema, and the
+// only thing that can answer that is generate itself: CI runs it and fails if it
+// wants to write anything.
 
 if (problems.length > 0) {
   console.error('Migration journal is inconsistent:\n');
@@ -141,5 +146,5 @@ if (problems.length > 0) {
 console.log(
   `Migration journal OK: ${files.length} migrations, all journaled, ` +
     'sequential, and strictly increasing in `when`; ' +
-    `generate baseline present (${snapshots.length} snapshot(s)).`
+    `${snapshots.length} snapshot(s) in meta/, all parseable.`
 );
