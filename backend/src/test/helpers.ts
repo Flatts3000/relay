@@ -13,7 +13,7 @@ import {
 } from '../db/schema/index.js';
 
 type BroadcastCategory = (typeof broadcastCategoryEnum.enumValues)[number];
-import { generateToken, generateExpiresAt } from '../utils/crypto.js';
+import { generateToken, generateExpiresAt, hashToken } from '../utils/crypto.js';
 
 export interface TestHub {
   id: string;
@@ -122,9 +122,11 @@ export async function createTestSession(userId: string): Promise<string> {
   const token = generateToken();
   const expiresAt = generateExpiresAt(30); // 30 minutes
 
+  // Stored hashed, exactly as createSessionForUser does, so fixtures behave
+  // like real sessions rather than bypassing the storage model under test.
   await db.insert(sessions).values({
     userId,
-    token,
+    token: hashToken(token),
     expiresAt,
   });
 

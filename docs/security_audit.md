@@ -40,14 +40,14 @@ This document summarizes the comprehensive security audit conducted as part of P
 
 ### 1.3 Authentication & Authorization
 
-| Area               | Status | Notes                                       |
-| ------------------ | ------ | ------------------------------------------- |
-| Session management | PASS   | Cryptographically secure 32-byte tokens     |
-| Password handling  | N/A    | Magic link authentication only              |
-| Token storage      | PASS   | Hashed tokens stored in database            |
-| Session expiry     | PASS   | 7-day expiry with proper cleanup            |
-| Role-based access  | PASS   | Middleware enforces role checks             |
-| Route protection   | PASS   | All protected routes require authentication |
+| Area               | Status | Notes                                                  |
+| ------------------ | ------ | ------------------------------------------------------ |
+| Session management | PASS   | Cryptographically secure 32-byte tokens                |
+| Password handling  | N/A    | Magic link authentication only                         |
+| Token storage      | PASS   | SHA-256 of the token stored; raw value never persisted |
+| Session expiry     | PASS   | 7-day expiry with proper cleanup                       |
+| Role-based access  | PASS   | Middleware enforces role checks                        |
+| Route protection   | PASS   | All protected routes require authentication            |
 
 **Key Files:**
 

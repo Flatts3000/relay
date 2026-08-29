@@ -1,7 +1,7 @@
 import { eq, and, gt, lt, isNull } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { users, authTokens, sessions } from '../db/schema/index.js';
-import { generateToken, generateExpiresAt } from '../utils/crypto.js';
+import { generateToken, generateExpiresAt, hashToken } from '../utils/crypto.js';
 import { getHubMembershipForUser, getGroupMembershipForUser } from './membership.service.js';
 import type { User } from '../db/schema/index.js';
 
@@ -39,9 +39,10 @@ export async function createMagicLinkToken(userId: string): Promise<string> {
   const token = generateToken();
   const expiresAt = generateExpiresAt(MAGIC_LINK_EXPIRY_MINUTES);
 
+  // The caller gets the raw token to put in the email; only its hash is stored.
   await db.insert(authTokens).values({
     userId,
-    token,
+    token: hashToken(token),
     expiresAt,
   });
 
@@ -60,7 +61,11 @@ export async function verifyMagicLinkToken(token: string): Promise<AuthResult> {
     .from(authTokens)
     .innerJoin(users, eq(authTokens.userId, users.id))
     .where(
-      and(eq(authTokens.token, token), gt(authTokens.expiresAt, now), isNull(authTokens.usedAt))
+      and(
+        eq(authTokens.token, hashToken(token)),
+        gt(authTokens.expiresAt, now),
+        isNull(authTokens.usedAt)
+      )
     )
     .limit(1);
 
@@ -85,7 +90,7 @@ export async function verifyMagicLinkToken(token: string): Promise<AuthResult> {
 
   await db.insert(sessions).values({
     userId: record.user.id,
-    token: sessionToken,
+    token: hashToken(sessionToken),
     expiresAt: sessionExpiresAt,
   });
 
@@ -107,7 +112,11 @@ export async function validateSession(sessionToken: string): Promise<Authenticat
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
     .where(
-      and(eq(sessions.token, sessionToken), gt(sessions.expiresAt, now), isNull(users.deletedAt))
+      and(
+        eq(sessions.token, hashToken(sessionToken)),
+        gt(sessions.expiresAt, now),
+        isNull(users.deletedAt)
+      )
     )
     .limit(1);
 
@@ -145,7 +154,7 @@ export async function createSessionForUser(userId: string): Promise<string> {
 
   await db.insert(sessions).values({
     userId,
-    token: sessionToken,
+    token: hashToken(sessionToken),
     expiresAt: sessionExpiresAt,
   });
 
@@ -153,7 +162,7 @@ export async function createSessionForUser(userId: string): Promise<string> {
 }
 
 export async function invalidateSession(sessionToken: string): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.token, sessionToken));
+  await db.delete(sessions).where(eq(sessions.token, hashToken(sessionToken)));
 }
 
 export async function invalidateAllUserSessions(userId: string): Promise<void> {
