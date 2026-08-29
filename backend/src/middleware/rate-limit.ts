@@ -140,7 +140,7 @@ export const directoryBrowseRateLimiter = rateLimit({
  */
 export const broadcastCreationRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 5 broadcasts per hour
+  max: config.broadcastRateLimitMax,
   standardHeaders: false,
   legacyHeaders: false,
   message: { error: 'Too many broadcast attempts, please try again later.' },

@@ -42,6 +42,28 @@ const configSchema = z.object({
     (v) => (v === '' || v === undefined ? undefined : v),
     z.coerce.number().int().positive().default(600)
   ),
+  // How many invites every broadcast is padded up to, with decoys.
+  //
+  // The row count for a broadcast is otherwise the number of groups that matched
+  // its region and categories, readable by anyone holding the database - a dump,
+  // a backup, an operator, a subpoena. In an area served by one group it names
+  // the recipient.
+  //
+  // Padding is up to this floor and never truncates: dropping a real recipient
+  // would mean a person's request silently not reaching a group that serves
+  // them, which is far worse than the count leaking. Set to 0 to disable.
+  padInvitesTo: z.preprocess(
+    (v) => (v === '' || v === undefined ? undefined : v),
+    z.coerce.number().int().min(0).default(8)
+  ),
+  // Broadcasts per hour from one address. Configurable for the same reason the
+  // login limit is: the suite has to exercise this path more than five times to
+  // test what padding does across several submissions, and a production-shaped
+  // limit would make those tests assert 429s instead of behaviour.
+  broadcastRateLimitMax: z.preprocess(
+    (v) => (v === '' || v === undefined ? undefined : v),
+    z.coerce.number().int().positive().default(5)
+  ),
   frontendUrl: z.string().default('http://localhost:3000'),
   database: z.object({
     host: z.string().default('localhost'),
@@ -72,6 +94,8 @@ const env = {
   trustProxyHops: process.env['TRUST_PROXY_HOPS'],
   authLoginRateLimitMax: process.env['AUTH_LOGIN_RATE_LIMIT_MAX'],
   apiRateLimitMax: process.env['API_RATE_LIMIT_MAX'],
+  padInvitesTo: process.env['PAD_INVITES_TO'],
+  broadcastRateLimitMax: process.env['BROADCAST_RATE_LIMIT_MAX'],
   frontendUrl: process.env['FRONTEND_URL'],
   database: {
     host: process.env['DB_HOST'],

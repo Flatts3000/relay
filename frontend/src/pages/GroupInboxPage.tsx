@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faChevronRight } from '@fortawesome/free-solid-svg-icons';
-import { Alert, Button, IconCircle } from '../components/ui';
+import { Alert, Button, IconCircle, Input } from '../components/ui';
 import { fetchInvites } from '../api/invites';
+import { useGroupKey } from '../contexts';
+import { unwrapKey, decodeBase64 } from '../utils/broadcast-crypto';
 import type { Invite } from '../api/types';
 
 /**
@@ -13,26 +15,67 @@ import type { Invite } from '../api/types';
  */
 export function GroupInboxPage() {
   const { t } = useTranslation(['help', 'common']);
+  const { secretKey, isUnlocked, isUnlocking, unlock } = useGroupKey();
   const [invites, setInvites] = useState<Invite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passphrase, setPassphrase] = useState('');
+  const [unlockError, setUnlockError] = useState('');
 
+  /**
+   * Fetch, then keep only what this group can actually open.
+   *
+   * Broadcasts are padded with decoy invites addressed to real groups that did
+   * not match, so the row count does not reveal how many groups did. Nothing
+   * distinguishes a decoy server-side - by design, since anything that did would
+   * equally serve someone reading the database - so the filtering has to happen
+   * here, by trying to unwrap each key and discarding what fails.
+   *
+   * That is why this page needs the group key before it can show anything.
+   */
   const loadInvites = useCallback(async () => {
+    if (!secretKey) return;
     setIsLoading(true);
     setError('');
     try {
       const data = await fetchInvites();
-      setInvites(data);
+      setInvites(
+        data.filter((invite) => {
+          try {
+            return unwrapKey(decodeBase64(invite.wrappedKey), secretKey) !== null;
+          } catch {
+            // A malformed key is a decoy as far as this group is concerned.
+            return false;
+          }
+        })
+      );
     } catch {
       setError(t('help:errors.loadRequestsFailed'));
     } finally {
       setIsLoading(false);
     }
-  }, [t]);
+  }, [secretKey, t]);
 
   useEffect(() => {
     loadInvites();
   }, [loadInvites]);
+
+  const handleUnlock = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUnlockError('');
+    const result = await unlock(passphrase);
+    if (result.ok) {
+      setPassphrase('');
+      return;
+    }
+    setUnlockError(
+      result.reason === 'no-key'
+        ? t('help:inbox.unlock.noKey')
+        : result.reason === 'wrong-passphrase'
+          ? t('help:inbox.unlock.wrongPassphrase')
+          : t('help:inbox.unlock.error')
+    );
+  };
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString(undefined, {
@@ -59,7 +102,34 @@ export function GroupInboxPage() {
         </Alert>
       )}
 
-      {isLoading ? (
+      {!isUnlocked ? (
+        <form
+          onSubmit={handleUnlock}
+          className="bg-white border border-gray-200 rounded-lg p-6 max-w-md space-y-4"
+        >
+          <p className="text-sm text-gray-600">{t('help:inbox.unlockToView')}</p>
+          {unlockError && <Alert type="error">{unlockError}</Alert>}
+          <Input
+            type="password"
+            name="passphrase"
+            label={t('help:inbox.unlock.placeholder')}
+            value={passphrase}
+            onChange={(e) => setPassphrase(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+          <Button
+            type="submit"
+            disabled={!passphrase.trim() || isUnlocking}
+            isLoading={isUnlocking}
+          >
+            {t('help:inbox.unlock.unlockSubmit')}
+          </Button>
+          {isUnlocking && (
+            <p className="text-xs text-gray-500">{t('help:inbox.unlock.deriving')}</p>
+          )}
+        </form>
+      ) : isLoading ? (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
         </div>
@@ -103,11 +173,13 @@ export function GroupInboxPage() {
         </div>
       )}
 
-      <div className="mt-6">
-        <Button variant="secondary" onClick={loadInvites} disabled={isLoading}>
-          {t('help:view.refresh')}
-        </Button>
-      </div>
+      {isUnlocked && (
+        <div className="mt-6">
+          <Button variant="secondary" onClick={loadInvites} disabled={isLoading}>
+            {t('help:view.refresh')}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

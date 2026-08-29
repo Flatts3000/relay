@@ -96,6 +96,7 @@
       "countdown": "Auto-deletes in {{time}}",
       "saved": "I've saved this information",
       "decryptionFailed": "Unable to decrypt this request. The key may be incorrect."
-    }
+    },
+    "unlockToView": "Enter your group's passphrase to see your help requests. Requests are mixed with decoys so the number of groups contacted is not visible to anyone holding the database, and only your key can tell them apart."
   }
 }

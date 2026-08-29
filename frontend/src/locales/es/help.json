@@ -96,6 +96,7 @@
       "countdown": "Se auto-elimina en {{time}}",
       "saved": "He guardado esta información",
       "decryptionFailed": "No se pudo descifrar esta solicitud. La clave puede ser incorrecta."
-    }
+    },
+    "unlockToView": "Ingresa la contraseña de tu grupo para ver tus solicitudes de ayuda. Las solicitudes se mezclan con señuelos para que nadie con acceso a la base de datos vea a cuántos grupos se contactó; solo tu clave puede distinguirlos."
   }
 }

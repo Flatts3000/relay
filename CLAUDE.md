@@ -35,7 +35,10 @@ Individual residents facing housing insecurity and other urgent needs lack a cen
 - Client generates symmetric key, wraps per recipient group's public key
 - Per-group invites deleted after confirmation or TTL expiry
 - Safe-word verification code for out-of-band contact authentication
-- Relay stores only ciphertext it cannot decrypt; encrypted material deleted as soon as all invites are resolved
+- Relay stores only ciphertext it cannot decrypt; encrypted material deleted once all invites are resolved, which in practice means at the 7-day TTL - see the padding note below
+- Broadcasts are padded with decoy invites addressed to real groups that did not match, so the invite row count does not reveal how many groups did. Nothing marks a decoy, because anything the server could use to tell them apart would serve someone reading the database equally well. Two consequences worth knowing:
+  - Recipients cannot tell either, so a group fetches decoys and discards them client-side on failed unwrap. The inbox therefore requires the group key before it can show anything.
+  - Decoys are never confirmed by anyone, so they survive to the TTL and hold the broadcast open behind them. A broadcast whose real recipient confirms immediately is no longer destroyed immediately. This is the price of hiding the count, and it cannot be avoided by retiring decoys early without reintroducing the leak.
 - No IP logging on anonymous routes; no cookies for anonymous users
 - If subpoenaed, Relay can only produce encrypted blobs it cannot decrypt
 
