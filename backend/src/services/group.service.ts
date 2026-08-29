@@ -100,17 +100,47 @@ export async function getGroupById(groupId: string, hubId?: string): Promise<Gro
   const group = result[0];
   if (!group) return null;
 
-  let verificationStatus: VerificationStatus | undefined;
-  if (hubId) {
-    const [membership] = await db
-      .select({ verificationStatus: groupHubMemberships.verificationStatus })
-      .from(groupHubMemberships)
-      .where(and(eq(groupHubMemberships.groupId, groupId), eq(groupHubMemberships.hubId, hubId)))
-      .limit(1);
-    verificationStatus = membership?.verificationStatus as VerificationStatus | undefined;
-  }
+  const verificationStatus = await resolveVerificationStatus(groupId, hubId);
 
   return toGroupResponse(group, verificationStatus);
+}
+
+/**
+ * Resolve a group's verification status.
+ *
+ * With a hub in context, the answer is that hub's view of the group. Without
+ * one, fall back to the group's own memberships.
+ *
+ * The fallback is what makes this correct for group coordinators. Verification
+ * lives on group_hub_memberships, but a coordinator is group staff and never
+ * hub staff, so hub_members holds no row for them and their session's hubId is
+ * structurally always null. Callers therefore passed undefined, the status came
+ * back undefined, and every "verified only" gate in the UI failed closed - most
+ * visibly the new funding request form, which told verified groups they were
+ * not verified while their own dashboard said otherwise.
+ *
+ * A group may in principle belong to more than one hub. Verified by any of them
+ * is verified for the purposes of these gates, so the strongest status wins
+ * rather than an arbitrary first row.
+ */
+async function resolveVerificationStatus(
+  groupId: string,
+  hubId?: string
+): Promise<VerificationStatus | undefined> {
+  const conditions = [eq(groupHubMemberships.groupId, groupId)];
+  if (hubId) {
+    conditions.push(eq(groupHubMemberships.hubId, hubId));
+  }
+
+  const memberships = await db
+    .select({ verificationStatus: groupHubMemberships.verificationStatus })
+    .from(groupHubMemberships)
+    .where(and(...conditions));
+
+  if (memberships.length === 0) return undefined;
+
+  const statuses = memberships.map((m) => m.verificationStatus as VerificationStatus);
+  return statuses.find((s) => s === 'verified') ?? statuses[0];
 }
 
 /**

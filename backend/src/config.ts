@@ -1,3 +1,9 @@
+// Load the root .env before anything reads process.env. This lives here
+// rather than only in index.ts because every entry point that skips the
+// server - the seed scripts, drizzle helpers, one-off tsx scripts - imports
+// config directly, and without this they silently fall back to the schema
+// defaults and connect to the wrong database.
+import './env.js';
 import { z } from 'zod';
 
 const configSchema = z.object({
@@ -21,6 +27,14 @@ const configSchema = z.object({
   authLoginRateLimitMax: z.preprocess(
     (v) => (v === '' || v === undefined ? undefined : v),
     z.coerce.number().int().positive().default(10)
+  ),
+  // Requests per 15 minutes to every non-health API route, keyed on the client
+  // address. Same preprocess rationale as the login limit above. Configurable
+  // so a seeded dev environment or an end-to-end run can page through the whole
+  // app without tripping a production-shaped limit.
+  apiRateLimitMax: z.preprocess(
+    (v) => (v === '' || v === undefined ? undefined : v),
+    z.coerce.number().int().positive().default(100)
   ),
   frontendUrl: z.string().default('http://localhost:3000'),
   database: z.object({
@@ -51,6 +65,7 @@ const env = {
   corsOrigin: process.env['CORS_ORIGIN'],
   trustProxyHops: process.env['TRUST_PROXY_HOPS'],
   authLoginRateLimitMax: process.env['AUTH_LOGIN_RATE_LIMIT_MAX'],
+  apiRateLimitMax: process.env['API_RATE_LIMIT_MAX'],
   frontendUrl: process.env['FRONTEND_URL'],
   database: {
     host: process.env['DB_HOST'],

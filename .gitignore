@@ -85,3 +85,9 @@ credentials/
 
 # Claude Code local settings
 .claude/
+
+# UX audit artefacts. Screenshots are regenerated from a seeded database and go
+# stale as soon as the pages they show are changed, so they are not committed.
+# See docs/ux_audit_results.md for how to reproduce them.
+docs/audit_screenshots/
+.playwright-mcp/

@@ -5,11 +5,11 @@ import { config } from '../config.js';
 
 /**
  * Rate limiter for authenticated routes.
- * Standard configuration - 100 requests per 15 minutes per IP.
+ * 100 requests per 15 minutes per IP by default, via API_RATE_LIMIT_MAX.
  */
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
+  max: config.apiRateLimitMax,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },

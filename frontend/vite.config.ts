@@ -4,10 +4,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    // Ports are assigned per project by the local port registry so several
+    // projects can run their dev servers side by side. Overridable via env for
+    // anyone whose registry hands out different numbers.
+    port: Number(process.env['FRONTEND_PORT'] ?? 3021),
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: process.env['BACKEND_URL'] ?? 'http://localhost:8004',
         changeOrigin: true,
       },
     },

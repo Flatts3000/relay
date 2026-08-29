@@ -148,8 +148,23 @@ export async function createHubAdminWithSession(hubId: string): Promise<{
   return { user, sessionToken };
 }
 
+/**
+ * A group coordinator, built the way onboarding actually builds one.
+ *
+ * The hubId parameter is deliberately NOT turned into a hub_members row. No
+ * production path ever writes one for a group coordinator - hub_members is only
+ * written by the hub-owner and hub-staff accept flows - so a fixture that
+ * created one gave every test a coordinator whose session carried a hubId that
+ * no real coordinator can have. That divergence hid two bugs until a manual
+ * pass found them: the new funding request form rejected verified groups, and
+ * the peer attestation endpoint 400'd for every possible caller. Both read a
+ * hubId off the session that is structurally always null in production.
+ *
+ * The hub relationship still exists, through the group's own membership, which
+ * createTestGroup(hubId) writes. That is the real one.
+ */
 export async function createGroupCoordinatorWithSession(
-  hubId: string,
+  _hubId: string,
   groupId: string
 ): Promise<{
   user: TestUser & { hubId: string | null; groupId: string | null };
@@ -158,7 +173,6 @@ export async function createGroupCoordinatorWithSession(
   const user = await createTestUser({
     email: `coordinator-${Date.now()}@test.org`,
     role: 'group_coordinator',
-    hubId,
     groupId,
   });
   const sessionToken = await createTestSession(user.id);

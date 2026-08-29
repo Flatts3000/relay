@@ -289,12 +289,12 @@ verificationRouter.post('/groups/:groupId/revoke', requireHubAdmin, async (req, 
 verificationRouter.get('/attestation-requests', requireGroupCoordinator, async (req, res) => {
   const user = req.user!;
 
-  if (!user.groupId || !user.hubId) {
+  if (!user.groupId) {
     res.status(400).json({ error: 'User is not associated with a group' });
     return;
   }
 
-  const requests = await getPendingAttestationRequests(user.groupId, user.hubId);
+  const requests = await getPendingAttestationRequests(user.groupId);
   res.json({ requests });
 });
 
