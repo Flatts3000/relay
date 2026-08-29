@@ -9,7 +9,7 @@ import {
   groupMembers,
   groupHubMemberships,
 } from '../db/schema/index.js';
-import { generateToken, generateExpiresAt } from '../utils/crypto.js';
+import { generateExpiresAt, generateToken, hashToken } from '../utils/crypto.js';
 import { createSessionForUser } from './auth.service.js';
 import { sendOnboardingInviteEmail } from './email.service.js';
 import { logAuditEvent } from './audit.service.js';
@@ -104,7 +104,12 @@ export async function createOnboardingInvite(
       targetHubId: input.targetHubId ?? null,
       targetGroupId: input.targetGroupId ?? null,
       invitedById: inviterId,
-      token,
+      // Stored as a SHA-256 of the value that goes in the email, the same shape
+      // sessions and magic links use. An invite is a bearer credential and this
+      // is the one with the largest blast radius: an unaccepted staff-admin
+      // invite read out of a backup creates a staff_admin account and returns a
+      // live session for it. Hashing means a dump yields nothing replayable.
+      token: hashToken(token),
       expiresAt,
     })
     .returning();
@@ -167,6 +172,12 @@ export async function createOnboardingInvite(
 
 // ---------- Get invite by token ----------
 
+/**
+ * Look up an invite by the raw token from the invitation link.
+ *
+ * The caller passes the value the recipient was emailed; the stored column holds
+ * its hash, so it is hashed here rather than compared directly.
+ */
 export async function getInviteByToken(token: string): Promise<OnboardingInvite | null> {
   const now = new Date();
   const result = await db
@@ -174,7 +185,7 @@ export async function getInviteByToken(token: string): Promise<OnboardingInvite 
     .from(onboardingInvites)
     .where(
       and(
-        eq(onboardingInvites.token, token),
+        eq(onboardingInvites.token, hashToken(token)),
         gt(onboardingInvites.expiresAt, now),
         isNull(onboardingInvites.acceptedAt)
       )
@@ -295,9 +306,30 @@ export async function revokeInvite(
 
 // ---------- List invites ----------
 
+/**
+ * Every column except the token.
+ *
+ * These rows are serialised straight to the API, and `select()` returned the
+ * token with them - so listing invites handed the caller a live invitation link
+ * for every pending invite they could see, letting a coordinator accept one
+ * addressed to somebody else. Hashing the column makes that harmless, but there
+ * is no reason to publish it at all.
+ */
+const inviteListColumns = {
+  id: onboardingInvites.id,
+  email: onboardingInvites.email,
+  role: onboardingInvites.role,
+  targetHubId: onboardingInvites.targetHubId,
+  targetGroupId: onboardingInvites.targetGroupId,
+  invitedById: onboardingInvites.invitedById,
+  expiresAt: onboardingInvites.expiresAt,
+  acceptedAt: onboardingInvites.acceptedAt,
+  createdAt: onboardingInvites.createdAt,
+};
+
 export async function listInvitesForHub(hubId: string) {
   return db
-    .select()
+    .select(inviteListColumns)
     .from(onboardingInvites)
     .where(eq(onboardingInvites.targetHubId, hubId))
     .orderBy(desc(onboardingInvites.createdAt));
@@ -305,7 +337,7 @@ export async function listInvitesForHub(hubId: string) {
 
 export async function listInvitesForGroup(groupId: string) {
   return db
-    .select()
+    .select(inviteListColumns)
     .from(onboardingInvites)
     .where(eq(onboardingInvites.targetGroupId, groupId))
     .orderBy(desc(onboardingInvites.createdAt));
@@ -314,7 +346,7 @@ export async function listInvitesForGroup(groupId: string) {
 export async function listPendingInvitesByInviter(inviterId: string) {
   const now = new Date();
   return db
-    .select()
+    .select(inviteListColumns)
     .from(onboardingInvites)
     .where(
       and(

@@ -1,0 +1,24 @@
+-- Clear onboarding invite tokens that were stored in plaintext.
+--
+-- The last credential #48 did not cover. As of this change the column holds a
+-- SHA-256 of the value that goes in the invitation email, so existing rows hold
+-- a raw token that can never match a hashed lookup again - dead weight that is
+-- still a working credential if the row is read directly, out of a backup or a
+-- dump, which is exactly what this removes.
+--
+-- This one has the largest blast radius of the three. An unexpired, unaccepted
+-- staff_admin invite creates a staff_admin account and returns a live session
+-- for it, so a single row read out of a nightly dump was a privilege escalation
+-- to the highest role in the system.
+--
+-- Effect on users: every outstanding invitation stops working and has to be
+-- reissued. Accepted invites are unaffected in substance - the account and its
+-- memberships already exist - but the rows go too, since a hash of a value we
+-- no longer hold cannot be reconstructed and an accepted invite has no further
+-- use.
+--
+-- Deliberately DELETE rather than re-hashing in place: re-hashing would read the
+-- plaintext one last time to write its digest, which moves the value rather than
+-- retiring it, and leaves the raw token in the WAL either way.
+
+DELETE FROM "onboarding_invites";

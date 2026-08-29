@@ -40,14 +40,14 @@ This document summarizes the comprehensive security audit conducted as part of P
 
 ### 1.3 Authentication & Authorization
 
-| Area               | Status  | Notes                                                                                                    |
-| ------------------ | ------- | -------------------------------------------------------------------------------------------------------- |
-| Session management | PASS    | Cryptographically secure 32-byte tokens                                                                  |
-| Password handling  | N/A     | Magic link authentication only                                                                           |
-| Token storage      | PARTIAL | Session and magic-link tokens stored as SHA-256. Onboarding invite tokens are still stored raw - see #51 |
-| Session expiry     | PASS    | 30-minute expiry, slid forward on activity, with cleanup of expired rows                                 |
-| Role-based access  | PASS    | Middleware enforces role checks                                                                          |
-| Route protection   | PASS    | All protected routes require authentication                                                              |
+| Area               | Status | Notes                                                                                                                                                                                                |
+| ------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Session management | PASS   | Cryptographically secure 32-byte tokens                                                                                                                                                              |
+| Password handling  | N/A    | Magic link authentication only                                                                                                                                                                       |
+| Token storage      | PASS   | Every bearer credential is stored as a SHA-256 of the issued value: sessions and magic links (#48), onboarding invites (#51). The raw value is only ever in the email or the response that issues it |
+| Session expiry     | PASS   | 30-minute expiry, slid forward on activity, with cleanup of expired rows                                                                                                                             |
+| Role-based access  | PASS   | Middleware enforces role checks                                                                                                                                                                      |
+| Route protection   | PASS   | All protected routes require authentication                                                                                                                                                          |
 
 **Key Files:**
 

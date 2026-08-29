@@ -269,7 +269,11 @@ export async function createTestOnboardingInvite(
     targetHubId: overrides.targetHubId ?? null,
     targetGroupId: overrides.targetGroupId ?? null,
     invitedById,
-    token,
+    // Hashed, exactly as createOnboardingInvite stores it. A fixture that wrote
+    // the raw value would make every test here pass against a service that had
+    // stopped hashing - the same way the coordinator fixture's invented
+    // hub_members row hid two bugs until a manual pass found them.
+    token: hashToken(token),
     expiresAt: overrides.expiresAt ?? generateExpiresAt(48 * 60),
     ...(overrides.acceptedAt ? { acceptedAt: overrides.acceptedAt } : {}),
   });
