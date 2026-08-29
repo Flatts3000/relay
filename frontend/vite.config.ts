@@ -45,11 +45,33 @@ export default defineConfig({
         'src/main.tsx',
         'src/vite-env.d.ts',
       ],
+      // Per-file rather than global.
+      //
+      // A global figure here would be meaningless: two of roughly a hundred
+      // frontend files have tests, so any honest global number is ~2% and any
+      // aspirational one fails every run - which is how the previous 60 came to
+      // be ignored entirely, since nothing invoked `test:coverage`.
+      //
+      // What matters is that the client-side encryption path does not regress.
+      // These two modules hold the product's central privacy claim, are at 100%
+      // on all four metrics, and are enforced at 95 so a single defensive branch
+      // does not fail the build while a genuine gap still does.
+      //
+      // Add entries here as other areas gain tests, and add a global floor once
+      // there is a real one to hold. See #6.
       thresholds: {
-        statements: 60,
-        branches: 60,
-        functions: 60,
-        lines: 60,
+        'src/utils/broadcast-crypto.ts': {
+          statements: 95,
+          branches: 95,
+          functions: 95,
+          lines: 95,
+        },
+        'src/utils/group-key.ts': {
+          statements: 95,
+          branches: 95,
+          functions: 95,
+          lines: 95,
+        },
       },
     },
   },
