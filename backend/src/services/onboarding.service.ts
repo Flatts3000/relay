@@ -9,7 +9,7 @@ import {
   groupMembers,
   groupHubMemberships,
 } from '../db/schema/index.js';
-import { generateToken, generateExpiresAt } from '../utils/crypto.js';
+import { generateExpiresAt, generateToken, hashToken } from '../utils/crypto.js';
 import { createSessionForUser } from './auth.service.js';
 import { sendOnboardingInviteEmail } from './email.service.js';
 import { logAuditEvent } from './audit.service.js';
@@ -50,11 +50,19 @@ export interface CreateInviteInput {
 
 // ---------- Create invite ----------
 
+/**
+ * An invite as it is safe to hand back to a caller: everything but the token.
+ *
+ * The stored token is a hash that the accept route rejects, so publishing it
+ * would be handing out a string that looks like a credential and is not one.
+ */
+export type SafeOnboardingInvite = Omit<OnboardingInvite, 'token'>;
+
 export async function createOnboardingInvite(
   input: CreateInviteInput,
   inviterId: string,
   req: Request
-): Promise<OnboardingInvite> {
+): Promise<SafeOnboardingInvite> {
   // Check for existing active invite with same email+role+target
   const existing = await db
     .select()
@@ -104,7 +112,12 @@ export async function createOnboardingInvite(
       targetHubId: input.targetHubId ?? null,
       targetGroupId: input.targetGroupId ?? null,
       invitedById: inviterId,
-      token,
+      // Stored as a SHA-256 of the value that goes in the email, the same shape
+      // sessions and magic links use. An invite is a bearer credential and this
+      // is the one with the largest blast radius: an unaccepted staff-admin
+      // invite read out of a backup creates a staff_admin account and returns a
+      // live session for it. Hashing means a dump yields nothing replayable.
+      token: hashToken(token),
       expiresAt,
     })
     .returning();
@@ -145,7 +158,19 @@ export async function createOnboardingInvite(
       contextName
     );
   } catch (emailError) {
+    // Discard the invite rather than swallowing the failure.
+    //
+    // Returning 201 here was survivable while the raw token was stored and
+    // echoed back, because an admin could recover the link from the row. Now the
+    // token exists only in the message that failed to send, so a swallowed
+    // failure strands a credential nobody holds: the invitee gets nothing, and
+    // the duplicate guard rejects every retry for the full 72 hours because the
+    // dead invite is still unexpired and unaccepted.
     console.error('Failed to send onboarding invite email:', emailError);
+    await db.delete(onboardingInvites).where(eq(onboardingInvites.id, invite!.id));
+    throw new Error(
+      'Could not send the invitation email. No invite was created; please try again.'
+    );
   }
 
   await logAuditEvent({
@@ -162,11 +187,32 @@ export async function createOnboardingInvite(
     req,
   });
 
-  return invite!;
+  // Deliberately without the token. The stored value is a hash the accept route
+  // rejects, so returning it publishes a string that looks like a credential and
+  // is not one - and would put undefined-shaped bugs into any client that tried
+  // to build an invitation link from it.
+  const safeInvite: SafeOnboardingInvite = {
+    id: invite!.id,
+    email: invite!.email,
+    role: invite!.role,
+    targetHubId: invite!.targetHubId,
+    targetGroupId: invite!.targetGroupId,
+    invitedById: invite!.invitedById,
+    expiresAt: invite!.expiresAt,
+    acceptedAt: invite!.acceptedAt,
+    createdAt: invite!.createdAt,
+  };
+  return safeInvite;
 }
 
 // ---------- Get invite by token ----------
 
+/**
+ * Look up an invite by the raw token from the invitation link.
+ *
+ * The caller passes the value the recipient was emailed; the stored column holds
+ * its hash, so it is hashed here rather than compared directly.
+ */
 export async function getInviteByToken(token: string): Promise<OnboardingInvite | null> {
   const now = new Date();
   const result = await db
@@ -174,7 +220,7 @@ export async function getInviteByToken(token: string): Promise<OnboardingInvite 
     .from(onboardingInvites)
     .where(
       and(
-        eq(onboardingInvites.token, token),
+        eq(onboardingInvites.token, hashToken(token)),
         gt(onboardingInvites.expiresAt, now),
         isNull(onboardingInvites.acceptedAt)
       )
@@ -295,9 +341,30 @@ export async function revokeInvite(
 
 // ---------- List invites ----------
 
+/**
+ * Every column except the token.
+ *
+ * These rows are serialised straight to the API, and `select()` returned the
+ * token with them - so listing invites handed the caller a live invitation link
+ * for every pending invite they could see, letting a coordinator accept one
+ * addressed to somebody else. Hashing the column makes that harmless, but there
+ * is no reason to publish it at all.
+ */
+const inviteListColumns = {
+  id: onboardingInvites.id,
+  email: onboardingInvites.email,
+  role: onboardingInvites.role,
+  targetHubId: onboardingInvites.targetHubId,
+  targetGroupId: onboardingInvites.targetGroupId,
+  invitedById: onboardingInvites.invitedById,
+  expiresAt: onboardingInvites.expiresAt,
+  acceptedAt: onboardingInvites.acceptedAt,
+  createdAt: onboardingInvites.createdAt,
+};
+
 export async function listInvitesForHub(hubId: string) {
   return db
-    .select()
+    .select(inviteListColumns)
     .from(onboardingInvites)
     .where(eq(onboardingInvites.targetHubId, hubId))
     .orderBy(desc(onboardingInvites.createdAt));
@@ -305,7 +372,7 @@ export async function listInvitesForHub(hubId: string) {
 
 export async function listInvitesForGroup(groupId: string) {
   return db
-    .select()
+    .select(inviteListColumns)
     .from(onboardingInvites)
     .where(eq(onboardingInvites.targetGroupId, groupId))
     .orderBy(desc(onboardingInvites.createdAt));
@@ -314,7 +381,7 @@ export async function listInvitesForGroup(groupId: string) {
 export async function listPendingInvitesByInviter(inviterId: string) {
   const now = new Date();
   return db
-    .select()
+    .select(inviteListColumns)
     .from(onboardingInvites)
     .where(
       and(

@@ -71,6 +71,13 @@
       "when": 1787958016249,
       "tag": "0009_group_key_salt",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787958016250,
+      "tag": "0010_clear_plaintext_invite_tokens",
+      "breakpoints": true
     }
   ]
 }
