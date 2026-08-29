@@ -79,9 +79,15 @@ export async function deriveGroupKeypair(
   const bits = await crypto.subtle.deriveBits(
     {
       name: 'PBKDF2',
-      // Uint8Array is copied into a fresh ArrayBuffer: a view over a larger
-      // buffer would otherwise salt with whatever else that buffer holds.
-      salt: new Uint8Array(salt).buffer as ArrayBuffer,
+      // A fresh Uint8Array, not its .buffer.
+      //
+      // The copy is what stops a view over a larger buffer salting with whatever
+      // else that buffer holds. Handing over `.buffer` did that too, but it also
+      // fails outside a browser: under jsdom the ArrayBuffer belongs to the
+      // window realm, and Node's WebCrypto rejects it as "not instance of
+      // ArrayBuffer, Buffer, TypedArray, or DataView". Passing the typed array
+      // is realm-safe and already carries the right offset and length.
+      salt: new Uint8Array(salt),
       iterations: PBKDF2_ITERATIONS,
       hash: 'SHA-256',
     },
