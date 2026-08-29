@@ -201,5 +201,23 @@
     "termsGroupIndependenceDesc": "Los grupos de ayuda mutua listados en Relay son organizaciones independientes. Relay no controla, respalda ni asume responsabilidad por sus acciones, decisiones o distribución de fondos.",
     "termsAcceptableUse": "Uso Aceptable",
     "termsAcceptableUseDesc": "No abuse del sistema de buzón anónimo. No envíe solicitudes de ayuda fraudulentas, no envíe spam a los grupos con mensajes, ni use la plataforma para propósitos distintos a la coordinación de ayuda mutua."
+  },
+  "broadcastKey": {
+    "title": "Clave para solicitudes de ayuda",
+    "description": "Las personas que piden ayuda cifran su mensaje para tu grupo. Elige una contraseña para que tu grupo pueda abrirlos. La contraseña nunca sale de este dispositivo: Relay solo recibe una clave pública, así que nadie aquí puede leer tus solicitudes.",
+    "notSetWarning": "Tu grupo aún no tiene clave, así que no recibirá solicitudes de ayuda. Elige una contraseña para empezar a recibirlas.",
+    "replaceWarning": "Tu grupo ya tiene una clave. Elegir una contraseña nueva la reemplaza, y cualquier solicitud que ya esté esperando en tu bandeja no se podrá abrir.",
+    "passphraseLabel": "Contraseña",
+    "confirmLabel": "Confirmar contraseña",
+    "passphraseHelp": "Al menos {{count}} caracteres. Anótala en un lugar seguro y compártela con las personas voluntarias que leen las solicitudes: cualquiera que la tenga puede abrirlas.",
+    "submit": "Guardar contraseña",
+    "replaceSubmit": "Reemplazar contraseña",
+    "deriving": "Protegiendo tu contraseña. Esto tarda unos segundos.",
+    "saved": "Contraseña guardada. Tu grupo ya puede recibir solicitudes de ayuda.",
+    "savedWithDiscards": "Contraseña guardada. {{count}} solicitud(es) en espera ya no se podían abrir y se eliminaron.",
+    "tooShort": "La contraseña debe tener al menos {{count}} caracteres.",
+    "mismatch": "Las dos contraseñas no coinciden.",
+    "failed": "No se pudo guardar la contraseña. Inténtalo de nuevo.",
+    "recoveryNote": "No hay forma de recuperar una contraseña perdida: eso es lo que impide que cualquier otra persona, incluida Relay, lea tus solicitudes. Si la pierdes, elige una nueva aquí; las solicitudes enviadas antes no se podrán abrir."
   }
 }

@@ -1,4 +1,4 @@
-import { get, post, patch, del } from './client';
+import { get, post, patch, put, del } from './client';
 import type {
   Group,
   CreateGroupInput,
@@ -40,4 +40,27 @@ export async function updateGroup(id: string, input: UpdateGroupInput): Promise<
 
 export async function deleteGroup(id: string): Promise<void> {
   return del<void>(`/api/groups/${id}`);
+}
+
+/**
+ * The signed-in coordinator's own group, including its broadcast key salt.
+ *
+ * Distinct from getGroup(id): only this view carries key material, and a
+ * coordinator should not need to know their group's uuid to read it.
+ */
+export async function getMyGroup(): Promise<{ group: Group }> {
+  return get<{ group: Group }>('/api/groups/me');
+}
+
+/**
+ * Register the group's broadcast key.
+ *
+ * Only the public half and the salt are sent. The passphrase and the private key
+ * stay in the browser, which is what keeps Relay unable to read help requests.
+ */
+export async function setBroadcastKey(input: {
+  publicKey: string;
+  keySalt: string;
+}): Promise<{ invitesDiscarded: number }> {
+  return put<{ invitesDiscarded: number }>('/api/groups/me/broadcast-key', input);
 }

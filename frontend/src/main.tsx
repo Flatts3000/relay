@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './contexts';
+import { AuthProvider, GroupKeyProvider } from './contexts';
 import App from './App';
 import './i18n'; // Initialize i18n
 import './index.css';
@@ -16,7 +16,9 @@ createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <GroupKeyProvider>
+          <App />
+        </GroupKeyProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>

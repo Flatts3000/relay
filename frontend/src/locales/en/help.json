@@ -69,11 +69,16 @@
     "expires": "Expires",
     "viewRequest": "View Request",
     "unlock": {
-      "title": "Unlock Group Key",
-      "description": "Enter your group's private key to decrypt this request.",
-      "placeholder": "Paste your group's private key (base64)",
+      "title": "Unlock this request",
+      "description": "Enter your group's help request passphrase to open this message.",
+      "placeholder": "Your group's passphrase",
       "submit": "Decrypt",
-      "error": "Failed to decrypt. Check your key and try again."
+      "error": "Failed to decrypt. Check your key and try again.",
+      "wrongPassphrase": "That passphrase does not match your group's key. Check it and try again.",
+      "noKey": "Your group has not set a help request passphrase yet, so this request cannot be opened.",
+      "noKeyAction": "Set one in group settings",
+      "unlockSubmit": "Unlock",
+      "deriving": "Checking your passphrase. This takes a few seconds."
     },
     "decrypted": {
       "title": "Decrypted Help Request",

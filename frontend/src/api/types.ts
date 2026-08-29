@@ -29,6 +29,12 @@ export interface Group {
   aidCategories: AidCategory[];
   contactEmail: string;
   verificationStatus?: VerificationStatus;
+  /**
+   * Broadcast key material. Returned only by GET /api/groups/me, so a hub or
+   * staff view of the same group carries neither field.
+   */
+  keySalt?: string | null;
+  broadcastPublicKey?: string | null;
   createdAt: string;
   updatedAt: string;
 }

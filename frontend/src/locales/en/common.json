@@ -201,5 +201,23 @@
     "termsGroupIndependenceDesc": "Mutual aid groups listed on Relay are independent organizations. Relay does not control, endorse, or assume responsibility for their actions, decisions, or fund distribution.",
     "termsAcceptableUse": "Acceptable Use",
     "termsAcceptableUseDesc": "Do not abuse the anonymous mailbox system. Do not submit fraudulent help requests, spam groups with messages, or use the platform for purposes other than mutual aid coordination."
+  },
+  "broadcastKey": {
+    "title": "Help request key",
+    "description": "People asking for help encrypt their message to your group. Set a passphrase so your group can open them. The passphrase never leaves this device - Relay only receives a public key, so nobody here can read your requests.",
+    "notSetWarning": "Your group has no key yet, so it will not be sent any help requests. Set a passphrase to start receiving them.",
+    "replaceWarning": "Your group already has a key. Setting a new passphrase replaces it, and any request already waiting in your inbox can no longer be opened.",
+    "passphraseLabel": "Passphrase",
+    "confirmLabel": "Confirm passphrase",
+    "passphraseHelp": "At least {{count}} characters. Write it somewhere safe and share it with the volunteers who read your requests - anyone with it can open them.",
+    "submit": "Set passphrase",
+    "replaceSubmit": "Replace passphrase",
+    "deriving": "Securing your passphrase. This takes a few seconds.",
+    "saved": "Passphrase set. Your group can now receive help requests.",
+    "savedWithDiscards": "Passphrase set. {{count}} request(s) that were waiting could no longer be opened and were removed.",
+    "tooShort": "Passphrase must be at least {{count}} characters.",
+    "mismatch": "The two passphrases do not match.",
+    "failed": "Could not save the passphrase. Please try again.",
+    "recoveryNote": "There is no way to recover a lost passphrase - that is what stops anyone else, including Relay, from reading your requests. If you lose it, set a new one here; requests sent before then cannot be opened."
   }
 }

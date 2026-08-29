@@ -69,11 +69,16 @@
     "expires": "Expira",
     "viewRequest": "Ver solicitud",
     "unlock": {
-      "title": "Desbloquear clave del grupo",
-      "description": "Ingrese la clave privada de su grupo para descifrar esta solicitud.",
-      "placeholder": "Pegue la clave privada de su grupo (base64)",
+      "title": "Desbloquear esta solicitud",
+      "description": "Ingresa la contraseña de solicitudes de ayuda de tu grupo para abrir este mensaje.",
+      "placeholder": "La contraseña de tu grupo",
       "submit": "Descifrar",
-      "error": "Error al descifrar. Verifique su clave e intente de nuevo."
+      "error": "Error al descifrar. Verifique su clave e intente de nuevo.",
+      "wrongPassphrase": "Esa contraseña no coincide con la clave de tu grupo. Revísala e inténtalo de nuevo.",
+      "noKey": "Tu grupo aún no ha elegido una contraseña para las solicitudes de ayuda, así que esta no se puede abrir.",
+      "noKeyAction": "Elige una en la configuración del grupo",
+      "unlockSubmit": "Desbloquear",
+      "deriving": "Comprobando tu contraseña. Esto tarda unos segundos."
     },
     "decrypted": {
       "title": "Solicitud de ayuda descifrada",

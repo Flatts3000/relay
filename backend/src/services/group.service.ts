@@ -1,6 +1,12 @@
 import { eq, and, isNull, ilike, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { groups, groupHubMemberships, type Group, type NewGroup } from '../db/schema/index.js';
+import {
+  groups,
+  groupHubMemberships,
+  broadcastInvites,
+  type Group,
+  type NewGroup,
+} from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
 import type { Request } from 'express';
 import type {
@@ -10,12 +16,17 @@ import type {
   GroupResponse,
   AidCategory,
   VerificationStatus,
+  BroadcastKeyInput,
 } from '../validations/group.validation.js';
 
 /**
  * Transform a database group record into an API response
  */
-function toGroupResponse(group: Group, verificationStatus?: VerificationStatus): GroupResponse {
+function toGroupResponse(
+  group: Group,
+  verificationStatus?: VerificationStatus,
+  includeKeyMaterial = false
+): GroupResponse {
   return {
     id: group.id,
     name: group.name,
@@ -23,6 +34,13 @@ function toGroupResponse(group: Group, verificationStatus?: VerificationStatus):
     aidCategories: group.aidCategories as AidCategory[],
     contactEmail: group.contactEmail,
     ...(verificationStatus && { verificationStatus }),
+    // Off by default. The salt is not a secret, but only a coordinator of this
+    // group has any use for it, and the hub and staff views have no business
+    // carrying it around.
+    ...(includeKeyMaterial && {
+      keySalt: group.keySalt ? group.keySalt.toString('base64') : null,
+      broadcastPublicKey: group.publicKey ? group.publicKey.toString('base64') : null,
+    }),
     createdAt: group.createdAt.toISOString(),
     updatedAt: group.updatedAt.toISOString(),
   };
@@ -90,7 +108,11 @@ export async function createGroup(
 /**
  * Get a group by ID, optionally including verification status for a specific hub
  */
-export async function getGroupById(groupId: string, hubId?: string): Promise<GroupResponse | null> {
+export async function getGroupById(
+  groupId: string,
+  hubId?: string,
+  includeKeyMaterial = false
+): Promise<GroupResponse | null> {
   const result = await db
     .select()
     .from(groups)
@@ -102,7 +124,7 @@ export async function getGroupById(groupId: string, hubId?: string): Promise<Gro
 
   const verificationStatus = await resolveVerificationStatus(groupId, hubId);
 
-  return toGroupResponse(group, verificationStatus);
+  return toGroupResponse(group, verificationStatus, includeKeyMaterial);
 }
 
 /**
@@ -321,4 +343,57 @@ export function canUserModifyGroup(
   targetGroupId: string
 ): boolean {
   return userRole === 'group_coordinator' && userGroupId === targetGroupId;
+}
+
+/**
+ * Register a group's broadcast key material.
+ *
+ * Both values arrive base64 from the browser, which derived the keypair from a
+ * coordinator passphrase and the salt. Only the public half is sent; the private
+ * half never leaves the device, so a Relay operator, a database dump and a
+ * subpoena all yield the same thing - a public key.
+ *
+ * Setting a new passphrase replaces both halves atomically. That deliberately
+ * makes every wrapped key already sitting in broadcast_invites for this group
+ * undecryptable, because those keys were wrapped to the old public key, so they
+ * are deleted in the same transaction rather than left to look pending until the
+ * TTL sweep reaches them.
+ */
+export async function setGroupBroadcastKey(
+  groupId: string,
+  input: BroadcastKeyInput,
+  userId: string,
+  req: Request
+): Promise<{ invitesDiscarded: number }> {
+  return db.transaction(async (tx) => {
+    const discarded = await tx
+      .delete(broadcastInvites)
+      .where(eq(broadcastInvites.groupId, groupId))
+      .returning({ id: broadcastInvites.id });
+
+    await tx
+      .update(groups)
+      .set({
+        publicKey: Buffer.from(input.publicKey, 'base64'),
+        keySalt: Buffer.from(input.keySalt, 'base64'),
+        updatedAt: new Date(),
+      })
+      .where(eq(groups.id, groupId));
+
+    await logAuditEvent(
+      {
+        userId,
+        action: 'update',
+        entityType: 'group',
+        entityId: groupId,
+        // No key material in the audit trail. That a key was set is the fact
+        // worth keeping; which key it was is not.
+        metadata: { field: 'broadcastKey', invitesDiscarded: discarded.length },
+        req,
+      },
+      tx
+    );
+
+    return { invitesDiscarded: discarded.length };
+  });
 }
