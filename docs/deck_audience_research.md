@@ -42,32 +42,42 @@ costs no privacy at all - see section 3.
 
 ---
 
-## 2. Relay is not a 501(c)(3), and the deck currently implies otherwise
+## 2. The entity: a transfer, not a gap
 
-Verified in the repository: Relay is built by **Mythic Works LLC** and licensed
-**AGPL-3.0**. There is no charitable entity anywhere in the codebase or docs.
+**Updated 2026-08-29 after the owner clarified the plan.** An earlier version of
+this section read the repository and concluded there was no charitable entity and
+no stated plan. The first half was right; the second was not, because the plan
+existed and was simply unwritten.
 
-That has hard consequences:
+**Mythic Works LLC is building Relay and will transfer it to a 501(c)(3) created
+to hold it.** That is a materially better position than an unresolved one, and it
+should be said early rather than buried - a company building something and giving
+it away is a credibility asset for exactly the funders in section 5.
 
-- **An LLC cannot receive tax-deductible donations.** Any "donate" ask is a
-  transfer to a private company, and sophisticated donors will notice.
-- **Most private foundations cannot grant to it** without expenditure
-  responsibility, which many simply decline to take on.
-- Some funders in the relevant market genuinely do not care - see section 5 - but
-  the general-philanthropy path is closed until this is resolved.
+It also costs less than it looks, because **AGPL-3.0 has already made the give-away
+partly irreversible**. The code cannot be closed. What actually transfers is
+copyright, the domain, the name, the running infrastructure, and stewardship.
 
-Three routes, in rough order of speed:
+Three things a funder will ask, and none of them is currently answered:
 
-| Route                                                 | Speed                | Cost                                      |
-| ----------------------------------------------------- | -------------------- | ----------------------------------------- |
-| **Fiscal sponsorship** by an existing 501(c)(3)       | weeks                | 5-10% of funds, and a sponsor with a say  |
-| **Form a 501(c)(3)**                                  | months, plus IRS lag | filing costs, a board, ongoing compliance |
-| **Target funders who fund companies and individuals** | now                  | narrower pool, but a strong fit here      |
+1. **Does the nonprofit exist in any form?** State incorporation and IRS
+   recognition are separate steps with very different timelines. A 1023-EZ can be
+   recognised in weeks; a full 1023 can take many months. "Will be formed" and
+   "is formed, awaiting determination" are different answers to a grant officer.
+2. **How does money arrive in the meantime?** Until the nonprofit has recognition,
+   Relay cannot accept tax-deductible donations, and most private foundations
+   cannot grant to the LLC without expenditure responsibility. Fiscal sponsorship
+   bridges this in weeks for 5-10%. Some funders in the section 5 market grant
+   directly to companies and individuals, which sidesteps it entirely.
+3. **Who sits on the nonprofit's board?** With the same people on both sides, the
+   transfer is a related-party transaction. The standard answer is an independent
+   board majority approving the transfer under a conflict-of-interest policy, plus
+   a documented basis for any claimed valuation. Getting ahead of this reads as
+   competence; being asked about it cold does not.
 
-This has to be settled before a deck with an ask goes anywhere. It is currently
-the single largest blocker between the deck and money.
-
----
+The deck now states the transfer plan on the title slide and on slides 12 and 15,
+names the related-party question rather than waiting to be asked, and leaves the
+interim funding route as a marked placeholder.
 
 ## 3. The urgency is real and it is documented
 

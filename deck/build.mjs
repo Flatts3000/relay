@@ -235,7 +235,7 @@ const slides = [
   // 1 TITLE
   `<section class="slide" data-name="Relay">
     <div class="stack">
-      <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; OPEN SOURCE &middot; BUILT AND DEPLOYED &middot; NOT YET PILOTED</div>
+      <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; BUILT AND DEPLOYED &middot; NOT YET PILOTED &middot; BEING GIVEN TO A NONPROFIT</div>
       <h1 class="k h-xl">Infrastructure for <span class="hl">solidarity</span>, built to be useless to anyone who seizes it.</h1>
       <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
       <div class="row" style="margin-top:4px">
@@ -466,7 +466,7 @@ const slides = [
       <div class="cols three" style="margin-top:6px">
         <div class="card flag"><h3>Paused February 2026</h3><p>Development stopped after the tenth phase shipped, and restarted in August 2026 to repair the deployment and work the backlog down.</p></div>
         <div class="card flag"><h3>Single host, no alerting</h3><p>One EC2 instance running Docker Compose. An outage earlier this year was found by hand, not by a monitor.</p></div>
-        <div class="card flag"><h3>No charitable entity yet</h3><p>Relay is built by Mythic Works LLC under AGPL-3.0. Fiscal sponsorship or incorporation is an open decision - see the last slide.</p></div>
+        <div class="card flag"><h3>The nonprofit does not exist yet</h3><p>Mythic Works LLC is building Relay and will transfer it to a 501(c)(3) formed to hold it. That entity has not been created, so today Relay cannot take tax-deductible donations - see the last slide.</p></div>
       </div>
       <p class="small muted" style="margin-top:2px">Every limitation above is a numbered issue in the public tracker, including the uncomfortable ones. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
     </div>
@@ -529,11 +529,18 @@ const slides = [
       <div class="cols three" style="margin-top:6px">
         <div class="card"><h3>A fund hub</h3><p>Route one cycle of real requests through it and say where it gets in the way.</p></div>
         <div class="card"><h3>A mutual aid network</h3><p>Put three to five groups through onboarding, and judge whether it respects how they already work.</p></div>
-        <div class="card"><h3>A funder</h3><p>Public-interest technology rather than human services: an articulated threat model, a copyleft licence, a reviewed cryptographic design, and a public issue tracker.</p></div>
+        <div class="card"><h3>A funder</h3><p>Public-interest technology rather than human services: an articulated threat model, a copyleft licence, a reviewed cryptographic design, and a public issue tracker. Several funders in that market grant to companies and individuals, which matters given the timing below.</p></div>
       </div>
-      <div class="card flag" style="margin-top:8px">
-        <h3>Open before any money moves</h3>
-        <p>Relay is Mythic Works LLC under AGPL-3.0, with no charitable entity. That closes most foundation routes and rules out tax-deductible donations until it is settled - by fiscal sponsorship, by incorporation, or by working with funders who fund companies and individuals directly. It is named here rather than discovered later.</p>
+      <div class="cols two" style="margin-top:8px;align-items:start">
+        <div class="card accent">
+          <h3>Built by a company that is giving it away</h3>
+          <p>Mythic Works LLC is building Relay and will transfer it to a 501(c)(3) created to hold it. Nobody is positioned to extract value from this, and the AGPL-3.0 licence already makes that irreversible for the code itself - what transfers is copyright, the domain, the name, the infrastructure and the stewardship.</p>
+        </div>
+        <div class="card flag">
+          <h3>The timing, stated plainly</h3>
+          <p>That nonprofit does not exist yet, so Relay cannot accept tax-deductible donations today and most foundations cannot grant to it directly. <span class="todo">interim route to be set</span></p>
+          <p style="margin-top:10px">Because the same people sit on both sides, the transfer is a related-party transaction. An independent board and a conflict-of-interest policy are the usual answer, and a funder will ask.</p>
+        </div>
       </div>
       <div class="row" style="margin-top:8px">
         <span class="chip"><b>relayfunds.org</b></span>
