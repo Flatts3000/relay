@@ -1,6 +1,7 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { createHash } from 'crypto';
 import type { Request } from 'express';
+import { config } from '../config.js';
 
 /**
  * Rate limiter for authenticated routes.
@@ -26,7 +27,7 @@ export const authRateLimiter = rateLimit({
  */
 export const authLoginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per window
+  max: config.authLoginRateLimitMax,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many login attempts, please try again later.' },

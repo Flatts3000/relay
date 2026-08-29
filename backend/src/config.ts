@@ -10,6 +10,10 @@ const configSchema = z.object({
   // for Caddy; the root docker-compose publishes the backend directly and must
   // stay at 0.
   trustProxyHops: z.coerce.number().int().min(0).default(0),
+  // Requests per 15 minutes to /api/auth/login and /verify, per hashed
+  // client. Configurable so the test suite can exercise the login flow
+  // more than ten times without tripping a production-shaped limit.
+  authLoginRateLimitMax: z.coerce.number().int().positive().default(10),
   frontendUrl: z.string().default('http://localhost:3000'),
   database: z.object({
     host: z.string().default('localhost'),
@@ -38,6 +42,7 @@ const env = {
   port: process.env['PORT'],
   corsOrigin: process.env['CORS_ORIGIN'],
   trustProxyHops: process.env['TRUST_PROXY_HOPS'],
+  authLoginRateLimitMax: process.env['AUTH_LOGIN_RATE_LIMIT_MAX'],
   frontendUrl: process.env['FRONTEND_URL'],
   database: {
     host: process.env['DB_HOST'],
