@@ -1,15 +1,9 @@
 import { db } from '../db/index.js';
+import type { Executor } from '../db/executor.js';
 import { auditLog, type NewAuditLogEntry } from '../db/schema/index.js';
 import type { Request } from 'express';
 
 type AuditAction = NewAuditLogEntry['action'];
-
-/**
- * Either the pool-backed client or an open transaction. Callers that write an
- * audit entry alongside the change it describes should pass their transaction,
- * so the entry commits or rolls back with the change rather than separately.
- */
-type Executor = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 interface AuditParams {
   userId?: string;

@@ -366,7 +366,7 @@ export async function acceptHubOwnerInvite(
       .where(eq(onboardingInvites.id, invite.id));
 
     // Create session
-    const sessionToken = await createSessionForUser(user!.id);
+    const sessionToken = await createSessionForUser(user!.id, tx);
 
     return { sessionToken, userId: user!.id };
   });
@@ -397,7 +397,7 @@ export async function acceptHubStaffInvite(
       .set({ acceptedAt: now })
       .where(eq(onboardingInvites.id, invite.id));
 
-    const sessionToken = await createSessionForUser(user!.id);
+    const sessionToken = await createSessionForUser(user!.id, tx);
     return { sessionToken, userId: user!.id };
   });
 }
@@ -455,7 +455,7 @@ export async function acceptGroupOwnerInvite(
       .set({ acceptedAt: now })
       .where(eq(onboardingInvites.id, invite.id));
 
-    const sessionToken = await createSessionForUser(user!.id);
+    const sessionToken = await createSessionForUser(user!.id, tx);
     return { sessionToken, userId: user!.id };
   });
 }
@@ -485,7 +485,7 @@ export async function acceptGroupStaffInvite(
       .set({ acceptedAt: now })
       .where(eq(onboardingInvites.id, invite.id));
 
-    const sessionToken = await createSessionForUser(user!.id);
+    const sessionToken = await createSessionForUser(user!.id, tx);
     return { sessionToken, userId: user!.id };
   });
 }
@@ -508,7 +508,7 @@ export async function acceptStaffAdminInvite(
       .set({ acceptedAt: now })
       .where(eq(onboardingInvites.id, invite.id));
 
-    const sessionToken = await createSessionForUser(user!.id);
+    const sessionToken = await createSessionForUser(user!.id, tx);
     return { sessionToken, userId: user!.id };
   });
 }
@@ -544,7 +544,7 @@ export async function acceptHubMembershipInvite(
       .set({ acceptedAt: now })
       .where(eq(onboardingInvites.id, invite.id));
 
-    const sessionToken = await createSessionForUser(existingUserId);
+    const sessionToken = await createSessionForUser(existingUserId, tx);
     return { sessionToken };
   });
 }
