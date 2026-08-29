@@ -37,10 +37,39 @@ whether to trust the project with the safety of undocumented residents and peopl
 fleeing violence. One invented figure discovered later would end that
 conversation, and deserve to.
 
-That is also why slide 9 says plainly that no pilot has run and nobody has used
-the product, and why slide 7 names the metadata Relay does store in the clear
-instead of leaving the encryption claim unqualified. For this audience the
-credibility comes from the disclosure, not in spite of it.
+That is also why slide 12 says plainly that no pilot has run and nobody has used
+the product, why slide 10 names the metadata Relay does store in the clear
+instead of leaving the encryption claim unqualified, and why slide 15 states that
+there is no charitable entity. For this audience the credibility comes from the
+disclosure, not in spite of it.
+
+## Who it is aimed at, and why it reads the way it does
+
+Rebuilt on `../docs/deck_audience_research.md`. Three findings shaped it:
+
+**The identifiable victim effect is unavailable.** The strongest driver of
+individual giving is one named person, and Relay cannot produce one - it does not
+know who it helped, by design. The substitute the research supports is
+unitization: a group presented as a single unit works nearly as well. Hence slide
+2, where the protagonist is a group of organizers. Every human moment in the deck
+sits with organizers, never recipients.
+
+**It is not a charity and must not pitch as one.** "Solidarity not charity" is
+the defining distinction of the movement Relay serves; a deck positioning it as
+helping the needy reads to the groups it depends on as the thing they organised
+against. The framing throughout is infrastructure for solidarity - Relay decides
+nothing and touches no distribution.
+
+**It is aimed at public-interest technology funders, not human services.** The
+threat model, copyleft licence, independent cryptography review and public issue
+tracker are what OTF, NLnet and the Common Good Cyber Fund select on, and what a
+human-services funder would ignore. That is why the subpoena slide is placed as a
+strength rather than a caveat.
+
+Slide 2's group is explicitly illustrative and labelled as such on the slide. It
+is drawn from `docs/problem_brief.md`, not from a real group - Relay has none
+yet, and naming a fictional one would be the same failure as inventing a
+statistic.
 
 ## Current facts, and where they came from
 

@@ -88,6 +88,7 @@ const IMG = {
   directory: await shot('directory_desktop_v2.png', 1200, 76),
   reports: await shot('hub_reports_desktop_v2.png', 1200, 76),
   queue: await shot('hub_requests_desktop_v2.png', 1100, 74),
+  verification: await shot('hub_verification_desktop_v2.png', 1100, 76),
 };
 console.log(
   'image KB:',
@@ -194,6 +195,25 @@ h1,h2,h3,h4,p{margin:0}
 .zone{position:absolute;top:0;bottom:44px;width:20%;z-index:4;cursor:pointer}
 .zone.l{left:0}.zone.r{right:0}
 :focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.toc>div{padding:clamp(14px,1.5vw,20px);background:rgba(255,255,255,.02);border-right:1px solid var(--line)}
+.toc>div:last-child{border-right:none;background:linear-gradient(180deg,rgba(45,212,191,.12),var(--card2))}
+.toc b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:9px}
+.toc p{font-size:.86rem;color:var(--ink-2);line-height:1.5;margin-bottom:7px}
+.toc p:last-child{margin-bottom:0}
+.quote{border-left:2px solid var(--teal-dim);padding:2px 0 2px clamp(14px,1.6vw,22px)}
+.quote p{font-family:var(--serif);font-size:clamp(1.25rem,2.3vw,1.9rem);line-height:1.28;color:var(--ink);letter-spacing:-.005em}
+.quote cite{display:block;margin-top:12px;font-style:normal;font-family:var(--mono);font-size:.66rem;letter-spacing:.05em;color:var(--ink-3)}
+.money{display:flex;flex-direction:column;gap:9px}
+.line{display:grid;grid-template-columns:1fr auto;gap:2px 16px;align-items:baseline;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:none}
+.line .w{font-size:.93rem;color:var(--ink)}
+.line .w em{font-style:normal;display:block;font-size:.79rem;color:var(--ink-3);margin-top:3px;line-height:1.45}
+.line .v{font-family:var(--mono);color:var(--teal);font-weight:600;font-size:.9rem;white-space:nowrap}
+/* An unset amount must read as unset. .line .v out-specifies .todo, so the
+   placeholder chips were rendering in the accent colour and looked like real
+   figures at a glance. */
+.line .v.todo{color:var(--amber);font-weight:400}
 @media (max-width:900px){
   .two,.three,.four,.flow{grid-template-columns:1fr}
   .shot{display:none}
@@ -215,114 +235,186 @@ const slides = [
   // 1 TITLE
   `<section class="slide" data-name="Relay">
     <div class="stack">
-      <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; BUILT AND DEPLOYED &middot; NOT YET PILOTED</div>
-      <h1 class="k h-xl">Mutual aid money moves on <span class="hl">personal introductions</span>. That does not scale, and it leaves people out.</h1>
-      <p class="lede">Relay is a coordination layer between local mutual aid groups and the funds that back them - built so that if it is ever subpoenaed, there is nothing useful to hand over.</p>
+      <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; OPEN SOURCE &middot; BUILT AND DEPLOYED &middot; NOT YET PILOTED</div>
+      <h1 class="k h-xl">Infrastructure for <span class="hl">solidarity</span>, built to be useless to anyone who seizes it.</h1>
+      <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
       <div class="row" style="margin-top:4px">
-        <span class="chip"><b>E2E</b>&nbsp; encrypted help requests</span>
+        <span class="chip"><b>E2E</b>&nbsp; encrypted requests</span>
         <span class="chip"><b>No accounts</b>&nbsp; for individuals</span>
+        <span class="chip"><b>AGPL-3.0</b></span>
         <span class="chip"><b>EN / ES</b></span>
-        <span class="chip"><b>Open source</b></span>
       </div>
     </div>
   </section>`,
 
-  // 2 PROBLEM
+  // 2 THE GROUP
+  `<section class="slide" data-name="Who this is for">
+    <div class="stack">
+      <span class="eyebrow">Who this is for</span>
+      <h2 class="k h-lg">Eleven neighbours and a <span class="hl">spreadsheet</span>.</h2>
+      <div class="cols two">
+        <div class="stack gap-s">
+          <p class="lede">They know who on their block is behind on rent, whose power is about to be cut, which family stopped answering the door. They are good at the part that is hard to systematise.</p>
+          <p class="lede">What they do not have is a way to reach the fund that would cover it - without already knowing somebody who knows somebody. So the money sits in one place and the knowledge sits in another.</p>
+        </div>
+        <div class="card accent">
+          <h3>The unit of trust is the group</h3>
+          <p>Relay works at group level and nowhere else. Groups are accountable for the money, groups make every distribution decision, groups hold the local relationships. Relay's whole job is to stop the introduction being a prerequisite.</p>
+          <p style="margin-top:10px">That is also why it can afford to know nothing about the people receiving aid.</p>
+        </div>
+      </div>
+      <p class="src">The pattern above is drawn from docs/problem_brief.md and is illustrative of the groups Relay is designed for. No group has been onboarded yet - see slide 12.</p>
+    </div>
+  </section>`,
+
+  // 3 PROBLEM
   `<section class="slide" data-name="The problem">
     <div class="stack">
       <span class="eyebrow">Two coordination failures</span>
-      <h2 class="k h-lg">This is not a fundraising problem. It is a <span class="hl">discovery and trust</span> problem.</h2>
+      <h2 class="k h-lg">Not a fundraising problem. A <span class="hl">discovery and trust</span> problem.</h2>
       <div class="cols two" style="margin-top:6px">
         <div class="card">
           <h3>Groups cannot find hubs. Hubs cannot vet groups.</h3>
-          <p>Money is easier to raise centrally; aid is better distributed locally. The link between the two runs on word of mouth, DMs and Google Forms. New and smaller groups never get connected, and hubs have no safe way to tell who is real - without demanding paperwork that excludes exactly the groups doing the work.</p>
+          <p>Money is easier to raise centrally; aid is better distributed locally. The link between them runs on word of mouth, DMs and Google Forms. New and smaller groups never get connected, and hubs have no safe way to tell who is real without demanding paperwork that excludes exactly the groups doing the work.</p>
         </div>
         <div class="card">
           <h3>People in crisis cannot search for help safely.</h3>
-          <p>Existing directories are fragmented, out of date, or need an account. Giving an email or phone number creates a traceable record. People avoid looking at all rather than leave a trail that could be subpoenaed - so the aid exists and never reaches them.</p>
+          <p>Directories are fragmented, stale, or need an account. An email or phone number creates a traceable record. People avoid looking at all rather than leave a trail - so the aid exists, and does not reach them.</p>
         </div>
       </div>
-      <p class="small muted" style="margin-top:2px">Both failures are worst for the people with the most to lose: undocumented residents, people fleeing violence, anyone for whom a database entry is a risk.</p>
+      <p class="small muted" style="margin-top:2px">Both failures fall hardest on the people with the most to lose: undocumented residents, people fleeing violence, anyone for whom a database row is a risk.</p>
     </div>
   </section>`,
 
-  // 3 THE CONSTRAINT
-  `<section class="slide" data-name="The constraint">
+  // 4 WHY NOW
+  `<section class="slide" data-name="Why now">
     <div class="stack">
-      <span class="eyebrow">Why this is hard</span>
-      <h2 class="k h-lg">Every obvious solution makes people <span class="hl">less safe</span>.</h2>
-      <p class="lede">A directory that logs searches, an intake form that stores a phone number, an analytics tag that records who visited - each is standard practice, and each creates a record that can be leaked, scraped, or lawfully demanded.</p>
-      <div class="cols three" style="margin-top:6px">
-        <div class="card"><h3>Assume seizure</h3><p>The design premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
-        <div class="card"><h3>Minimise, do not protect</h3><p>Data that is never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
-        <div class="card"><h3>Verification without paperwork</h3><p>Trust for fund routing sits at the group level: hub approval, peer attestation, sponsor reference. No IDs, no rosters, no documents.</p></div>
+      <span class="eyebrow">Why now</span>
+      <h2 class="k h-lg">The threat model is not hypothetical. <span class="warn">Organizers are being prosecuted.</span></h2>
+      <div class="cols three" style="margin-top:4px">
+        <div class="card flag">
+          <h3>Charity fraud and money laundering charges</h3>
+          <p>Three Atlanta Solidarity Fund organizers were arrested in May 2023 over what Nonprofit Quarterly describes as routine nonprofit reimbursements. The money laundering charges were dropped in September 2024; racketeering charges under a 61-defendant RICO indictment remain outstanding.</p>
+        </div>
+        <div class="card flag">
+          <h3>Payment rails are a surveillance layer</h3>
+          <p>IRS reporting thresholds on money-sharing apps put a durable record behind ordinary transfers between neighbours - the exact mechanism most mutual aid runs on today.</p>
+        </div>
+        <div class="card flag">
+          <h3>Co-optation is a live fear</h3>
+          <p>Organizers actively worry that philanthropic structure and compliance requirements defang the work. Any tool entering this space is read against that suspicion, and should be.</p>
+        </div>
+      </div>
+      <div class="quote" style="margin-top:8px">
+        <p>The sector's own recommendations to mutual aid funds include decentralised organizing to reduce surveillance vulnerability, and parallel structures where visibility is a risk.</p>
+        <cite>Nonprofit Quarterly, "Protecting Solidarity: Countering Attacks on Mutual Aid Funds" &middot; Relay's design brief, arrived at independently</cite>
       </div>
     </div>
   </section>`,
 
-  // 4 WHAT IT IS
+  // 5 THE CONSTRAINT
+  `<section class="slide" data-name="The constraint">
+    <div class="stack">
+      <span class="eyebrow">Why this is hard to build</span>
+      <h2 class="k h-lg">Every obvious solution makes people <span class="hl">less safe</span>.</h2>
+      <p class="lede">A directory that logs searches. An intake form that stores a phone number. An analytics tag recording who visited. Each is standard practice, and each manufactures a record that can be leaked, scraped, or lawfully demanded.</p>
+      <div class="cols three" style="margin-top:6px">
+        <div class="card"><h3>Assume seizure</h3><p>The premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
+        <div class="card"><h3>Minimise, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
+        <div class="card"><h3>Verify without paperwork</h3><p>Hub approval, peer attestation, or a sponsor reference. Three lightweight paths. No IDs, no rosters, no documents.</p></div>
+      </div>
+    </div>
+  </section>`,
+
+  // 6 WHAT IT IS
   `<section class="slide" data-name="What Relay is">
     <div class="stack">
-      <span class="eyebrow">The product</span>
+      <span class="eyebrow">Scope, stated narrowly on purpose</span>
       <h2 class="k h-lg">A thin coordination layer. <span class="hl">Nothing more.</span></h2>
       <div class="cols two">
-        <div class="stack gap-s">
-          <div class="ledger">
-            <span class="yes">IS</span><span>A public directory of verified groups, browsable with no account and no tracking</span>
-            <span class="yes">IS</span><span>A funding request workflow between groups and hubs, at group level only</span>
-            <span class="yes">IS</span><span>An anonymous, end-to-end encrypted way to ask local groups for help</span>
-            <span class="no">NOT</span><span>A case management system</span>
-            <span class="no">NOT</span><span>A benefits application platform</span>
-            <span class="no">NOT</span><span>A donor marketplace or a fundraising site</span>
-            <span class="no">NOT</span><span>A database of people who needed help</span>
-          </div>
+        <div class="ledger">
+          <span class="yes">IS</span><span>A public directory of verified groups, browsable with no account and no tracking</span>
+          <span class="yes">IS</span><span>A funding request workflow between groups and hubs, at group level only</span>
+          <span class="yes">IS</span><span>An anonymous, end-to-end encrypted way to ask local groups for help</span>
+          <span class="no">NOT</span><span>An arbiter of who deserves aid - Relay makes no eligibility decision, ever</span>
+          <span class="no">NOT</span><span>Anywhere in the distribution path - money and aid never pass through it</span>
+          <span class="no">NOT</span><span>A case management or benefits system</span>
+          <span class="no">NOT</span><span>A database of people who needed help</span>
         </div>
         ${frame(IMG.home, 'relayfunds.org', 'clamp(180px,40vh,420px)')}
       </div>
     </div>
   </section>`,
 
-  // 5 GROUP <-> HUB
+  // 7 THEORY OF CHANGE
+  `<section class="slide" data-name="Theory of change">
+    <div class="stack">
+      <span class="eyebrow">Theory of change</span>
+      <h2 class="k h-md">Remove the introduction requirement, and the existing system works better.</h2>
+      <div class="toc" style="margin-top:6px">
+        <div>
+          <b>Activities</b>
+          <p>A verified public directory of groups.</p>
+          <p>A group-level funding request and payout workflow.</p>
+          <p>Encrypted anonymous help requests routed to matching groups.</p>
+        </div>
+        <div>
+          <b>Outputs</b>
+          <p>Groups reach hubs without a personal introduction.</p>
+          <p>Hubs vet groups without collecting sensitive documents.</p>
+          <p>People reach groups without creating a traceable record.</p>
+        </div>
+        <div>
+          <b>Outcomes</b>
+          <p>More groups connected to funds, and funds moving faster.</p>
+          <p>Aid reaches people who currently go without because searching for it is itself a risk.</p>
+          <p>No new surveillance surface created in the process.</p>
+        </div>
+      </div>
+      <p class="small muted" style="margin-top:4px">Relay changes nothing about how groups do their work or who they help. The intervention is strictly on the coordination layer, which is why the theory is short.</p>
+    </div>
+  </section>`,
+
+  // 8 GROUPS AND HUBS
   `<section class="slide" data-name="Groups and hubs">
     <div class="stack">
       <span class="eyebrow">Flow one</span>
       <h2 class="k h-md">Groups get funded without knowing the right person.</h2>
       <div class="flow" style="margin-top:4px">
-        <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that can be a pseudonym, a service area, aid categories, and a role-based email. Nothing else.</p></div>
-        <div class="step"><b>02 &middot; VERIFY</b><p>Hub approval, a peer group vouching, or a sponsor reference. Three lightweight paths, no documents.</p></div>
-        <div class="step"><b>03 &middot; REQUEST</b><p>The group asks for an amount, a category, and a region. Justification is optional and warns against personal detail.</p></div>
+        <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that may be a pseudonym, a service area, aid categories, and a role-based email. Nothing else.</p></div>
+        <div class="step"><b>02 &middot; VERIFY</b><p>Hub approval, a peer group vouching, or a sponsor reference. No documents at any point.</p></div>
+        <div class="step"><b>03 &middot; REQUEST</b><p>An amount, a category, a region. Justification is optional and warns against personal detail.</p></div>
         <div class="step"><b>04 &middot; TRACK</b><p>Submitted, approved, funds sent, acknowledged. No receipts, no narratives, no recipient data.</p></div>
       </div>
       <div class="cols two" style="margin-top:8px;align-items:start">
-        <p class="small">Hubs get aggregate reporting - totals by category, groups supported, time to funding - and never a per-person or per-household figure, because the data to produce one does not exist.</p>
-        ${frame(IMG.reports, 'Hub reporting', 'clamp(150px,28vh,300px)')}
+        ${frame(IMG.verification, 'Hub verification queue', 'clamp(140px,26vh,280px)')}
+        ${frame(IMG.reports, 'Aggregate reporting', 'clamp(140px,26vh,280px)')}
       </div>
+      <p class="src">Hubs get totals by category, groups supported, and time to funding. A per-person figure is not withheld - it cannot be produced, because the data to produce it is never collected.</p>
     </div>
   </section>`,
 
-  // 6 ANONYMOUS REQUESTS
+  // 9 ANONYMOUS REQUESTS
   `<section class="slide" data-name="Anonymous requests">
     <div class="stack">
       <span class="eyebrow">Flow two &middot; the hard one</span>
-      <h2 class="k h-md">Someone in crisis asks for help, and Relay never learns who they are.</h2>
+      <h2 class="k h-md">Someone asks for help, and Relay never learns who they are.</h2>
       <div class="cols two">
-        <div class="stack gap-s">
-          <div class="flow" style="grid-template-columns:1fr">
-            <div class="step"><b>ON THEIR DEVICE</b><p>They pick an area and what they need, write a message, and include a way to be reached. The browser generates a key, encrypts the message, and wraps that key separately for each verified group serving the area.</p></div>
-            <div class="step"><b>ON THE SERVER</b><p>Relay stores ciphertext it cannot read, plus one wrapped key per recipient group. No account, no cookie, no IP logged on this route.</p></div>
-            <div class="step"><b>ON THE GROUP'S DEVICE</b><p>A coordinator unlocks with their group passphrase, decrypts, and sees the message, the contact details, and a safe word.</p></div>
-            <div class="step"><b>OFF RELAY ENTIRELY</b><p>The group makes contact directly and repeats the safe word, so the person knows the call is genuine. Relay is not in that conversation.</p></div>
-          </div>
+        <div class="flow" style="grid-template-columns:1fr">
+          <div class="step"><b>ON THEIR DEVICE</b><p>They pick an area and what they need, write a message, and include a way to be reached. The browser generates a key, encrypts the message, and wraps that key separately for each verified group serving the area.</p></div>
+          <div class="step"><b>ON THE SERVER</b><p>Relay stores ciphertext it cannot read, plus one wrapped key per recipient group. No account, no cookie, no IP logged on this route.</p></div>
+          <div class="step"><b>ON THE GROUP'S DEVICE</b><p>A coordinator unlocks with their group passphrase and sees the message, the contact details, and a safe word.</p></div>
+          <div class="step"><b>OFF RELAY ENTIRELY</b><p>The group makes contact directly and repeats the safe word, so the person knows the call is genuine. Relay is not in that conversation.</p></div>
         </div>
         <div class="stack gap-s">
           ${frame(IMG.help, 'Request help anonymously', 'clamp(190px,42vh,440px)')}
-          <p class="src">TweetNaCl. secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys are derived from a coordinator passphrase with PBKDF2-HMAC-SHA256 at 600,000 iterations; the passphrase never leaves the browser.</p>
+          <p class="src">TweetNaCl. secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations; the passphrase never leaves the browser. Cryptography independently reviewed.</p>
         </div>
       </div>
     </div>
   </section>`,
 
-  // 7 SUBPOENA
+  // 10 SUBPOENA
   `<section class="slide" data-name="Under subpoena">
     <div class="stack">
       <span class="eyebrow">The test that matters</span>
@@ -330,27 +422,27 @@ const slides = [
       <div class="cols two" style="margin-top:4px">
         <div class="card accent">
           <h3>What is there</h3>
-          <p>Encrypted blobs nobody at Relay can open. A public list of groups that already consented to being listed. Group-level funding amounts and dates. Coarse regions and aid categories attached to requests.</p>
+          <p>Encrypted blobs nobody at Relay can open. A public list of groups that already consented to being listed. Group-level funding amounts and dates. Coarse region and aid category on each request.</p>
         </div>
         <div class="card">
           <h3>What is not there</h3>
-          <p>No names, addresses, phone numbers or emails of anyone seeking aid - contact details live inside the encrypted payload. No accounts for individuals. No IP addresses or cookies on anonymous routes. No browsing records for the public directory. No record of who received what.</p>
+          <p>No names, addresses, phone numbers or emails of anyone seeking aid - contact details live inside the encrypted payload. No individual accounts. No IP addresses or cookies on anonymous routes. No record of who browsed the directory. No record of who received what.</p>
         </div>
       </div>
       <div class="row" style="margin-top:6px">
-        <span class="chip"><b>Deleted</b>&nbsp; invites go on confirmation or at 7-day TTL</span>
-        <span class="chip"><b>Hashed</b>&nbsp; every session, login and invite credential at rest</span>
-        <span class="chip"><b>Reviewed</b>&nbsp; cryptography assessed by an independent expert</span>
+        <span class="chip"><b>Deleted</b>&nbsp; requests go on confirmation or at 7-day TTL</span>
+        <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
+        <span class="chip"><b>AGPL-3.0</b>&nbsp; the claims are auditable</span>
       </div>
-      <p class="small muted" style="margin-top:2px">Stated plainly, because it is the design's central claim and the thing a partner should press hardest on: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered. That is a real, known limit, and it is documented rather than glossed.</p>
+      <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is documented in the repository rather than glossed.</p>
     </div>
   </section>`,
 
-  // 8 BUILT
+  // 11 WHAT EXISTS
   `<section class="slide" data-name="What exists">
     <div class="stack">
       <span class="eyebrow">Not a concept</span>
-      <h2 class="k h-lg">It is built, deployed, and <span class="hl">open source</span>.</h2>
+      <h2 class="k h-lg">Built, deployed, and <span class="hl">auditable</span>.</h2>
       <div class="row" style="margin-top:2px;gap:clamp(20px,3vw,54px)">
         <div class="stat"><span class="n">37</span><span class="l">routes across four roles</span></div>
         <div class="stat"><span class="n">187</span><span class="l">automated tests</span></div>
@@ -361,35 +453,35 @@ const slides = [
         ${frame(IMG.directory, 'Public group directory', 'clamp(150px,30vh,320px)')}
         ${frame(IMG.queue, 'Hub funding queue', 'clamp(150px,30vh,320px)')}
       </div>
-      <p class="src">Live at relayfunds.org. React, Node and PostgreSQL on a single host behind Caddy. Every pull request runs lint, typecheck, both test suites, a migrations job that diffs the applied schema against the definitions, container builds, dependency audit, CodeQL and Trivy.</p>
+      <p class="src">Live at relayfunds.org. React, Node and PostgreSQL on a single host behind Caddy. Every pull request runs lint, typecheck, both test suites, a migrations job diffing the applied schema against the definitions, container builds, dependency audit, CodeQL and Trivy.</p>
     </div>
   </section>`,
 
-  // 9 HONEST STATUS
+  // 12 HONEST STATUS
   `<section class="slide" data-name="Where it stands">
     <div class="stack">
       <span class="eyebrow">Where it actually stands</span>
       <h2 class="k h-lg">No pilot has run. <span class="warn">Nobody has used this yet.</span></h2>
       <p class="lede">The build is real and the production database holds zero records, because no group has been onboarded. Saying so plainly is the point - a project asking to be trusted with other people's safety does not get to overstate itself.</p>
       <div class="cols three" style="margin-top:6px">
-        <div class="card flag"><h3>Paused since February 2026</h3><p>Development stopped after the tenth phase shipped. It restarted in August 2026 to repair the deployment and work down the backlog.</p></div>
-        <div class="card flag"><h3>Single host, no alerting</h3><p>One EC2 instance running Docker Compose. An outage earlier this year was found by hand, not by a monitor. Tracked openly.</p></div>
-        <div class="card flag"><h3>Known gaps are public</h3><p>Every limitation is a numbered GitHub issue, including the ones that are uncomfortable. Nothing is hidden to make the project look further along.</p></div>
+        <div class="card flag"><h3>Paused February 2026</h3><p>Development stopped after the tenth phase shipped, and restarted in August 2026 to repair the deployment and work the backlog down.</p></div>
+        <div class="card flag"><h3>Single host, no alerting</h3><p>One EC2 instance running Docker Compose. An outage earlier this year was found by hand, not by a monitor.</p></div>
+        <div class="card flag"><h3>No charitable entity yet</h3><p>Relay is built by Mythic Works LLC under AGPL-3.0. Fiscal sponsorship or incorporation is an open decision - see the last slide.</p></div>
       </div>
-      <p class="small muted" style="margin-top:2px">What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
+      <p class="small muted" style="margin-top:2px">Every limitation above is a numbered issue in the public tracker, including the uncomfortable ones. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
     </div>
   </section>`,
 
-  // 10 THE PILOT
+  // 13 THE PILOT
   `<section class="slide" data-name="The pilot">
     <div class="stack">
       <span class="eyebrow">The ask, concretely</span>
       <h2 class="k h-lg">One hub. Three to five groups. <span class="hl">Thirty to forty-five days.</span></h2>
       <div class="cols two" style="margin-top:4px">
         <div class="stack gap-s">
-          <p class="small"><b style="color:var(--ink)">What a partner provides:</b> one fund hub willing to route real money through the workflow, introductions to three to five local groups, and honest feedback when it does not work.</p>
-          <p class="small"><b style="color:var(--ink)">What Relay provides:</b> the platform, onboarding, support throughout, and a facilitator. No cost to participants.</p>
-          <p class="small"><b style="color:var(--ink)">Participation is opt-in and endable by any party at any time.</b> If the pilot does not clearly help, it stops - that is written into the proposal, not implied.</p>
+          <p class="small"><b style="color:var(--ink)">A partner provides:</b> one fund hub willing to route real money through the workflow, introductions to three to five local groups, and honest feedback when it does not work.</p>
+          <p class="small"><b style="color:var(--ink)">Relay provides:</b> the platform, onboarding, support throughout, and a facilitator. No cost to participants.</p>
+          <p class="small"><b style="color:var(--ink)">Participation is opt-in and endable by any party at any time.</b> If it does not clearly help, it stops - written into the proposal, not implied.</p>
         </div>
         <div class="card">
           <h3>It succeeded if</h3>
@@ -398,7 +490,7 @@ const slides = [
             <dt>02</dt><dd>Someone asked for help without identifying themselves</dd>
             <dt>03</dt><dd>A group reached that person, verified by safe word</dd>
             <dt>04</dt><dd>Funds moved faster than they did before</dd>
-            <dt>05</dt><dd>Participants say it felt safer than the tools they replaced</dd>
+            <dt>05</dt><dd>Participants say it felt safer than the tools it replaced</dd>
             <dt>06</dt><dd>Nobody asked for recipient data, because nothing needed it</dd>
           </div>
         </div>
@@ -406,32 +498,44 @@ const slides = [
     </div>
   </section>`,
 
-  // 11 WHY THIS APPROACH
-  `<section class="slide" data-name="Why this way">
+  // 14 WHAT IT COSTS
+  `<section class="slide" data-name="What it costs">
     <div class="stack">
-      <span class="eyebrow">What makes it different</span>
-      <h2 class="k h-lg">Most tools in this space collect first and <span class="hl">protect later</span>.</h2>
-      <div class="cols three" style="margin-top:4px">
-        <div class="card"><h3>Group-first, individual-opaque</h3><p>Accountability for money sits with groups, who already hold local trust. Individuals never register, so there is no roster of people who needed help.</p></div>
-        <div class="card"><h3>Ephemeral by construction</h3><p>Requests delete on confirmation or expire within seven days. Retention is not a policy that can be changed later; it is enforced by a scheduler and a database constraint.</p></div>
-        <div class="card"><h3>Auditable in public</h3><p>Open source, with the security review, the known gaps and the architectural decisions all in the repository. A partner can verify the claims instead of taking them.</p></div>
+      <span class="eyebrow">What funding buys</span>
+      <h2 class="k h-lg">The software <span class="hl">is</span> the program.</h2>
+      <p class="lede">There is no separate charitable activity here to point at. A hosted, maintained, audited coordination layer is the entire intervention - so by the usual accounting Relay looks like pure overhead, and it is worth saying why that framing does not fit before anyone applies it.</p>
+      <div class="cols two" style="margin-top:6px;align-items:start">
+        <div class="money">
+          <div class="line"><span class="w">Hosting and infrastructure<em>Single host, database, TLS, backups, domain</em></span><span class="v todo">to set</span></div>
+          <div class="line"><span class="w">Engineering and maintenance<em>Security patching, dependency updates, the open backlog</em></span><span class="v todo">to set</span></div>
+          <div class="line"><span class="w">Pilot facilitation<em>Onboarding groups, support during the pilot, writing up what happened</em></span><span class="v todo">to set</span></div>
+          <div class="line"><span class="w">Independent security review<em>Repeat of the cryptography review, widened to the application</em></span><span class="v todo">to set</span></div>
+          <div class="line"><span class="w">Monitoring and alerting<em>Currently absent; an outage went undetected this year</em></span><span class="v todo">to set</span></div>
+        </div>
+        <div class="card">
+          <h3>What it does not buy</h3>
+          <p>No aid budget. Relay does not hold, route or distribute money, and would not be a good place to put any - the funds already exist and already have hubs. What is missing is the layer that connects them.</p>
+          <p style="margin-top:10px">Amounts are deliberately unset until the entity question is resolved, because the answer changes what can be received and from whom.</p>
+        </div>
       </div>
-      <p class="small muted" style="margin-top:4px">The design principle throughout: assume the worst case and reduce the blast radius, rather than promise the worst case will not happen.</p>
     </div>
   </section>`,
 
-  // 12 CLOSE
+  // 15 NEXT
   `<section class="slide" data-name="Next">
     <div class="stack">
       <span class="eyebrow">Next</span>
       <h2 class="k h-lg">The build is done enough. It needs <span class="hl">one hub willing to try it</span>.</h2>
-      <p class="lede">The most useful next conversation is with a fund hub or a mutual aid network that already moves money to local groups and finds the coordination painful.</p>
-      <div class="cols three" style="margin-top:8px">
-        <div class="card"><h3>For a fund hub</h3><p>Route one cycle of real requests through it and tell us where it gets in the way.</p></div>
-        <div class="card"><h3>For a mutual aid network</h3><p>Put three to five groups through onboarding and verification, and judge whether it respects how they already work.</p></div>
-        <div class="card"><h3>For a funder</h3><p>The pilot needs a facilitator's time and the hosting behind it. <span class="todo">amount + use of funds to be set</span></p></div>
+      <div class="cols three" style="margin-top:6px">
+        <div class="card"><h3>A fund hub</h3><p>Route one cycle of real requests through it and say where it gets in the way.</p></div>
+        <div class="card"><h3>A mutual aid network</h3><p>Put three to five groups through onboarding, and judge whether it respects how they already work.</p></div>
+        <div class="card"><h3>A funder</h3><p>Public-interest technology rather than human services: an articulated threat model, a copyleft licence, a reviewed cryptographic design, and a public issue tracker.</p></div>
       </div>
-      <div class="row" style="margin-top:10px">
+      <div class="card flag" style="margin-top:8px">
+        <h3>Open before any money moves</h3>
+        <p>Relay is Mythic Works LLC under AGPL-3.0, with no charitable entity. That closes most foundation routes and rules out tax-deductible donations until it is settled - by fiscal sponsorship, by incorporation, or by working with funders who fund companies and individuals directly. It is named here rather than discovered later.</p>
+      </div>
+      <div class="row" style="margin-top:8px">
         <span class="chip"><b>relayfunds.org</b></span>
         <span class="chip"><b>github.com/Flatts3000/relay</b></span>
         <span class="todo">contact + who is behind this to be added</span>
