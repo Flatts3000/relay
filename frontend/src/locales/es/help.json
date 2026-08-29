@@ -8,7 +8,8 @@
     "refresh": "Actualizar"
   },
   "detail": {
-    "backToList": "Volver a solicitudes de ayuda"
+    "backToList": "Volver a solicitudes de ayuda",
+    "title": "Solicitud de ayuda"
   },
   "errors": {
     "regionRequired": "Por favor ingrese su área/región",
@@ -45,6 +46,12 @@
       "contactRequired": "Por favor ingrese su información de contacto",
       "noGroups": "No se encontraron grupos en su área para las categorías seleccionadas. Intente ampliar su selección.",
       "submitFailed": "Error al enviar la solicitud. Por favor intente de nuevo."
+    },
+    "next": {
+      "title": "Qué pasa después",
+      "step1": "Tu mensaje se cifra en este dispositivo y se envía a grupos de ayuda mutua verificados que atienden la zona que elegiste.",
+      "step2": "En la siguiente pantalla recibirás una palabra clave. Anótala: un grupo te la repetirá para que sepas que el contacto es auténtico.",
+      "step3": "Un grupo te contactará como pediste. Si nadie te contacta en unos días, puedes enviar otra solicitud."
     }
   },
   "broadcastCategories": {

@@ -123,7 +123,7 @@ export function HubGroupsListPage() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>
+                  <h2 className="text-lg font-medium text-gray-900">{group.name}</h2>
                   <p className="text-gray-600">{group.serviceArea}</p>
                 </div>
                 <span

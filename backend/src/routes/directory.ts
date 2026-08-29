@@ -36,6 +36,7 @@ directoryRouter.get('/', directoryLookupRateLimiter, async (req, res) => {
  * Query params:
  *   - search (optional): filter by name or service area
  *   - category (optional): filter by aid category
+ *   - region (optional): filter by service area
  *
  * CRITICAL: No authentication, no cookies, no IP logging, no audit.
  */
@@ -53,6 +54,11 @@ directoryRouter.get('/groups', directoryBrowseRateLimiter, async (req, res) => {
   // Validate category against allowed enum values
   const category = rawCategory && VALID_AID_CATEGORIES.has(rawCategory) ? rawCategory : undefined;
 
-  const entries = await getPublicDirectoryEntries(search, category);
+  const rawRegion =
+    typeof req.query['region'] === 'string' ? req.query['region'].trim() : undefined;
+  const region =
+    rawRegion && rawRegion.length > 0 && rawRegion.length <= 200 ? rawRegion : undefined;
+
+  const entries = await getPublicDirectoryEntries(search, category, region);
   res.json({ entries, total: entries.length });
 });

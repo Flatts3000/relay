@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import { PublicHeader, PublicFooter } from '../components/layout';
-import { Alert } from '../components/ui';
+import { Alert, RegionAutocomplete } from '../components/ui';
 import { fetchPublicDirectory } from '../api/directory';
 import { AID_CATEGORIES } from '../api/types';
 import type { PublicDirectoryEntry } from '../api/types';
@@ -21,6 +22,7 @@ export function GroupDirectoryPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [regionFilter, setRegionFilter] = useState('');
 
   // Debounced, because loadDirectory depends on `search` and the effect below
   // re-fires on every change: without this, typing "brooklyn mutual aid" is
@@ -40,7 +42,8 @@ export function GroupDirectoryPage() {
     try {
       const results = await fetchPublicDirectory(
         debouncedSearch || undefined,
-        categoryFilter || undefined
+        categoryFilter || undefined,
+        regionFilter || undefined
       );
       setEntries(results);
     } catch (err) {
@@ -48,7 +51,7 @@ export function GroupDirectoryPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch, categoryFilter, t]);
+  }, [debouncedSearch, categoryFilter, regionFilter, t]);
 
   useEffect(() => {
     loadDirectory();
@@ -59,7 +62,7 @@ export function GroupDirectoryPage() {
       <PublicHeader />
 
       <main className="flex-1 py-12 sm:py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="mb-8 text-center">
             <h1 className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-2">
               {t('directory.title')}
@@ -67,27 +70,55 @@ export function GroupDirectoryPage() {
             <p className="text-lg text-gray-600">{t('directory.description')}</p>
           </div>
 
-          {/* Filter bar */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t('directory.searchPlaceholder')}
-              className="flex-1 px-4 min-h-[44px] rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          {/* Region is its own control rather than folded into the free-text
+              search. Browsing by area is how this directory is meant to be
+              used, and one box that also matches group names returns a group in
+              another county because its name happens to contain the word
+              typed. */}
+          <div className="grid gap-3 sm:grid-cols-3 mb-6">
+            <RegionAutocomplete
+              value={regionFilter}
+              onChange={setRegionFilter}
+              label={t('directory.regionLabel')}
+              placeholder={t('directory.regionPlaceholder')}
             />
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 min-h-[44px] rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              <option value="">{t('directory.allCategories')}</option>
-              {AID_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat}>
-                  {t(`aidCategories.${cat}`)}
-                </option>
-              ))}
-            </select>
+            <div>
+              <label
+                htmlFor="directory-category"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                {t('directory.categoryLabel')}
+              </label>
+              <select
+                id="directory-category"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full px-4 min-h-[44px] rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="">{t('directory.allCategories')}</option>
+                {AID_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {t(`aidCategories.${cat}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="directory-search"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                {t('directory.searchLabel')}
+              </label>
+              <input
+                id="directory-search"
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('directory.searchPlaceholder')}
+                className="w-full px-4 min-h-[44px] rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+            </div>
           </div>
 
           {error && (
@@ -101,12 +132,21 @@ export function GroupDirectoryPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
             </div>
           ) : entries.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-xl">
-              <p className="text-gray-500">
-                {search || categoryFilter
+            <div className="text-center py-12 bg-gray-50 rounded-xl px-6">
+              <p className="text-gray-700 mb-2 font-medium">
+                {search || categoryFilter || regionFilter
                   ? t('directory.noGroupsFound')
                   : t('directory.noGroupsYet')}
               </p>
+              {/* An empty result is the moment someone most needs the other way
+                  through the product, not a dead end. */}
+              <p className="text-sm text-gray-600 mb-4">{t('directory.emptyHelp')}</p>
+              <Link
+                to="/help"
+                className="inline-flex items-center justify-center px-4 py-3 min-h-[44px] rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
+              >
+                {t('directory.emptyAction')}
+              </Link>
             </div>
           ) : (
             <>
@@ -114,27 +154,28 @@ export function GroupDirectoryPage() {
                 {t('directory.groupCount', { count: entries.length })}
               </p>
 
-              <div className="grid gap-4">
+              {/* Two and three columns rather than one long ribbon: eight
+                  results used to fill two thousand pixels, so finding the
+                  nearest group meant scrolling past every other one. */}
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {entries.map((entry) => (
                   <div
                     key={entry.id}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 flex flex-col"
                   >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-                          {entry.name}
-                          <FontAwesomeIcon
-                            icon={faCheckCircle}
-                            className="text-green-500 text-sm"
-                            title={t('verificationStatus.verified')}
-                          />
-                        </h3>
-                        <p className="text-gray-600">{entry.serviceArea}</p>
-                      </div>
-                    </div>
+                    <h2 className="text-base font-semibold text-gray-900">{entry.name}</h2>
+                    <p className="text-sm text-gray-600 mt-0.5">{entry.serviceArea}</p>
 
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    {/* Labelled, not a bare tick carrying a title attribute.
+                        Verification is this directory's entire trust claim, and
+                        an icon that only explains itself on hover explains
+                        itself to nobody on a phone. */}
+                    <p className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 mt-2">
+                      <FontAwesomeIcon icon={faCheckCircle} aria-hidden="true" />
+                      {t('directory.verifiedBadge')}
+                    </p>
+
+                    <div className="flex flex-wrap gap-1.5 my-3">
                       {entry.aidCategories.map((cat) => (
                         <span
                           key={cat}
@@ -145,15 +186,30 @@ export function GroupDirectoryPage() {
                       ))}
                     </div>
 
+                    {/* The only action on the page, so it looks like one. */}
                     <a
                       href={`mailto:${entry.contactEmail}`}
-                      className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700"
+                      className="mt-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
                     >
-                      <FontAwesomeIcon icon={faEnvelope} />
+                      <FontAwesomeIcon icon={faEnvelope} aria-hidden="true" />
                       {t('directory.contactEmail')}
                     </a>
                   </div>
                 ))}
+              </div>
+
+              {/* Bridges the two halves of the product: someone who browses and
+                  finds nothing that fits had no way from here to the anonymous
+                  request. */}
+              <div className="mt-10 rounded-xl bg-gray-50 border border-gray-200 p-6 text-center">
+                <p className="text-gray-700 font-medium mb-1">{t('directory.ctaTitle')}</p>
+                <p className="text-sm text-gray-600 mb-4">{t('directory.ctaDescription')}</p>
+                <Link
+                  to="/help"
+                  className="inline-flex items-center justify-center px-4 py-3 min-h-[44px] rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
+                >
+                  {t('directory.emptyAction')}
+                </Link>
               </div>
             </>
           )}

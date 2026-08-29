@@ -29,12 +29,18 @@ const configSchema = z.object({
     z.coerce.number().int().positive().default(10)
   ),
   // Requests per 15 minutes to every non-health API route, keyed on the client
-  // address. Same preprocess rationale as the login limit above. Configurable
-  // so a seeded dev environment or an end-to-end run can page through the whole
-  // app without tripping a production-shaped limit.
+  // address. Same preprocess rationale as the login limit above.
+  //
+  // 100 was too low to use the product with. AuthContext calls /api/auth/me on
+  // every mount, so each navigation costs at least two requests, and the budget
+  // is per address - which for this user base means per shelter, per library,
+  // per mobile carrier NAT, as the login limiter's own comment notes. Paging
+  // through the app during a UX review tripped it and locked the session out
+  // mid-run. 600 still bounds abuse at 40 requests a minute sustained while
+  // leaving room for several people working from one address.
   apiRateLimitMax: z.preprocess(
     (v) => (v === '' || v === undefined ? undefined : v),
-    z.coerce.number().int().positive().default(100)
+    z.coerce.number().int().positive().default(600)
   ),
   frontendUrl: z.string().default('http://localhost:3000'),
   database: z.object({

@@ -107,5 +107,21 @@
     "failedToAcknowledge": "Error al confirmar la recepción",
     "notVerified": "Solo los grupos verificados pueden enviar solicitudes de fondos",
     "invalidStatus": "Esta acción no está disponible para el estado actual"
+  },
+  "requestCount_one": "{{count}} solicitud",
+  "requestCount_other": "{{count}} solicitudes",
+  "sections": {
+    "awaitingHub_one": "Esperando tu decisión ({{count}})",
+    "awaitingHub_other": "Esperando tu decisión ({{count}})",
+    "awaitingGroup_one": "Esperando al centro ({{count}})",
+    "awaitingGroup_other": "Esperando al centro ({{count}})",
+    "settled_one": "Resueltas ({{count}})",
+    "settled_other": "Resueltas ({{count}})"
+  },
+  "totals": {
+    "awaiting": "Esperando decisión",
+    "settled": "Ya resueltas",
+    "urgent": "Marcadas urgentes",
+    "urgentHint": "de las que esperan decisión"
   }
 }

@@ -257,7 +257,9 @@ export default function App() {
         />
 
         {/* Design system - development documentation */}
-        <Route path="/design-system" element={<DesignSystemPage />} />
+        {/* Development only. An internal component gallery on a public,
+            unauthenticated route is not something to ship. */}
+        {import.meta.env.DEV && <Route path="/design-system" element={<DesignSystemPage />} />}
 
         {/* Public info pages - no authentication */}
         <Route path="/privacy" element={<PrivacyPage />} />

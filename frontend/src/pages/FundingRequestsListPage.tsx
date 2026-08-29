@@ -66,12 +66,66 @@ export function FundingRequestsListPage() {
     }).format(parseFloat(amount));
   };
 
+  // A hub admin's job on this page is to find the requests waiting on a
+  // decision and make it. Submitted is the only status that means "you";
+  // everything else is a record of something already settled. Eighteen rows in
+  // one undifferentiated stream, with the status as a pale pill at the far right
+  // edge, made that hunting work.
+  const awaiting = requests.filter((r) => r.status === 'submitted');
+  const settled = requests.filter((r) => r.status !== 'submitted');
+  const sum = (rows: FundingRequest[]) =>
+    rows.reduce((total, r) => total + parseFloat(r.amount), 0);
+
+  const renderRequest = (request: FundingRequest) => (
+    <Link
+      key={request.id}
+      to={`/requests/${request.id}`}
+      className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 hover:shadow transition-all"
+    >
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-semibold text-gray-900">
+              {formatAmount(request.amount)}
+            </span>
+            {request.urgency === 'urgent' && (
+              <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
+                {t('requests:form.urgencyUrgent')}
+              </span>
+            )}
+          </div>
+          {isHubAdmin && <p className="text-gray-700 font-medium">{request.groupName}</p>}
+          <p className="text-gray-600">
+            {t(`common:aidCategories.${request.category}`)} • {request.region}
+          </p>
+        </div>
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClass(request.status)}`}
+        >
+          {t(`requests:status.${request.status === 'funds_sent' ? 'fundsSent' : request.status}`)}
+        </span>
+      </div>
+      {request.clarificationRequest && request.status === 'submitted' && (
+        <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+          {t('requests:clarify.pending')}
+        </div>
+      )}
+      <div className="mt-3 text-sm text-gray-500">
+        {new Date(request.submittedAt).toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </div>
+    </Link>
+  );
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('requests:title')}</h1>
-          <p className="text-gray-600">{total} request(s)</p>
+          <p className="text-gray-600">{t('requests:requestCount', { count: total })}</p>
         </div>
         {!isHubAdmin && (
           <Link
@@ -87,6 +141,37 @@ export function FundingRequestsListPage() {
         <Alert type="error" className="mb-6">
           {error}
         </Alert>
+      )}
+
+      {/* The page is about money and did not state any totals, so the reviewer
+          had to add eighteen figures in their head to answer the first question
+          anyone asks: how much is waiting on me. */}
+      {!isLoading && requests.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-3 mb-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <p className="text-sm text-gray-500">{t('requests:totals.awaiting')}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formatAmount(String(sum(awaiting)))}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {t('requests:requestCount', { count: awaiting.length })}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <p className="text-sm text-gray-500">{t('requests:totals.settled')}</p>
+            <p className="text-2xl font-bold text-gray-900">{formatAmount(String(sum(settled)))}</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {t('requests:requestCount', { count: settled.length })}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-4">
+            <p className="text-sm text-gray-500">{t('requests:totals.urgent')}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {awaiting.filter((r) => r.urgency === 'urgent').length}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">{t('requests:totals.urgentHint')}</p>
+          </div>
+        </div>
       )}
 
       {/* Filters */}
@@ -151,52 +236,30 @@ export function FundingRequestsListPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
-          {requests.map((request) => (
-            <Link
-              key={request.id}
-              to={`/requests/${request.id}`}
-              className="block bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:border-primary-300 hover:shadow transition-all"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-semibold text-gray-900">
-                      {formatAmount(request.amount)}
-                    </span>
-                    {request.urgency === 'urgent' && (
-                      <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
-                        {t('requests:form.urgencyUrgent')}
-                      </span>
-                    )}
-                  </div>
-                  {isHubAdmin && <p className="text-gray-700 font-medium">{request.groupName}</p>}
-                  <p className="text-gray-600">
-                    {t(`common:aidCategories.${request.category}`)} • {request.region}
-                  </p>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClass(request.status)}`}
-                >
-                  {t(
-                    `requests:status.${request.status === 'funds_sent' ? 'fundsSent' : request.status}`
-                  )}
-                </span>
-              </div>
-              {request.clarificationRequest && request.status === 'submitted' && (
-                <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                  {t('requests:clarify.pending')}
-                </div>
-              )}
-              <div className="mt-3 text-sm text-gray-500">
-                {new Date(request.submittedAt).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </div>
-            </Link>
-          ))}
+        <div className="space-y-8">
+          {/* Split only when the reader has not already filtered to one status:
+              a deliberate filter is its own answer, and re-sectioning it would
+              just be noise. */}
+          {statusFilter === '' && awaiting.length > 0 && settled.length > 0 ? (
+            <>
+              <section>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
+                  {isHubAdmin
+                    ? t('requests:sections.awaitingHub', { count: awaiting.length })
+                    : t('requests:sections.awaitingGroup', { count: awaiting.length })}
+                </h2>
+                <div className="grid gap-4">{awaiting.map(renderRequest)}</div>
+              </section>
+              <section>
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
+                  {t('requests:sections.settled', { count: settled.length })}
+                </h2>
+                <div className="grid gap-4">{settled.map(renderRequest)}</div>
+              </section>
+            </>
+          ) : (
+            <div className="grid gap-4">{requests.map(renderRequest)}</div>
+          )}
         </div>
       )}
     </div>

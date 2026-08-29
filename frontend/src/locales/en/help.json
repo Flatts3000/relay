@@ -8,7 +8,8 @@
     "refresh": "Refresh"
   },
   "detail": {
-    "backToList": "Back to Help Requests"
+    "backToList": "Back to Help Requests",
+    "title": "Help request"
   },
   "errors": {
     "regionRequired": "Please enter your area/region",
@@ -45,6 +46,12 @@
       "contactRequired": "Please enter your contact information",
       "noGroups": "No groups found in your area for the selected categories. Try broadening your selection.",
       "submitFailed": "Failed to send request. Please try again."
+    },
+    "next": {
+      "title": "What happens next",
+      "step1": "Your message is encrypted on this device and sent to verified mutual aid groups serving the area you chose.",
+      "step2": "You get a safe word on the next screen. Write it down - a group will repeat it back to you so you know the contact is genuine.",
+      "step3": "A group contacts you the way you asked. If nobody has been in touch after a few days, you can send another request."
     }
   },
   "broadcastCategories": {

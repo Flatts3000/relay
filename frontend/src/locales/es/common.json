@@ -82,7 +82,16 @@
     "noGroupsYet": "Aún no hay grupos verificados. Vuelve pronto.",
     "contactEmail": "Contacto",
     "groupCount_one": "{{count}} grupo verificado",
-    "groupCount_other": "{{count}} grupos verificados"
+    "groupCount_other": "{{count}} grupos verificados",
+    "regionLabel": "Zona",
+    "regionPlaceholder": "Ciudad o condado",
+    "categoryLabel": "Tipo de ayuda",
+    "searchLabel": "Nombre del grupo",
+    "verifiedBadge": "Verificado",
+    "emptyHelp": "Prueba con una zona más amplia o quita un filtro. También puedes enviar una solicitud anónima y dejar que los grupos te contacten.",
+    "emptyAction": "Pedir ayuda de forma anónima",
+    "ctaTitle": "¿No sabes a qué grupo contactar?",
+    "ctaDescription": "Envía una solicitud cifrada y la verán todos los grupos verificados que atienden tu zona. Sin cuenta, sin nombre, sin seguimiento."
   },
   "dashboard": {
     "title": "Panel de Control",
@@ -219,5 +228,18 @@
     "mismatch": "Las dos contraseñas no coinciden.",
     "failed": "No se pudo guardar la contraseña. Inténtalo de nuevo.",
     "recoveryNote": "No hay forma de recuperar una contraseña perdida: eso es lo que impide que cualquier otra persona, incluida Relay, lea tus solicitudes. Si la pierdes, elige una nueva aquí; las solicitudes enviadas antes no se podrán abrir."
+  },
+  "hubDashboard": {
+    "title": "Panel del centro",
+    "subtitle": "Lo que espera tu decisión y lo que tu centro ha movido.",
+    "awaitingDecision": "Solicitudes de fondos que esperan tu decisión",
+    "requested": "solicitados",
+    "pendingVerifications": "Grupos que esperan verificación",
+    "groupsWaiting": "esperando revisión",
+    "allClear": "Ahora mismo no hay nada esperando tu decisión.",
+    "activity": "Actividad",
+    "totalMoved": "Total solicitado",
+    "approved": "Solicitudes aprobadas",
+    "totalRequests": "Solicitudes recibidas"
   }
 }

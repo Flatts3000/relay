@@ -196,6 +196,10 @@ export function InviteDetailPage() {
   if (error && !invite) {
     return (
       <div>
+        {/* The heading belongs on this branch too. A request that has already
+            been dealt with, or whose invite expired, renders here - and it was
+            a page with an error message and no title. */}
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('help:detail.title')}</h1>
         <Alert type="error" className="mb-4">
           {error}
         </Alert>
@@ -211,6 +215,9 @@ export function InviteDetailPage() {
       <Button variant="secondary" onClick={() => navigate('/inbox')} className="mb-6">
         {t('help:detail.backToList')}
       </Button>
+
+      {/* The page had two h2s and no h1, so it began mid-hierarchy. */}
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('help:detail.title')}</h1>
 
       {/* Not yet decrypted — show unlock form */}
       {!decryptedContent && invite && (

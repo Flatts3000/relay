@@ -82,7 +82,16 @@
     "noGroupsYet": "No verified groups are listed yet. Check back soon.",
     "contactEmail": "Contact",
     "groupCount_one": "{{count}} verified group",
-    "groupCount_other": "{{count}} verified groups"
+    "groupCount_other": "{{count}} verified groups",
+    "regionLabel": "Area",
+    "regionPlaceholder": "City or county",
+    "categoryLabel": "Type of help",
+    "searchLabel": "Group name",
+    "verifiedBadge": "Verified",
+    "emptyHelp": "Try a wider area, or remove a filter. You can also send an anonymous request and let groups come to you.",
+    "emptyAction": "Request help anonymously",
+    "ctaTitle": "Not sure which group to contact?",
+    "ctaDescription": "Send one encrypted request and every verified group serving your area will see it. No account, no name, no tracking."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -219,5 +228,18 @@
     "mismatch": "The two passphrases do not match.",
     "failed": "Could not save the passphrase. Please try again.",
     "recoveryNote": "There is no way to recover a lost passphrase - that is what stops anyone else, including Relay, from reading your requests. If you lose it, set a new one here; requests sent before then cannot be opened."
+  },
+  "hubDashboard": {
+    "title": "Hub dashboard",
+    "subtitle": "What is waiting on you, and what your hub has moved.",
+    "awaitingDecision": "Funding requests awaiting your decision",
+    "requested": "requested",
+    "pendingVerifications": "Groups awaiting verification",
+    "groupsWaiting": "waiting to be reviewed",
+    "allClear": "Nothing is waiting on you right now.",
+    "activity": "Activity",
+    "totalMoved": "Total requested",
+    "approved": "Requests approved",
+    "totalRequests": "Requests received"
   }
 }

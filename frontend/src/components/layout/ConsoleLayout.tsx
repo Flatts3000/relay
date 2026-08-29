@@ -59,7 +59,7 @@ export function ConsoleLayout({ children, navItems, badge }: ConsoleLayoutProps)
   const sidebar = (
     <nav className="flex flex-col h-full" aria-label={t('navigation.primary')}>
       <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2 min-h-[44px]">
           <img src="/logo.png" alt={t('appName')} className="h-7 brightness-0 invert" />
           {badge && (
             <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">

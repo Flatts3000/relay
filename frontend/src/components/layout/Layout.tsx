@@ -60,6 +60,7 @@ export function Layout({ children }: LayoutProps) {
     }
   } else if (user?.role === 'hub_admin') {
     navItems.push(
+      { key: 'dashboard', path: '/dashboard', label: t('navigation.dashboard'), icon: faGauge },
       { key: 'groups', path: '/groups', label: t('navigation.groups'), icon: faUserGroup },
       {
         key: 'verification',

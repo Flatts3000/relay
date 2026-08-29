@@ -21,9 +21,18 @@ html {
   outline-offset: 2px;
 }
 
-/* Touch target minimum size for mobile */
+/*
+ * Touch target minimum size for mobile.
+ *
+ * Deliberately not applied to every <a>. A blanket rule gave inline links inside
+ * sentences a 44px-tall box while leaving their text at its top, which is how
+ * the Settings link in the signed-in header came to sit visibly above the email
+ * address beside it on every page. Links that are genuine tap targets - nav
+ * items, card actions, link-styled buttons - size themselves through the padding
+ * in their own classes and are checked at 390px; links inside prose should be
+ * sized by the line box they sit in.
+ */
 button,
-a,
 [role='button'] {
   min-height: 44px;
   min-width: 44px;
