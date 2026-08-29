@@ -14,6 +14,12 @@ export default defineConfig({
     //   FRONTEND_PORT=3021 BACKEND_URL=http://localhost:8004 npm run dev
     // and the backend needs PORT, CORS_ORIGIN and FRONTEND_URL to match.
     port: Number(process.env['FRONTEND_PORT'] ?? 3000),
+    // Fail rather than wander. Vite's default is to walk to the next free port
+    // when this one is taken, which on a machine running several projects means
+    // silently squatting on a port another project has registered - and the only
+    // symptom is that project's dev server refusing to start later, somewhere
+    // else entirely. Better to stop here and say so.
+    strictPort: true,
     proxy: {
       '/api': {
         target: process.env['BACKEND_URL'] ?? 'http://localhost:4000',
