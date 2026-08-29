@@ -21,25 +21,30 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      exclude: [
-        'node_modules/**',
-        'src/test/**',
-        '**/*.d.ts',
-        '**/*.test.ts',
-        'drizzle/**',
-      ],
-      // Set to the floor actually achieved, and enforced in CI, which is
-      // strictly stronger than the 60 that was configured here before: nothing
-      // ran `test:coverage`, so that number failed on every invocation and
-      // stopped nothing. A threshold below the real figure is a ratchet - raise
-      // it as coverage climbs; it exists to stop coverage falling.
+      // Without this only files a test imports are instrumented, because Vitest 4
+      // removed coverage.all and `include` has no default. That makes the
+      // threshold below almost useless as a ratchet: a wholly untested new
+      // service would not appear in the report at all, so the percentages would
+      // stay flat or rise while coverage actually fell. The frontend config
+      // already carried this note; the backend did not.
+      include: ['src/**/*.ts'],
+      exclude: ['node_modules/**', 'src/test/**', '**/*.d.ts', '**/*.test.ts', 'drizzle/**'],
+      // A floor with headroom, enforced in CI. Stronger than the 60 configured
+      // here before, which nothing ever ran, so it failed on every local
+      // invocation and blocked nothing.
       //
-      // Measured 2026-08-29 at 35.27 / 22.08 / 40.92 / 35.50.
+      // Measured 2026-08-29 with `include` above: 33.55 / 21.50 / 38.79 / 33.85.
+      // Set several points below that on purpose. Pinned to the exact figure,
+      // adding four uncovered branches anywhere - a couple of defensive guards
+      // in an already-tested file - would fail CI on an unrelated change, which
+      // teaches people to route around the gate rather than respect it.
+      //
+      // This is a ratchet. Raise it as coverage climbs.
       thresholds: {
-        statements: 35,
-        branches: 22,
-        functions: 40,
-        lines: 35,
+        statements: 30,
+        branches: 18,
+        functions: 35,
+        lines: 30,
       },
     },
   },

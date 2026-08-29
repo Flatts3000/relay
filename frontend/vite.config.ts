@@ -60,6 +60,22 @@ export default defineConfig({
       // Add entries here as other areas gain tests, and add a global floor once
       // there is a real one to hold. See #6.
       thresholds: {
+        // A global floor low enough to be honest about a frontend with two
+        // tested files, and high enough to be a canary.
+        //
+        // It exists because a per-file glob that matches nothing passes
+        // silently: Vitest builds an empty coverage map and istanbul reports
+        // 100% for a total of zero. So renaming either module below, or a typo
+        // in its key, would remove the only enforced gate in this workspace with
+        // no signal whatsoever. If that happens the global figure collapses
+        // towards zero and this catches it.
+        //
+        // Measured 2026-08-29 at 1.90 / 0.56 / 1.79 / 1.97.
+        statements: 1.5,
+        branches: 0.4,
+        functions: 1.4,
+        lines: 1.5,
+
         'src/utils/broadcast-crypto.ts': {
           statements: 95,
           branches: 95,
