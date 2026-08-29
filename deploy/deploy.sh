@@ -9,7 +9,16 @@ ENV_FILE="${APP_DIR}/deploy/.env.prod"
 # Readiness, not liveness. This gate is what triggers the rollback below, so
 # checking an endpoint that answers 200 whenever the process is up meant a
 # deploy with a broken database config passed and was never rolled back.
-HEALTH_URL="http://localhost:80/api/health/ready"
+#
+# Addressed to the site Caddy actually serves, over HTTPS, resolved to the
+# loopback so no traffic leaves the box. Plain http://localhost:80 does not
+# work and never did: Caddy answers it with a 308 redirect to HTTPS, so the
+# gate could only ever see 308, fail all 30 attempts, and take the rollback
+# path on a perfectly good deploy. Verified on the host - all three of
+# /api/health, /api/health/ready and a Host-header variant returned 308.
+# -k because the certificate is for relayfunds.org and we are dialling 127.0.0.1.
+HEALTH_URL="https://relayfunds.org/api/health/ready"
+CURL_OPTS=(-sk --max-time 10 --resolve "relayfunds.org:443:127.0.0.1")
 MAX_RETRIES=30
 RETRY_INTERVAL=2
 
@@ -66,7 +75,7 @@ docker compose -f "$COMPOSE_FILE" exec -T backend npx drizzle-kit migrate
 # Health check
 echo "Checking health..."
 for i in $(seq 1 $MAX_RETRIES); do
-  HTTP_CODE=$(curl -s --max-time 10 -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
+  HTTP_CODE=$(curl "${CURL_OPTS[@]}" -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
   if [ "$HTTP_CODE" = "200" ]; then
     echo "Health check passed!"
     break
