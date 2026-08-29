@@ -94,7 +94,13 @@ BACKUP_SIZE=$(du -h "${BACKUP_DIR}/${BACKUP_FILE}" | cut -f1)
 echo "Backup created: ${BACKUP_FILE} (${BACKUP_SIZE}), ${TABLE_COUNT} tables, integrity OK."
 
 # Upload to S3
-if command -v aws &>/dev/null && [ -n "${AWS_ACCESS_KEY_ID:-}" ]; then
+# Credentials come from the EC2 instance role (relay-prod-ssm), not from keys
+# in .env.prod. The old condition also required AWS_ACCESS_KEY_ID to be set,
+# which meant that if the credentials ever went missing the job printed a
+# warning, skipped the upload, and still exited 0 - so backups would silently
+# stop leaving the local copy only, and nothing would say so. Now a credential
+# problem surfaces as a failed upload and a non-zero exit.
+if command -v aws &>/dev/null; then
   echo "Uploading to s3://${S3_BUCKET}/..."
   aws s3 cp "${BACKUP_DIR}/${BACKUP_FILE}" "s3://${S3_BUCKET}/${BACKUP_FILE}" \
     --storage-class STANDARD_IA
