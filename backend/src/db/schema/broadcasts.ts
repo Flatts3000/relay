@@ -1,4 +1,14 @@
-import { pgTable, uuid, varchar, timestamp, pgEnum, index, customType } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  uuid,
+  varchar,
+  timestamp,
+  pgEnum,
+  index,
+  customType,
+  check,
+} from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { broadcastCategoryEnum, groups } from './groups.js';
 
 // Custom type for bytea (binary data)
@@ -63,6 +73,14 @@ export const broadcastInvites = pgTable(
     broadcastIdIdx: index('broadcast_invites_broadcast_id_idx').on(table.broadcastId),
     groupStatusIdx: index('broadcast_invites_group_status_idx').on(table.groupId, table.status),
     expiresAtIdx: index('broadcast_invites_expires_at_idx').on(table.expiresAt),
+    // Biconditional. Either half alone leaves an invite that the 10-minute
+    // sweep skips - it filters on status = 'decrypted' AND a non-null timestamp
+    // - so the row survives to the 7-day TTL still holding the wrapped content
+    // key. See #33 and migration 0007.
+    decryptedAtRequired: check(
+      'broadcast_invites_decrypted_at_required',
+      sql`(${table.status} = 'decrypted') = (${table.decryptedAt} IS NOT NULL)`
+    ),
   })
 );
 
