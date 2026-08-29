@@ -1,6 +1,7 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { createHash } from 'crypto';
 import type { Request } from 'express';
+import { config } from '../config.js';
 
 /**
  * Rate limiter for authenticated routes.
@@ -21,16 +22,40 @@ export const authRateLimiter = rateLimit({
 });
 
 /**
- * Rate limiter for login/auth requests.
- * More restrictive - 10 requests per 15 minutes per IP.
+ * Rate limiters for the two routes that issue credentials.
+ *
+ * Two instances, so they hold separate buckets. Sharing one meant a person
+ * repeatedly requesting links could exhaust the budget and leave somebody else
+ * unable to complete /verify while holding a valid, unexpired magic link -
+ * the same shared-bucket failure separated in the directory limiters, one route
+ * over. The addresses this user base arrives from are frequently shared
+ * (shelter and library wifi, mobile CGNAT), so the budget is per building more
+ * often than per person.
+ *
+ * Both key on req.ip via the library default, NOT on the hashed rotating key
+ * used for anonymous traffic. That is deliberate: the hashed key's salt rotates
+ * every 5 minutes, which would hand an attacker a fresh bucket three times per
+ * window and gut the control. CLAUDE.md's IP constraint covers anonymous
+ * routes, and these are the authenticated surface - but note the address is
+ * held in the limiter's memory store for the window, and is not persisted.
  */
-export const authLoginRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many login attempts, please try again later.' },
-});
+function credentialRateLimiter(message: string) {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: config.authLoginRateLimitMax,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: message },
+  });
+}
+
+export const authLoginRateLimiter = credentialRateLimiter(
+  'Too many login attempts, please try again later.'
+);
+
+export const authVerifyRateLimiter = credentialRateLimiter(
+  'Too many verification attempts, please try again later.'
+);
 
 /**
  * Hash function for anonymous rate limiting.

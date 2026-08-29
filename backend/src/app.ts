@@ -5,7 +5,7 @@ import { config } from './config.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestLogger } from './middleware/request-logger.js';
 import { requestId } from './middleware/request-id.js';
-import { authRateLimiter, authLoginRateLimiter } from './middleware/rate-limit.js';
+import { authRateLimiter } from './middleware/rate-limit.js';
 import { auditMiddleware } from './middleware/audit.js';
 import { healthRouter } from './routes/health.js';
 import { authRouter } from './routes/auth.js';
@@ -111,7 +111,13 @@ app.use(auditMiddleware);
 app.use('/api/health', healthRouter);
 
 // Auth routes (with stricter rate limiting)
-app.use('/api/auth', authLoginRateLimiter, authRouter);
+// The strict login limiter is applied inside the router, to /login and
+// /verify only. Mounting it here covered /me and /logout too, and the
+// frontend calls /me on every app mount - so ten page loads in fifteen
+// minutes locked a coordinator out of the authenticated UI entirely, and
+// behind a shared address that was ten loads for everyone on it.
+// General traffic here is still covered by authRateLimiter above.
+app.use('/api/auth', authRouter);
 
 // Authenticated routes
 app.use('/api/groups', groupsRouter);

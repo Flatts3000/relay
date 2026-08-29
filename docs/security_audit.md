@@ -82,7 +82,16 @@ This document summarizes the comprehensive security audit conducted as part of P
 | Anonymous endpoints | 10 req/min  | PASS   |
 | General API         | 100 req/min | PASS   |
 
-**Privacy Note:** Rate limiting uses hashed IPs with rotating salt to prevent tracking.
+**Privacy Note:** Rate limiting on **anonymous** routes - the public directory and
+broadcast submission - keys on a SHA-256 of the client address with a salt that
+rotates every 5 minutes, so no raw address is stored and the association expires
+with the salt.
+
+The limiters on `/api/auth/login` and `/api/auth/verify` do **not** hash: they use
+the library default, which keys on the client address and holds it in an in-memory
+store for the 15-minute window. This is deliberate - a salt rotating every 5 minutes
+would hand an attacker a fresh bucket three times per window. Nothing is persisted
+either way.
 
 ---
 

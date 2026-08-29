@@ -1,4 +1,5 @@
 import { asyncRouter } from '../utils/async-router.js';
+import { authLoginRateLimiter, authVerifyRateLimiter } from '../middleware/rate-limit.js';
 import { z } from 'zod';
 import {
   findUserByEmail,
@@ -22,7 +23,7 @@ const verifyTokenSchema = z.object({
 });
 
 // Request magic link
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/login', authLoginRateLimiter, async (req, res) => {
   try {
     const { email } = loginRequestSchema.parse(req.body);
 
@@ -74,7 +75,7 @@ authRouter.post('/login', async (req, res) => {
 });
 
 // Verify magic link token and create session
-authRouter.post('/verify', async (req, res) => {
+authRouter.post('/verify', authVerifyRateLimiter, async (req, res) => {
   try {
     const { token } = verifyTokenSchema.parse(req.body);
 
