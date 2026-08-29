@@ -15,6 +15,7 @@ import {
 import { validateSession } from '../services/auth.service.js';
 import {
   createTestHub,
+  createTestGroup,
   createTestUser,
   createTestOnboardingInvite,
   TestHub,
@@ -57,7 +58,12 @@ describe('Onboarding accept', () => {
         .select()
         .from(onboardingInvites)
         .where(eq(onboardingInvites.email, email));
-      expect(invite?.acceptedAt).not.toBeNull();
+      // Assert the row exists before asserting about it: `undefined?.acceptedAt`
+      // is undefined, and expect(undefined).not.toBeNull() passes - so the
+      // original form could not fail if the invite were deleted rather than
+      // stamped, or if the email lookup drifted.
+      expect(invite).toBeDefined();
+      expect(invite!.acceptedAt).toBeInstanceOf(Date);
 
       // A session token that does not authenticate would leave the new admin
       // holding a useless credential immediately after signing up.
@@ -177,6 +183,57 @@ describe('Onboarding accept', () => {
       // session that resolves without it is authenticated but powerless.
       expect(session?.hubId).toBe(hub!.id);
       expect(session?.isOwner).toBe(true);
+    });
+  });
+
+  // The three paths above are the ones with distinct setup. These cover the
+  // remaining half of the blast radius the fix claims: the same transaction bug
+  // was present in all six, and a test per path is what stops one of them
+  // quietly regressing on its own.
+  describe('the remaining accept paths', () => {
+    it('accepts a hub staff invite and returns a working session', async () => {
+      const hub = await createTestHub();
+      const admin = await inviter(hub);
+      const { token, email } = await createTestOnboardingInvite(admin.id, {
+        role: 'hub_admin',
+        targetHubId: hub.id,
+      });
+
+      const response = await request(app).post('/api/onboarding/accept/hub-staff').send({ token });
+
+      expect(response.status).toBe(201);
+
+      const [created] = await db.select().from(users).where(eq(users.email, email));
+      expect(created).toBeDefined();
+
+      const session = await validateSession(response.body.sessionToken);
+      expect(session?.id).toBe(created!.id);
+      expect(session?.hubId).toBe(hub.id);
+      // Staff join an existing hub rather than owning it.
+      expect(session?.isOwner).toBe(false);
+    });
+
+    it('accepts a group staff invite and returns a working session', async () => {
+      const hub = await createTestHub();
+      const admin = await inviter(hub);
+      const group = await createTestGroup(hub.id);
+      const { token, email } = await createTestOnboardingInvite(admin.id, {
+        role: 'group_coordinator',
+        targetGroupId: group.id,
+      });
+
+      const response = await request(app)
+        .post('/api/onboarding/accept/group-staff')
+        .send({ token });
+
+      expect(response.status).toBe(201);
+
+      const [created] = await db.select().from(users).where(eq(users.email, email));
+      expect(created).toBeDefined();
+
+      const session = await validateSession(response.body.sessionToken);
+      expect(session?.groupId).toBe(group.id);
+      expect(session?.isOwner).toBe(false);
     });
   });
 

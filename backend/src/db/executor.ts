@@ -1,4 +1,9 @@
-import { db } from './index.js';
+// Type-only: db/index.ts constructs a pg.Pool and reads config at module load,
+// so importing this type must never pull that in. TS elides a value import
+// used only in a type position today, but `import type` makes that guaranteed
+// rather than incidental - it survives verbatimModuleSyntax and bundlers that
+// preserve imports.
+import type { db } from './index.js';
 
 /**
  * Either the pool-backed client or an open transaction.

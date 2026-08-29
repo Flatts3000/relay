@@ -14,6 +14,7 @@ import {
 } from '../db/schema/index.js';
 
 type BroadcastCategory = (typeof broadcastCategoryEnum.enumValues)[number];
+import { randomUUID } from 'crypto';
 import { generateToken, generateExpiresAt, hashToken } from '../utils/crypto.js';
 
 export interface TestHub {
@@ -241,12 +242,16 @@ export async function createTestOnboardingInvite(
   } = {}
 ): Promise<{ token: string; email: string }> {
   const token = generateToken();
-  const email =
-    overrides.email ?? `invitee-${Date.now()}-${Math.round(performance.now())}@test.org`;
+  // randomUUID rather than a clock: two invites created in the same millisecond
+  // would otherwise share an address, and users.email is UNIQUE, so accepting
+  // both would surface as a confusing 400 from the accept route rather than a
+  // fixture error. Lowercased because the production create path does the same,
+  // and a fixture that skips it would let a case-sensitivity bug hide.
+  const email = (overrides.email ?? `invitee-${randomUUID()}@test.org`).toLowerCase();
 
   await db.insert(onboardingInvites).values({
     email,
-    role: (overrides.role ?? 'staff_admin') as never,
+    role: overrides.role ?? 'staff_admin',
     targetHubId: overrides.targetHubId ?? null,
     targetGroupId: overrides.targetGroupId ?? null,
     invitedById,
