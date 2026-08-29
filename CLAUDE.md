@@ -113,7 +113,7 @@ When writing new infrastructure code, build toward the target column. When reaso
 | Database       | PostgreSQL (container, not RDS)      |
 | Compute        | Single EC2 instance (not Fargate)    |
 | Infrastructure | Terraform in `/infra`, never applied |
-| CI/CD          | None. GitHub Actions is disabled     |
+| CI/CD          | GitHub Actions                       |
 | Containers     | Docker Compose                       |
 | i18n           | react-i18next (English, Spanish)     |
 | E2E Encryption | libsodium (TweetNaCl.js)             |
@@ -130,15 +130,15 @@ When writing new infrastructure code, build toward the target column. When reaso
 
 ## GitHub Actions
 
-Currently **disabled**. This was a deliberate early-development choice that has outlived its usefulness now that there is a deployed environment and 20 open dependency advisories. Re-enabling is tracked in [#5](https://github.com/Flatts3000/relay/issues/5).
+Enabled. `ci.yml` runs on every pull request: lint and typecheck, both test suites, the migrations
+job, builds, Docker builds, Terraform validate, dependency audit, CodeQL and Trivy. `deploy.yml`
+handles production.
 
-```bash
-# Re-enable when ready for CI
-gh api repos/Flatts3000/relay/actions/permissions -X PUT --input - <<< '{"enabled": true, "allowed_actions": "all"}'
-
-# Disable again if needed
-gh api repos/Flatts3000/relay/actions/permissions -X PUT --input - <<< '{"enabled": false}'
-```
+Two things it does not do. There is no OIDC anywhere - no workflow requests an `id-token`
+permission, and the production host holds a static IAM key
+([#11](https://github.com/Flatts3000/relay/issues/11)). And coverage thresholds are configured in
+both workspaces but never enforced, because no job runs `test:coverage`
+([#6](https://github.com/Flatts3000/relay/issues/6)).
 
 ## Build Commands
 

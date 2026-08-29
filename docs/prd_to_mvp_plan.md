@@ -492,7 +492,7 @@ frontend/src/locales/
 
 ### 5.1 Backend
 
-> **Shipped.** All four routes exist in `routes/groups.ts`, plus `GET /api/groups/me` and the broadcast-key route added later.
+> **Shipped.** All five routes exist in `routes/groups.ts`, plus `GET /api/groups/me`, `GET /api/groups/me/dashboard` and the broadcast-key route added later.
 
 - [x] `POST /api/groups` — register new group (invite flow)
 - [x] `GET /api/groups` — list groups (hub admin only)
@@ -716,14 +716,14 @@ frontend/src/locales/
 
 ### 8.4 Backend - Invite Lifecycle & Cleanup
 
-> **Shipped.** A ten-minute scheduler enforces the post-decryption window and the seven-day TTL, deletes the ciphertext once the last invite resolves, and writes a tombstone at that point. Covered by `invite-cleanup.service.test.ts`.
+> **Partially shipped.** A ten-minute scheduler enforces the post-decryption window and the seven-day TTL, deletes the ciphertext once the last invite resolves, and writes a tombstone at that point, all covered by `invite-cleanup.service.test.ts`. The dummy invite item below is not built, because dummy invites are not built - see 8.2.
 
 - [x] Invite TTL enforcement (scheduled job)
 - [x] Confirmation-based deletion (immediate on confirm)
 - [x] 10-minute auto-delete after decryption
 - [x] Ciphertext cleanup when all invites resolved
 - [x] Tombstone creation (broadcast ID, bucket, timestamp, confirming groups)
-- [x] Dummy invite cleanup at TTL expiry
+- [ ] Dummy invite cleanup at TTL expiry _(no dummy invites exist - see 8.2)_
 
 ### 8.5 Backend - Directory
 
@@ -746,7 +746,7 @@ frontend/src/locales/
 - [x] Content warnings: "Only recipient groups can read this" / shared device warning
 - [x] Submit: generate content key → encrypt payload → fetch directory → wrap key per group → upload
 - [x] Receipt screen: broadcast ID + safe-word + "A group will contact you" guidance
-- [x] **Verify:** Works on slow/intermittent connections
+- [ ] **Verify:** Works on slow/intermittent connections _(never measured - see 10.5)_
 - [x] **Verify:** No cookies, no localStorage persisted after submission
 - [x] **Verify:** All screens bilingual (English/Spanish)
 
@@ -765,7 +765,7 @@ frontend/src/locales/
 
 ### 8.8 Privacy Verification
 
-> **Shipped.** Verified end to end during the UX audit: a request submitted anonymously was opened by the recipient group, and the server holds only ciphertext.
+> **Partially shipped.** The privacy properties hold and were walked through end to end during the UX audit of 2026-08-29: a request submitted anonymously was opened by the recipient group, and the server holds only ciphertext it cannot read. But the items below labelled **Test:** ask for automated coverage, and there is none - there is no `broadcasts.test.ts`, and the only automated broadcast coverage is `invite-cleanup.service.test.ts` and `broadcast-key.test.ts`. A walkthrough is not a test; it does not run again tomorrow.
 
 - [x] **Audit:** No cookies set for anonymous users
 - [x] **Audit:** No server logs of broadcast submission
@@ -776,11 +776,11 @@ frontend/src/locales/
 - [x] **Audit:** Invites deleted after confirmation; ciphertext deleted after all invites resolved
 - [x] **Audit:** Content Security Policy blocks external scripts
 - [x] **Audit:** No third-party resources loaded
-- [x] **Test:** Full broadcast → decrypt → confirm → delete flow end-to-end
-- [x] **Test:** Groups added after broadcast cannot decrypt it (no invite exists)
+- [ ] **Test:** Full broadcast → decrypt → confirm → delete flow end-to-end _(walked through by hand, never automated)_
+- [ ] **Test:** Groups added after broadcast cannot decrypt it (no invite exists)
 - [x] **Test:** Tombstone retained, ciphertext and invites gone after resolution
 - [x] **Test:** 10-minute auto-delete works
-- [x] **Test:** Dummy invite padding works correctly
+- [ ] **Test:** Dummy invite padding works correctly _(no padding to test - see 8.2 and [#57](https://github.com/Flatts3000/relay/issues/57))_
 
 **Checkpoint:** Full anonymous help broadcast flow works; encryption verified; no tracking verified.
 
@@ -831,7 +831,7 @@ frontend/src/locales/
 
 ### 10.1 Application Security Audit
 
-> **Shipped.** Recorded in [security_audit.md](security_audit.md).
+> **Shipped, with the audit itself since corrected.** Recorded in [security_audit.md](security_audit.md). Read it as amended rather than as written: its token-storage findings were wrong when made - [#48](https://github.com/Flatts3000/relay/issues/48) is titled for exactly that, and plaintext storage of session, magic-link and invite tokens was only actually fixed in [#50](https://github.com/Flatts3000/relay/pull/50) and [#55](https://github.com/Flatts3000/relay/pull/55). The reviews in this section have now genuinely happened and the current state is sound; the document they point at was not evidence of that at the time it was written.
 
 - [x] Input validation review (all endpoints)
 - [x] SQL injection testing (parameterized queries verified)
@@ -874,7 +874,7 @@ frontend/src/locales/
 
 ### 10.4 Accessibility Audit
 
-> **Not done.** No accessibility audit has been run and no tooling is wired up - there is no axe, no Lighthouse, and no E2E suite. The UX audit of 2026-08-29 covered heading structure and touch targets only.
+> **Done once by hand, now stale, and untooled.** [security_audit.md](security_audit.md) section 4 is a WCAG 2.1 AA audit covering the checklist below. Treat it with care: its remediation list names `CreateMailboxPage` and `ViewMailboxPage`, screens removed with the mailbox model, so it describes an application that no longer exists. Nothing is automated - no axe, no Lighthouse, no E2E suite - so nothing re-checks any of this on a change. The UX audit of 2026-08-29 covered heading structure and touch targets only.
 
 - [ ] WCAG 2.1 AA compliance check
 - [ ] Screen reader testing
