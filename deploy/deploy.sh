@@ -3,6 +3,12 @@
 # Run from the repository root: /opt/relay
 set -euo pipefail
 
+# Absolute path to this script, resolved before the cd below so the re-exec
+# further down works however the script was invoked. `exec "$0"` is not enough:
+# when called as ./deploy.sh, $0 stays relative, and by the time the re-exec
+# runs the working directory has changed to APP_DIR, so exec cannot find it.
+SELF_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
+
 APP_DIR="${APP_DIR:-/opt/relay}"
 COMPOSE_FILE="${APP_DIR}/deploy/docker-compose.prod.yml"
 ENV_FILE="${APP_DIR}/deploy/.env.prod"
@@ -55,14 +61,14 @@ set +a
 # The env var makes this at most a single hand-off, so a pull that somehow
 # always reports a change cannot loop.
 echo "Pulling latest code..."
-SELF_BEFORE=$(sha256sum "$0" | cut -d' ' -f1)
+SELF_BEFORE=$(sha256sum "$SELF_PATH" | cut -d' ' -f1)
 git pull origin main
-SELF_AFTER=$(sha256sum "$0" | cut -d' ' -f1)
+SELF_AFTER=$(sha256sum "$SELF_PATH" | cut -d' ' -f1)
 
 if [ "$SELF_BEFORE" != "$SELF_AFTER" ] && [ -z "${RELAY_DEPLOY_REEXEC:-}" ]; then
   echo "deploy.sh changed in this pull - re-executing the new version."
   export RELAY_DEPLOY_REEXEC=1
-  exec "$0" "$@"
+  exec "$SELF_PATH" "$@"
 fi
 
 # Build images
