@@ -72,6 +72,7 @@ async function seed() {
     name: string;
     serviceArea: string;
     publicKey: Uint8Array;
+    secretKey: Uint8Array;
   }> = [];
 
   for (let i = 0; i < GROUP_NAMES.length; i++) {
@@ -84,6 +85,12 @@ async function seed() {
         aidCategories: [CATEGORIES[i % 3]!, CATEGORIES[(i + 1) % 3]!],
         contactEmail: `contact${i}@relay.test`,
         publicKey: Buffer.from(keypair.publicKey),
+        // Both halves, or the groups_key_material_complete CHECK rejects the row.
+        // A seeded salt is not derivable from any passphrase, so these groups
+        // cannot be unlocked through the UI - set a passphrase in group settings
+        // to do that. The key is here so the group appears in the broadcast
+        // directory and the inbox has something in it.
+        keySalt: Buffer.from(nacl.randomBytes(16)),
         broadcastCategories: ['food', 'shelter_housing'],
         broadcastServiceArea: REGIONS[i % REGIONS.length]!,
         createdAt: daysAgo(60 - i * 3),
@@ -103,6 +110,7 @@ async function seed() {
       name: group!.name,
       serviceArea: group!.serviceArea,
       publicKey: keypair.publicKey,
+      secretKey: keypair.secretKey,
     });
   }
 
@@ -185,17 +193,36 @@ async function seed() {
       .returning();
 
     for (const group of createdGroups.slice(0, 2)) {
+      // Packed nonce(24) + ephemeralPubKey(32) + box, matching wrapKeyForGroup
+      // and unwrapKey in frontend/src/utils/broadcast-crypto.ts. Any other order
+      // produces invites that always fail to unwrap, so the inbox this seed
+      // exists to populate would only ever exercise the failure path.
       const ephemeral = nacl.box.keyPair();
       const wrapNonce = nacl.randomBytes(nacl.box.nonceLength);
       const wrapped = nacl.box(contentKey, wrapNonce, group.publicKey, ephemeral.secretKey);
+      const packed = Buffer.concat([
+        Buffer.from(wrapNonce),
+        Buffer.from(ephemeral.publicKey),
+        Buffer.from(wrapped),
+      ]);
+
+      // Verify the packing round-trips rather than trusting it. This is the one
+      // place the seed reimplements production crypto, so it is the one place it
+      // can silently drift from it.
+      const unwrapped = nacl.box.open(
+        packed.subarray(24 + 32),
+        packed.subarray(0, 24),
+        packed.subarray(24, 24 + 32),
+        group.secretKey
+      );
+      if (!unwrapped) {
+        throw new Error('Seeded wrapped key does not unwrap; packing order is wrong');
+      }
+
       await db.insert(broadcastInvites).values({
         broadcastId: broadcast!.id,
         groupId: group.id,
-        wrappedKey: Buffer.concat([
-          Buffer.from(ephemeral.publicKey),
-          Buffer.from(wrapNonce),
-          Buffer.from(wrapped),
-        ]),
+        wrappedKey: packed,
         status: 'pending',
         createdAt: daysAgo(i),
       });

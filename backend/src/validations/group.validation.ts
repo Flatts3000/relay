@@ -68,18 +68,26 @@ export type UpdateGroupInput = z.infer<typeof updateGroupSchema>;
  * preserve, so it must never be in a position to hold the passphrase either.
  *
  * Lengths are fixed by the primitives - NaCl box public keys are 32 bytes, and
- * the salt is 16 - so they are checked rather than left open. Base64 of 32 bytes
- * is 44 characters, of 16 bytes is 24.
+ * the salt is 16 - so they are checked rather than left open. The check is on
+ * the DECODED length, not the string length: 44 unpadded base64 characters is a
+ * valid string that decodes to 33 bytes, and nacl.box throws 'bad public key
+ * size' on anything but 32. Because the broadcast directory only filters on the
+ * key being non-null, such a key would be handed to every sender routing to this
+ * group, and the throw escapes the per-group map in the submit page - so one
+ * malformed key would fail every anonymous help request for the whole bucket. A
+ * salt of the wrong length is quieter and just as bad: the keypair can never be
+ * rederived.
  */
+function base64OfExactly(bytes: number, message: string) {
+  return z
+    .string()
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/, message)
+    .refine((value) => Buffer.from(value, 'base64').length === bytes, message);
+}
+
 export const broadcastKeySchema = z.object({
-  publicKey: z
-    .string()
-    .length(44, 'Public key must be a base64-encoded 32-byte value')
-    .regex(/^[A-Za-z0-9+/]+={0,2}$/, 'Public key must be base64'),
-  keySalt: z
-    .string()
-    .length(24, 'Key salt must be a base64-encoded 16-byte value')
-    .regex(/^[A-Za-z0-9+/]+={0,2}$/, 'Key salt must be base64'),
+  publicKey: base64OfExactly(32, 'Public key must be a base64-encoded 32-byte value'),
+  keySalt: base64OfExactly(16, 'Key salt must be a base64-encoded 16-byte value'),
 });
 
 export type BroadcastKeyInput = z.infer<typeof broadcastKeySchema>;

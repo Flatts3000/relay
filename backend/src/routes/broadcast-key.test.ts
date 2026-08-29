@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import nacl from 'tweetnacl';
 import { app } from '../app.js';
 import { db } from '../db/index.js';
-import { groups, broadcastInvites } from '../db/schema/index.js';
+import { groups, broadcasts, broadcastInvites, broadcastTombstones } from '../db/schema/index.js';
 import {
   createTestHub,
   createTestGroup,
@@ -119,6 +119,145 @@ describe('PUT /api/groups/me/broadcast-key', () => {
       .from(broadcastInvites)
       .where(eq(broadcastInvites.groupId, group.id));
     expect(remaining).toHaveLength(0);
+  });
+
+  it('tombstones and deletes a broadcast left with no recipients', async () => {
+    const hub = await createTestHub();
+    const group = await createTestGroup(hub.id, { verificationStatus: 'verified' });
+    const { sessionToken } = await createGroupCoordinatorWithSession(hub.id, group.id);
+
+    await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(keyMaterial())
+      .expect(200);
+
+    // One broadcast, one recipient - the common case for a region and category
+    // served by a single group.
+    const broadcast = await createTestBroadcast();
+    await createTestInvite(broadcast.id, group.id);
+
+    await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(keyMaterial())
+      .expect(200);
+
+    // A bulk delete of the invites would leave this row behind forever: both
+    // cleanup sweeps iterate broadcast_invites, and nothing is keyed on
+    // broadcasts.expires_at, so no later pass would ever revisit it. The
+    // ciphertext, region and categories would be retained indefinitely - the
+    // opposite of the guarantee that encrypted material goes as soon as all
+    // invites resolve.
+    const remainingBroadcasts = await db
+      .select()
+      .from(broadcasts)
+      .where(eq(broadcasts.id, broadcast.id));
+    expect(remainingBroadcasts).toHaveLength(0);
+
+    const tombstones = await db
+      .select()
+      .from(broadcastTombstones)
+      .where(eq(broadcastTombstones.originalBroadcastId, broadcast.id));
+    expect(tombstones).toHaveLength(1);
+    expect(tombstones[0]?.groupIds).toContain(group.id);
+  });
+
+  it('leaves a broadcast alone while another group still holds an invite', async () => {
+    const hub = await createTestHub();
+    const rotating = await createTestGroup(hub.id, {
+      name: 'Rotating Group',
+      contactEmail: 'rotating@test.org',
+      verificationStatus: 'verified',
+    });
+    const other = await createTestGroup(hub.id, {
+      name: 'Other Group',
+      contactEmail: 'other@test.org',
+      verificationStatus: 'verified',
+    });
+    const { sessionToken } = await createGroupCoordinatorWithSession(hub.id, rotating.id);
+
+    await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(keyMaterial())
+      .expect(200);
+
+    const broadcast = await createTestBroadcast();
+    await createTestInvite(broadcast.id, rotating.id);
+    await createTestInvite(broadcast.id, other.id);
+
+    await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(keyMaterial())
+      .expect(200);
+
+    // The other group can still open it, so the ciphertext has to survive.
+    const remaining = await db.select().from(broadcasts).where(eq(broadcasts.id, broadcast.id));
+    expect(remaining).toHaveLength(1);
+
+    const invites = await db
+      .select()
+      .from(broadcastInvites)
+      .where(eq(broadcastInvites.broadcastId, broadcast.id));
+    expect(invites).toHaveLength(1);
+    expect(invites[0]?.groupId).toBe(other.id);
+  });
+
+  it('rejects base64 of the right string length but the wrong byte length', async () => {
+    const hub = await createTestHub();
+    const group = await createTestGroup(hub.id, { verificationStatus: 'verified' });
+    const { sessionToken } = await createGroupCoordinatorWithSession(hub.id, group.id);
+
+    // 44 unpadded base64 characters decode to 33 bytes, not 32. A string-length
+    // check accepts it; nacl.box then throws 'bad public key size' on every
+    // sender that routes to this group, and because the submit page wraps the
+    // content key for each matching group in one map, that throw fails the whole
+    // request - so one malformed key silently blocks anonymous help requests for
+    // an entire region.
+    const thirtyThreeBytes = 'A'.repeat(44);
+    expect(Buffer.from(thirtyThreeBytes, 'base64')).toHaveLength(33);
+
+    const response = await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send({ publicKey: thirtyThreeBytes, keySalt: keyMaterial().keySalt });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('rejects a salt of the right string length but the wrong byte length', async () => {
+    const hub = await createTestHub();
+    const group = await createTestGroup(hub.id, { verificationStatus: 'verified' });
+    const { sessionToken } = await createGroupCoordinatorWithSession(hub.id, group.id);
+
+    const eighteenBytes = 'A'.repeat(24);
+    expect(Buffer.from(eighteenBytes, 'base64')).toHaveLength(18);
+
+    // Quieter than a bad public key and just as fatal: the group looks
+    // broadcast-capable, but no passphrase can ever rederive the keypair, so
+    // nothing it receives can be opened.
+    const response = await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send({ publicKey: keyMaterial().publicKey, keySalt: eighteenBytes });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('accepts correctly padded 32-byte and 16-byte values', async () => {
+    const hub = await createTestHub();
+    const group = await createTestGroup(hub.id, { verificationStatus: 'verified' });
+    const { sessionToken } = await createGroupCoordinatorWithSession(hub.id, group.id);
+
+    // The negative cases above must not have been bought by rejecting everything.
+    const response = await request(app)
+      .put('/api/groups/me/broadcast-key')
+      .set('Authorization', `Bearer ${sessionToken}`)
+      .send(keyMaterial());
+
+    expect(response.status).toBe(200);
   });
 
   it('rejects a public key that is not 32 bytes of base64', async () => {

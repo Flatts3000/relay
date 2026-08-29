@@ -29,6 +29,7 @@ export function BroadcastKeySection() {
   const { t } = useTranslation('common');
 
   const [hasKey, setHasKey] = useState<boolean | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [confirmPassphrase, setConfirmPassphrase] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -38,7 +39,11 @@ export function BroadcastKeySection() {
   useEffect(() => {
     getMyGroup()
       .then(({ group }) => setHasKey(Boolean(group.broadcastPublicKey)))
-      .catch(() => setHasKey(false));
+      // A failed lookup is not the same as "no key set". Conflating them told a
+      // coordinator whose group has a working key that it had none, and steered
+      // them into setting a new passphrase - which rotates the key and discards
+      // every pending help request. Say the state is unknown instead.
+      .catch(() => setLoadFailed(true));
   }, []);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -92,13 +97,19 @@ export function BroadcastKeySection() {
 
       <p className="text-sm text-gray-600 mb-4">{t('broadcastKey.description')}</p>
 
-      {hasKey === false && (
+      {loadFailed && (
+        <Alert type="error" className="mb-4">
+          {t('broadcastKey.statusUnknown')}
+        </Alert>
+      )}
+
+      {hasKey === false && !loadFailed && (
         <Alert type="warning" className="mb-4">
           {t('broadcastKey.notSetWarning')}
         </Alert>
       )}
 
-      {hasKey === true && (
+      {hasKey === true && !loadFailed && (
         <Alert type="info" className="mb-4">
           {t('broadcastKey.replaceWarning')}
         </Alert>

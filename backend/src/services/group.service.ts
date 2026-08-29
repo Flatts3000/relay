@@ -1,12 +1,7 @@
 import { eq, and, isNull, ilike, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import {
-  groups,
-  groupHubMemberships,
-  broadcastInvites,
-  type Group,
-  type NewGroup,
-} from '../db/schema/index.js';
+import { groups, groupHubMemberships, type Group, type NewGroup } from '../db/schema/index.js';
+import { discardInvitesForGroup } from './invite-cleanup.service.js';
 import { logAuditEvent } from './audit.service.js';
 import type { Request } from 'express';
 import type {
@@ -366,10 +361,12 @@ export async function setGroupBroadcastKey(
   req: Request
 ): Promise<{ invitesDiscarded: number }> {
   return db.transaction(async (tx) => {
-    const discarded = await tx
-      .delete(broadcastInvites)
-      .where(eq(broadcastInvites.groupId, groupId))
-      .returning({ id: broadcastInvites.id });
+    // Routed through the cleanup service rather than deleting the rows here. A
+    // bulk delete leaves any broadcast whose only recipient was this group with
+    // zero invites and nothing that will ever revisit it, because both sweeps
+    // iterate broadcast_invites and none is keyed on broadcasts.expires_at - so
+    // its ciphertext would be retained indefinitely, untombstoned.
+    const discardedCount = await discardInvitesForGroup(tx, groupId);
 
     await tx
       .update(groups)
@@ -388,12 +385,12 @@ export async function setGroupBroadcastKey(
         entityId: groupId,
         // No key material in the audit trail. That a key was set is the fact
         // worth keeping; which key it was is not.
-        metadata: { field: 'broadcastKey', invitesDiscarded: discarded.length },
+        metadata: { field: 'broadcastKey', invitesDiscarded: discardedCount },
         req,
       },
       tx
     );
 
-    return { invitesDiscarded: discarded.length };
+    return { invitesDiscarded: discardedCount };
   });
 }

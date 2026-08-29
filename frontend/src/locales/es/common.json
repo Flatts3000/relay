@@ -227,7 +227,8 @@
     "tooShort": "La contraseña debe tener al menos {{count}} caracteres.",
     "mismatch": "Las dos contraseñas no coinciden.",
     "failed": "No se pudo guardar la contraseña. Inténtalo de nuevo.",
-    "recoveryNote": "No hay forma de recuperar una contraseña perdida: eso es lo que impide que cualquier otra persona, incluida Relay, lea tus solicitudes. Si la pierdes, elige una nueva aquí; las solicitudes enviadas antes no se podrán abrir."
+    "recoveryNote": "No hay forma de recuperar una contraseña perdida: eso es lo que impide que cualquier otra persona, incluida Relay, lea tus solicitudes. Si la pierdes, elige una nueva aquí; las solicitudes enviadas antes no se podrán abrir.",
+    "statusUnknown": "No se pudo comprobar si tu grupo tiene una clave. Recarga la página antes de cambiar algo aquí: elegir una contraseña nueva reemplaza cualquier clave existente y descarta las solicitudes que esperan en tu bandeja."
   },
   "hubDashboard": {
     "title": "Panel del centro",

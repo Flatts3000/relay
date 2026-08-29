@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
+import { useAuth } from './AuthContext';
 import { getMyGroup } from '../api/groups';
 import { decodeKey, deriveGroupKeypair, matchesRegisteredKey } from '../utils/group-key';
 
@@ -27,8 +36,19 @@ const GroupKeyContext = createContext<GroupKeyContextValue | null>(null);
  * the inbox.
  */
 export function GroupKeyProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [secretKey, setSecretKey] = useState<Uint8Array | null>(null);
   const [isUnlocking, setIsUnlocking] = useState(false);
+
+  // Dropped whenever the signed-in user changes, logging out included.
+  //
+  // Without this the comment above is false: the provider sits above the router
+  // and is never unmounted, so an unlocked key outlived logout for the life of
+  // the tab - on precisely the shared and borrowed machines the comment cites,
+  // where the next person to use the browser is the threat.
+  useEffect(() => {
+    setSecretKey(null);
+  }, [user?.id]);
 
   const unlock = useCallback(async (passphrase: string): Promise<UnlockResult> => {
     setIsUnlocking(true);

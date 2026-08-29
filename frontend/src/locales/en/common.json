@@ -227,7 +227,8 @@
     "tooShort": "Passphrase must be at least {{count}} characters.",
     "mismatch": "The two passphrases do not match.",
     "failed": "Could not save the passphrase. Please try again.",
-    "recoveryNote": "There is no way to recover a lost passphrase - that is what stops anyone else, including Relay, from reading your requests. If you lose it, set a new one here; requests sent before then cannot be opened."
+    "recoveryNote": "There is no way to recover a lost passphrase - that is what stops anyone else, including Relay, from reading your requests. If you lose it, set a new one here; requests sent before then cannot be opened.",
+    "statusUnknown": "Could not check whether your group has a key. Reload the page before changing anything here - setting a new passphrase replaces any existing key and discards requests waiting in your inbox."
   },
   "hubDashboard": {
     "title": "Hub dashboard",
