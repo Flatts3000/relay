@@ -38,9 +38,32 @@ set -a
 source "$ENV_FILE"
 set +a
 
-# Pull latest code
+# Pull latest code.
+#
+# Then hand off to the version we just pulled, if this file was one of the
+# things that changed.
+#
+# bash reads a script incrementally rather than loading it whole, so a running
+# deploy that pulls a new deploy.sh carries on executing the copy it had already
+# read. A change to this file would otherwise take effect on the deploy *after*
+# the one that ships it - which happened on 2026-08-29, when a fixed health
+# gate was pulled onto the host and the deploy then failed using the old one.
+#
+# The subtler risk is worse than the delay: if the pull changes the file's byte
+# length, bash can resume at an offset landing mid-token in the new content.
+#
+# The env var makes this at most a single hand-off, so a pull that somehow
+# always reports a change cannot loop.
 echo "Pulling latest code..."
+SELF_BEFORE=$(sha256sum "$0" | cut -d' ' -f1)
 git pull origin main
+SELF_AFTER=$(sha256sum "$0" | cut -d' ' -f1)
+
+if [ "$SELF_BEFORE" != "$SELF_AFTER" ] && [ -z "${RELAY_DEPLOY_REEXEC:-}" ]; then
+  echo "deploy.sh changed in this pull - re-executing the new version."
+  export RELAY_DEPLOY_REEXEC=1
+  exec "$0" "$@"
+fi
 
 # Build images
 echo "Building Docker images..."
