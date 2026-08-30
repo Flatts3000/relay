@@ -71,19 +71,74 @@ if [ "$SELF_BEFORE" != "$SELF_AFTER" ] && [ -z "${RELAY_DEPLOY_REEXEC:-}" ]; the
   exec "$SELF_PATH" "$@"
 fi
 
+# Must match the image: keys in docker-compose.prod.yml.
+IMAGE_BACKEND="relay-backend:current"
+IMAGE_FRONTEND="relay-frontend:current"
+PREV_BACKEND_TAG="relay-backend:previous"
+PREV_FRONTEND_TAG="relay-frontend:previous"
+
+# Give the currently deployed images a second, durable tag BEFORE the build
+# moves :current onto the new ones.
+#
+# Recording image IDs is not enough, and the version this replaced only recorded
+# IDs - then never used them, so its "rollback" was `down` followed by `up -d`,
+# which re-resolves the service definitions and starts the same new images
+# again. That turns a degraded site into a down site and brings it back just as
+# broken.
+#
+# Re-tagging by the recorded ID does not work either: an image that loses its
+# last tag is not necessarily retained. Verified on this Docker version - after
+# a rebuild the previous ID was gone from `docker images -a` entirely and
+# `docker tag <id>` failed with "No such image". An explicit tag survives,
+# because it is a tag.
+HAVE_PREV_BACKEND=0
+HAVE_PREV_FRONTEND=0
+if docker image inspect "$IMAGE_BACKEND" >/dev/null 2>&1 &&
+   docker tag "$IMAGE_BACKEND" "$PREV_BACKEND_TAG"; then
+  HAVE_PREV_BACKEND=1
+fi
+if docker image inspect "$IMAGE_FRONTEND" >/dev/null 2>&1 &&
+   docker tag "$IMAGE_FRONTEND" "$PREV_FRONTEND_TAG"; then
+  HAVE_PREV_FRONTEND=1
+fi
+
+rollback() {
+  echo "Rolling back..."
+  local restored=0
+  if [ "$HAVE_PREV_BACKEND" = "1" ] && docker tag "$PREV_BACKEND_TAG" "$IMAGE_BACKEND"; then
+    restored=1
+  fi
+  if [ "$HAVE_PREV_FRONTEND" = "1" ] && docker tag "$PREV_FRONTEND_TAG" "$IMAGE_FRONTEND"; then
+    restored=1
+  fi
+  if [ "$restored" != "1" ]; then
+    # Expected on the first deploy after this change, when no :current tag
+    # exists yet. Say so rather than pretending a rollback happened.
+    echo "No previous images to restore. Leaving the stack up for inspection."
+    return
+  fi
+  docker compose -f "$COMPOSE_FILE" up -d --force-recreate backend frontend caddy ||
+    echo "WARNING: rollback failed to start. Inspect with: docker compose -f $COMPOSE_FILE ps"
+}
+
 # Build images
 echo "Building Docker images..."
 docker compose -f "$COMPOSE_FILE" build
 
-# Store current image IDs for rollback
-PREV_BACKEND=$(docker compose -f "$COMPOSE_FILE" images -q backend 2>/dev/null || echo "")
-PREV_FRONTEND=$(docker compose -f "$COMPOSE_FILE" images -q frontend 2>/dev/null || echo "")
+# Database first, and migrations before anything starts serving.
+#
+# The old order was: recreate every container, then migrate. A migration
+# failure therefore left the new code already running against the old schema,
+# and because the health gate below sits after this step, neither the gate nor
+# the rollback it triggers was reachable for this class of failure. That is not
+# hypothetical - it is what every deploy did from 2026-08-29 (#64).
+#
+# Bringing up only postgres keeps the previous backend and frontend serving
+# while the schema moves. If the migration fails, set -e aborts here with the
+# old, working containers untouched.
+echo "Starting database..."
+docker compose -f "$COMPOSE_FILE" up -d postgres
 
-# Start services
-echo "Starting services..."
-docker compose -f "$COMPOSE_FILE" up -d
-
-# Wait for postgres to be ready
 echo "Waiting for postgres..."
 for i in $(seq 1 $MAX_RETRIES); do
   if docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U relay -d relay &>/dev/null; then
@@ -97,36 +152,55 @@ for i in $(seq 1 $MAX_RETRIES); do
   sleep "$RETRY_INTERVAL"
 done
 
-# Run database migrations
+# A one-off container from the image just built, so the migration runs the same
+# code the new server will. --no-deps because postgres is already up.
 echo "Running database migrations..."
-docker compose -f "$COMPOSE_FILE" exec -T backend npx drizzle-kit migrate
+docker compose -f "$COMPOSE_FILE" run --rm --no-deps backend node dist/migrate.js
 
-# Health check
-echo "Checking health..."
-for i in $(seq 1 $MAX_RETRIES); do
-  HTTP_CODE=$(curl "${CURL_OPTS[@]}" -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
-  if [ "$HTTP_CODE" = "200" ]; then
-    echo "Health check passed!"
-    break
-  fi
-  if [ "$i" -eq "$MAX_RETRIES" ]; then
-    echo "ERROR: Health check failed after $MAX_RETRIES attempts (last status: $HTTP_CODE)"
-    echo "Rolling back..."
+# Start the rest
+#
+# up -d can fail outright rather than merely leaving the site unhealthy: caddy
+# declares depends_on backend and frontend with condition: service_healthy, so a
+# broken backend makes compose exit non-zero with "dependency failed to start".
+# Under set -e that aborted the script right here - before the health gate below
+# and before the rollback the gate triggers - leaving a migrated schema, nothing
+# serving and no attempt to recover. It is routed into the same failure path as
+# an unhealthy deploy instead.
+echo "Starting services..."
+STARTED=1
+docker compose -f "$COMPOSE_FILE" up -d || {
+  STARTED=0
+  echo "ERROR: services failed to start; a dependency healthcheck did not pass."
+}
 
-    # Rollback: restart with previous images
-    if [ -n "$PREV_BACKEND" ] || [ -n "$PREV_FRONTEND" ]; then
-      docker compose -f "$COMPOSE_FILE" down
-      echo "Rollback: restarting previous containers..."
-      docker compose -f "$COMPOSE_FILE" up -d
+HEALTHY=0
+HTTP_CODE="not checked"
+if [ "$STARTED" = "1" ]; then
+  echo "Checking health..."
+  for i in $(seq 1 $MAX_RETRIES); do
+    HTTP_CODE=$(curl "${CURL_OPTS[@]}" -o /dev/null -w "%{http_code}" "$HEALTH_URL" 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" = "200" ]; then
+      echo "Health check passed!"
+      HEALTHY=1
+      break
     fi
-
-    echo "Check logs: docker compose -f $COMPOSE_FILE logs"
-    exit 1
+    sleep "$RETRY_INTERVAL"
+  done
+  if [ "$HEALTHY" != "1" ]; then
+    echo "ERROR: Health check failed after $MAX_RETRIES attempts (last status: $HTTP_CODE)"
   fi
-  sleep "$RETRY_INTERVAL"
-done
+fi
 
-# Clean up old images
+if [ "$HEALTHY" != "1" ]; then
+  rollback
+  echo "Check logs: docker compose -f $COMPOSE_FILE logs"
+  exit 1
+fi
+
+# Clean up old images.
+#
+# Safe for the rollback tag: prune -f removes dangling images only, and
+# relay-*:previous is tagged. Do not add -a here without moving that tag.
 echo "Cleaning up unused images..."
 docker image prune -f
 

@@ -216,6 +216,39 @@ jobs:
             psql -h localhost -p 5433 -U postgres -d relay_migrate -v ON_ERROR_STOP=1 -q -f "$f"
           done
 
+      # The migration entrypoint production actually runs, exercised end to end
+      # against a database it has never seen.
+      #
+      # Nothing in this job touched it before: the steps above apply the SQL by
+      # hand with psql, and the deploy used drizzle-kit with a config file that
+      # could not resolve inside the runtime image. So the step that ran on
+      # every production deploy was the one step CI never ran, and it was broken
+      # for seven consecutive deploys before anyone noticed (#64).
+      #
+      # Run twice, because a migrator that is not idempotent fails on the second
+      # deploy rather than the first.
+      - name: Build and run the compiled migration entrypoint, twice
+        working-directory: backend
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5433
+          DB_NAME: relay_entrypoint
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+        run: |
+          set -euo pipefail
+          PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d postgres \
+            -v ON_ERROR_STOP=1 -c "CREATE DATABASE relay_entrypoint;"
+          npm run build
+          node dist/migrate.js
+          node dist/migrate.js
+          rows=$(PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d relay_entrypoint -tAc \
+            "SELECT count(*) FROM drizzle.__drizzle_migrations;")
+          files=$(ls drizzle/*.sql | wc -l)
+          echo "applied $rows of $files migrations"
+          test "$(echo "$rows" | tr -d ' ')" = "$(echo "$files" | tr -d ' ')"
+
       - name: Dump the schema built by migrations
         run: |
           set -euo pipefail
