@@ -48,7 +48,8 @@ Without `sharp` the build embeds the PNGs unoptimised, which works but produces 
 file roughly twice the size.
 
 **Do not commit a rebuild made without the screenshots or without `sharp`.** The
-committed `relay-deck.html` is a 1.1 MB generated artifact, and its diff is a
+committed `frontend/public/deck/index.html` is a 1.1 MB generated artifact
+that now ships to production, and its diff is a
 single line of base64 that nobody can review. A rebuild on a fresh clone silently
 drops all six screenshots; a rebuild without `sharp` silently doubles the file.
 Either one looks like a normal commit and is invisible in review. Check the build
@@ -56,7 +57,7 @@ output before committing:
 
 ```
 image KB: { home: 209, help: 50, directory: 75, reports: 66, queue: 126, verification: 39 }
-wrote deck/relay-deck.html: 1130 KB, 15 slides
+wrote frontend/public/deck/index.html: 1130 KB, 15 slides  ->  served at /deck
 ```
 
 Zeroes in `image KB`, or a total far above ~1.2 MB, mean the artifact is wrong.

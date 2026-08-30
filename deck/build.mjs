@@ -16,7 +16,7 @@ import { createRequire } from 'module';
 
 // Resolved from this file, not the working directory, so `node build.mjs` from
 // inside deck/ does not warn that every screenshot is missing and then write
-// deck/deck/relay-deck.html while reporting success.
+// frontend/public/deck/deck/index.html while reporting success.
 const DIR = import.meta.dirname;
 const ROOT = path.resolve(DIR, '..');
 const SHOTS = path.join(ROOT, 'docs', 'audit_screenshots', 'ux_audit');
