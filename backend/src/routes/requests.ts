@@ -39,7 +39,7 @@ requestsRouter.post('/', requireGroupCoordinator, async (req, res) => {
       return;
     }
 
-    const request = await createFundingRequest(user.groupId, input, user.id, req);
+    const request = await createFundingRequest(user.groupId, input, user.id);
     res.status(201).json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -148,7 +148,7 @@ requestsRouter.post('/:id/approve', requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const request = await approveFundingRequest(id, user.hubId, user.id, req);
+    const request = await approveFundingRequest(id, user.hubId, user.id);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -184,7 +184,7 @@ requestsRouter.post('/:id/decline', requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const request = await declineFundingRequest(id, user.hubId, user.id, reason, req);
+    const request = await declineFundingRequest(id, user.hubId, user.id, reason);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -226,7 +226,7 @@ requestsRouter.post('/:id/clarify', requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const request = await requestClarification(id, user.hubId, user.id, message, req);
+    const request = await requestClarification(id, user.hubId, user.id, message);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -267,7 +267,7 @@ requestsRouter.post('/:id/mark-sent', requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const request = await markFundsSent(id, user.hubId, user.id, req);
+    const request = await markFundsSent(id, user.hubId, user.id);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -302,7 +302,7 @@ requestsRouter.post('/:id/acknowledge', requireGroupCoordinator, async (req, res
       return;
     }
 
-    const request = await acknowledgeReceipt(id, user.groupId, user.id, req);
+    const request = await acknowledgeReceipt(id, user.groupId, user.id);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {

@@ -133,7 +133,7 @@ adminRouter.patch('/users/:id/role', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
     const { role } = updateUserRoleSchema.parse(req.body);
-    const updated = await adminService.updateUserRole(id, role, req.user!.id, req);
+    const updated = await adminService.updateUserRole(id, role, req.user!.id);
     if (!updated) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -158,7 +158,7 @@ adminRouter.delete('/users/:id', async (req, res) => {
       return;
     }
 
-    const deleted = await adminService.softDeleteUser(id, req.user!.id, req);
+    const deleted = await adminService.softDeleteUser(id, req.user!.id);
     if (!deleted) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -210,7 +210,7 @@ adminRouter.get('/verification/:id', async (req, res) => {
 adminRouter.patch('/verification/:id/approve', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
-    const result = await adminService.approveVerificationRequest(id, req.user!.id, req);
+    const result = await adminService.approveVerificationRequest(id, req.user!.id);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
       res.status(status).json({
@@ -235,7 +235,7 @@ adminRouter.patch('/verification/:id/deny', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
     const { reason } = denyVerificationSchema.parse(req.body);
-    const result = await adminService.denyVerificationRequest(id, req.user!.id, reason, req);
+    const result = await adminService.denyVerificationRequest(id, req.user!.id, reason);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
       res.status(status).json({
@@ -293,7 +293,7 @@ adminRouter.get('/funding-requests/:id', async (req, res) => {
 adminRouter.patch('/funding-requests/:id/approve', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
-    const result = await adminService.adminApproveFundingRequest(id, req.user!.id, req);
+    const result = await adminService.adminApproveFundingRequest(id, req.user!.id);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
       res.status(status).json({
@@ -316,7 +316,7 @@ adminRouter.patch('/funding-requests/:id/decline', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
     const { reason } = declineFundingSchema.parse(req.body);
-    const result = await adminService.adminDeclineFundingRequest(id, req.user!.id, reason, req);
+    const result = await adminService.adminDeclineFundingRequest(id, req.user!.id, reason);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
       res.status(status).json({
@@ -338,7 +338,7 @@ adminRouter.patch('/funding-requests/:id/decline', async (req, res) => {
 adminRouter.patch('/funding-requests/:id/send-funds', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
-    const result = await adminService.adminMarkFundsSent(id, req.user!.id, req);
+    const result = await adminService.adminMarkFundsSent(id, req.user!.id);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
       res.status(status).json({
@@ -360,7 +360,7 @@ adminRouter.patch('/funding-requests/:id/send-funds', async (req, res) => {
 adminRouter.patch('/funding-requests/:id/acknowledge', async (req, res) => {
   try {
     const { id } = idParamSchema.parse(req.params);
-    const result = await adminService.adminAcknowledgeFunding(id, req.user!.id, req);
+    const result = await adminService.adminAcknowledgeFunding(id, req.user!.id);
     if ('error' in result) {
       const status = result.error === 'not_found' ? 404 : 409;
       res.status(status).json({

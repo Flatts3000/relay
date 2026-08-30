@@ -43,7 +43,7 @@ verificationRouter.post('/groups/:groupId/request', requireGroupCoordinator, asy
       return;
     }
 
-    const request = await createVerificationRequest(groupId, input.hubId, input, user.id, req);
+    const request = await createVerificationRequest(groupId, input.hubId, input, user.id);
     res.status(201).json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -181,7 +181,7 @@ verificationRouter.post('/requests/:id/approve', requireHubAdmin, async (req, re
       return;
     }
 
-    const request = await approveVerificationRequest(id, user.hubId, user.id, req);
+    const request = await approveVerificationRequest(id, user.hubId, user.id);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -220,7 +220,7 @@ verificationRouter.post('/requests/:id/deny', requireHubAdmin, async (req, res) 
       return;
     }
 
-    const request = await denyVerificationRequest(id, user.hubId, user.id, reason, req);
+    const request = await denyVerificationRequest(id, user.hubId, user.id, reason);
     res.json({ request });
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -261,7 +261,7 @@ verificationRouter.post('/groups/:groupId/revoke', requireHubAdmin, async (req, 
       return;
     }
 
-    await revokeGroupVerification(groupId, user.hubId, user.id, req);
+    await revokeGroupVerification(groupId, user.hubId, user.id);
     res.status(204).send();
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -312,7 +312,7 @@ verificationRouter.post('/requests/:id/attest', requireGroupCoordinator, async (
       return;
     }
 
-    const attestation = await submitPeerAttestation(id, user.groupId, user.id, req);
+    const attestation = await submitPeerAttestation(id, user.groupId, user.id);
     res.status(201).json({ attestation });
   } catch (err) {
     if (err instanceof z.ZodError) {

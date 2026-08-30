@@ -2,7 +2,6 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { hubMembers, groupMembers, groupHubMemberships, hubs, groups } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
-import type { Request } from 'express';
 
 export interface HubMembershipInfo {
   hubId: string;
@@ -93,8 +92,7 @@ export async function isGroupOwner(userId: string, groupId: string): Promise<boo
 export async function removeHubMember(
   userId: string,
   hubId: string,
-  removedBy: string,
-  req: Request
+  removedBy: string
 ): Promise<boolean> {
   const result = await db
     .delete(hubMembers)
@@ -109,7 +107,6 @@ export async function removeHubMember(
     entityType: 'hub_member',
     entityId: userId,
     metadata: { hubId, removedUserId: userId },
-    req,
   });
 
   return true;
@@ -118,8 +115,7 @@ export async function removeHubMember(
 export async function removeGroupMember(
   userId: string,
   groupId: string,
-  removedBy: string,
-  req: Request
+  removedBy: string
 ): Promise<boolean> {
   const result = await db
     .delete(groupMembers)
@@ -134,7 +130,6 @@ export async function removeGroupMember(
     entityType: 'group_member',
     entityId: userId,
     metadata: { groupId, removedUserId: userId },
-    req,
   });
 
   return true;
