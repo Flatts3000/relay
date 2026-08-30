@@ -13,6 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
+import { countAll } from './counts.mjs';
 
 // Resolved from this file, not the working directory, so `node build.mjs` from
 // inside deck/ does not warn that every screenshot is missing and then write
@@ -141,57 +142,9 @@ console.log(
 );
 
 // ---- Counted, not typed -----------------------------------------------------
-// Every figure on the "what exists" slide is derived from the repository here.
-// Hand-written ones drift: the deck went out claiming 187 tests and 11 open
-// issues while the tree held 188 and 10.
-const testCount = (() => {
-  let total = 0;
-  const walk = (dir) => {
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (/\.(test|spec)\.tsx?$/.test(entry.name)) {
-        const src = fs.readFileSync(full, 'utf8');
-        total += (src.match(/^\s*(it|test)(\.each\([^)]*\))?\s*\(/gm) || []).length;
-      }
-    }
-  };
-  for (const workspace of ['backend', 'frontend']) walk(path.join(ROOT, workspace, 'src'));
-  return total;
-})();
-
-const routeCount = (() => {
-  const src = fs.readFileSync(path.join(ROOT, 'frontend', 'src', 'App.tsx'), 'utf8');
-  const paths = [...src.matchAll(/path="([^"]+)"/g)].map((m) => m[1]);
-  // "*" is the not-found catch-all, and /design-system is mounted only behind
-  // import.meta.env.DEV, so neither is a route a user of the product can reach.
-  return paths.filter((r) => r !== '*' && r !== '/design-system').length;
-})();
-
-const ciJobCount = (() => {
-  const yml = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'ci.yml'), 'utf8');
-  const afterJobs = yml.split(/^jobs:\s*$/m)[1] ?? '';
-  return (afterJobs.match(/^ {2}[A-Za-z][\w-]*:\s*$/gm) || []).length;
-})();
-
-// A broken pattern here would ship "0 automated tests", which is worse than the
-// stale number this replaced: a reader can discount a figure that is merely out
-// of date, but a confident zero reads as the truth. The floors sit far below the
-// real values and far above anything a broken pattern would produce.
-for (const [label, value, floor] of [
-  ['tests', testCount, 50],
-  ['routes', routeCount, 10],
-  ['CI jobs', ciJobCount, 5],
-]) {
-  if (value < floor) {
-    throw new Error(
-      `Counted only ${value} ${label}, below the sanity floor of ${floor}. The ` +
-        'pattern that counts them has probably stopped matching. Fix the pattern ' +
-        'rather than lowering the floor - this number goes in front of partners.'
-    );
-  }
-}
-
+// Shared with deck/check-counts.mjs, which CI runs so the committed deck cannot
+// quietly drift away from the repository between rebuilds.
+const { tests: testCount, routes: routeCount, ciJobs: ciJobCount } = countAll(ROOT);
 console.log('counted:', testCount, 'tests,', routeCount, 'routes,', ciJobCount, 'CI jobs');
 
 // ---- Design tokens ----------------------------------------------------------
@@ -753,7 +706,7 @@ const slides = [
       <span class="eyebrow">How groups get funded</span>
       <h2 class="k h-md">Groups get funded without knowing the right person.</h2>
       <div class="flow" style="margin-top:4px">
-        <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that may be a pseudonym, a service area, aid categories, and a shared team address rather than anyone's personal one. Nothing else.</p></div>
+        <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that may be a pseudonym, a service area, aid categories, and a contact address - a shared team one is what groups are asked for. Nothing else.</p></div>
         <div class="step"><b>02 &middot; VERIFY</b><p>A fund hub approves, another group vouches, or an established organisation refers. No documents at any point.</p></div>
         <div class="step"><b>03 &middot; REQUEST</b><p>An amount, a category, a region. Justification is optional and warns against personal detail.</p></div>
         <div class="step"><b>04 &middot; TRACK</b><p>Submitted, approved, funds sent, acknowledged. No receipts, no narratives, no recipient data.</p></div>

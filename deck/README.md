@@ -155,19 +155,30 @@ statistic.
 
 ## Current facts, and where they came from
 
-| Claim                                     | Source                                                                                                                                                                      |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 37 routes across four roles               | route paths in `frontend/src/App.tsx`, excluding the 404 and the dev-only design system; cross-checked against the page components                                          |
-| 187 automated tests                       | 148 backend + 39 frontend, from `npm test`                                                                                                                                  |
-| Open issue count on slide 14              | counted at build time via `gh issue list`; the slide drops the number entirely if `gh` is missing or unauthenticated                                                        |
-| 10 CI jobs on every change                | the job definitions in `.github/workflows/ci.yml`. `gh pr checks` reports 12 runs, because CodeQL and the container scan each emit two - the job count is the stable figure |
-| Zero records in production                | `select count(*)` against the production database, 2026-08-29                                                                                                               |
-| Paused February 2026, resumed August 2026 | commit history                                                                                                                                                              |
-| Cryptography independently reviewed       | stated by the project owner; the reviewer, date and scope are still unrecorded ([#14](https://github.com/Flatts3000/relay/issues/14))                                       |
+| Claim                                     | Source                                                                                                                                                                                                                      |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| screens across four roles                 | counted at build time by `deck/counts.mjs` from route paths in `frontend/src/App.tsx`, excluding the 404 and anything behind `import.meta.env.DEV`                                                                          |
+| automated tests                           | counted at build time by `deck/counts.mjs` - `it(`/`test(` declarations that actually run, so `.skip` and `.todo` are excluded                                                                                              |
+| Open issue count on slide 14              | counted at build time via `gh issue list`; the slide drops the number entirely if `gh` is missing or unauthenticated                                                                                                        |
+| automated checks on every change          | counted at build time by `deck/counts.mjs` from the job definitions in `.github/workflows/ci.yml`. `gh pr checks` reports 12 runs, because CodeQL and the container scan each emit two - the job count is the stable figure |
+| Zero records in production                | `select count(*)` against the production database, 2026-08-29                                                                                                                                                               |
+| Paused February 2026, resumed August 2026 | commit history                                                                                                                                                                                                              |
+| Cryptography independently reviewed       | stated by the project owner; the reviewer, date and scope are still unrecorded ([#14](https://github.com/Flatts3000/relay/issues/14))                                                                                       |
 
-Re-check these before sending. The test counts and route count in particular
-drift with every merge, and a deck that is quietly six weeks stale is its own
-kind of inaccuracy.
+Those three figures are no longer written by hand. They are derived from the
+repository every time the deck is built, and `node deck/check-counts.mjs` runs in
+CI to fail the build if the committed deck disagrees with the tree - which is
+what used to happen silently, and is how "187 automated tests" went out while the
+repository held 188.
+
+The check compares figures rather than rebuilding and diffing bytes: the build
+fetches webfonts from Google and re-encodes screenshots with sharp, so a byte
+comparison would fail on a font revision or a sharp upgrade without either
+saying anything about accuracy.
+
+The open-issue count on slide 14 is fetched live at build time and is not
+checked, because it legitimately changes without the repository changing. Rebuild
+before sending if that number matters to the conversation.
 
 ## Editing
 
