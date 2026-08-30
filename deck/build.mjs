@@ -269,7 +269,7 @@ h1,h2,h3,h4,p{margin:0}
 .gaps .node{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
   padding:clamp(14px,1.5vw,22px);box-shadow:var(--sh-sm);text-align:center}
 .gaps .node svg{display:block;margin:0 auto 12px;width:clamp(46px,4.2vw,64px);height:auto}
-.gaps .node b{display:block;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:5px}
+.gaps .node h3{font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:5px}
 .gaps .node p{font-size:.86rem;color:var(--ink-2);line-height:1.45}
 .gaps .brk{text-align:center}
 .gaps .brk svg{display:block;margin:0 auto 7px;width:clamp(48px,4.6vw,68px);height:auto}
@@ -282,7 +282,7 @@ h1,h2,h3,h4,p{margin:0}
 .gaps .brk span{font-family:var(--mono);font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;
   color:var(--red-700);line-height:1.35;display:block}
 .lock b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--primary-600)}
+  text-transform:uppercase;color:var(--primary-600);margin-bottom:6px}
 .lock p{font-size:.84rem;color:var(--ink-2);line-height:1.45}
 .step{border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(12px,1.3vw,18px);background:var(--surface);box-shadow:var(--sh-sm)}
 .step b{display:block;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--primary-600);margin-bottom:7px}
@@ -334,7 +334,7 @@ h1,h2,h3,h4,p{margin:0}
   /* Each lockbox panel turns into a row - small drawing beside its text -
      rather than four full-width illustrations stacked down the phone. */
   .lock .p{flex-direction:row;align-items:center;gap:14px}
-  .lock .art{width:96px;flex:0 0 96px;max-width:none;margin:0}
+  .lock .art{width:124px;flex:0 0 124px;max-width:none;margin:0}
   /* .toc was left at three columns on every width, which nothing caught because
      it only clips below about 360px - at 320px its third column ran 27px past
      the viewport. Stacked, its column rules have to become row rules. */
@@ -368,6 +368,7 @@ const C = {
   box: '#b4d3f5',
   lid: '#dbeafe',
   blue: '#2e6eb5',
+  seal: '#0c2d52',
   blueD: '#164a84',
   blueL: '#4a90d9',
   key: '#1d5a9e',
@@ -425,7 +426,7 @@ const ART_SEAL = `
   ${arrow(48, 34)}
   <rect x="74" y="22" width="72" height="38" rx="5" fill="#fff" stroke="${C.box}" stroke-width="2"/>
   <rect x="70" y="14" width="80" height="12" rx="4" fill="${C.lid}" stroke="${C.box}" stroke-width="2"/>
-  ${padlock(100, 28, C.blue)}
+  ${padlock(100, 28, C.seal)}
   ${wrapped(6, 82, C.blue)}
   ${wrapped(74, 82, C.blueL)}
   ${wrapped(142, 82, C.blueD)}
@@ -436,7 +437,7 @@ const ART_SERVER = `
     stroke-width="2" stroke-dasharray="7 6"/>
   <rect x="22" y="34" width="66" height="34" rx="5" fill="#fff" stroke="${C.box}" stroke-width="2"/>
   <rect x="18" y="26" width="74" height="12" rx="4" fill="${C.lid}" stroke="${C.box}" stroke-width="2"/>
-  ${padlock(45, 40, C.blue, 0.85)}
+  ${padlock(45, 40, C.seal, 0.85)}
   <g transform="translate(110,24)">
     <rect x="0" y="0" width="64" height="22" rx="6" fill="#fff" stroke="${C.box}" stroke-width="2"/>
     ${padlock(7, 3, C.blue, 0.62)}<path d="M28 11h26" stroke="${C.lid}" stroke-width="4" stroke-linecap="round"/>
@@ -449,9 +450,9 @@ const ART_SERVER = `
     <rect x="0" y="0" width="64" height="22" rx="6" fill="#fff" stroke="${C.box}" stroke-width="2"/>
     ${padlock(7, 3, C.blueD, 0.62)}<path d="M28 11h26" stroke="${C.lid}" stroke-width="4" stroke-linecap="round"/>
   </g>
-  <g transform="translate(28,86)">
-    ${key(0, 0, C.ink)}
-    <path d="M-4 13 24-4" stroke="${C.red}" stroke-width="2.8" stroke-linecap="round"/>
+  <g transform="translate(24,80)">
+    ${key(0, 0, C.ink, 1.5)}
+    <path d="M-5 21 35-7" stroke="${C.red7}" stroke-width="3.4" stroke-linecap="round"/>
   </g>
 `;
 
@@ -462,7 +463,7 @@ const ART_OPEN = `
   ${arrow(74, 27, 10)}
   ${key(92, 22, C.key)}
   ${arrow(122, 27, 10)}
-  ${padlockOpen(148, 14, C.teal)}
+  ${padlockOpen(148, 14, C.blue)}
   <g transform="translate(40,64)">
     <rect x="0" y="1" width="86" height="11" rx="4" fill="${C.lid}" stroke="${C.box}"
       stroke-width="2" transform="rotate(-15 5 7)"/>
@@ -514,7 +515,7 @@ const BREAK = `<svg viewBox="0 0 72 40" role="img" aria-label="A connection brok
 
 const node = (icon, alt, title, body) =>
   `<div class="node"><svg viewBox="0 0 64 56" role="img" aria-label="${alt}">${icon}</svg>
-   <b>${title}</b><p>${body}</p></div>`;
+   <h3>${title}</h3><p>${body}</p></div>`;
 
 const brk = (label) => `<div class="brk">${BREAK}<span>${label}</span></div>`;
 
@@ -743,7 +744,7 @@ const slides = [
           ART_OFF
         )}
       </div>
-      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. Cryptography independently reviewed.</p>
+      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. Cryptography independently reviewed.</p>
     </div>
   </section>`,
 
@@ -765,7 +766,7 @@ const slides = [
         <div class="card">
           <h3>What is not there</h3>
           <ul class="inv gone">
-            ${gone('Names, addresses, phone numbers, emails')}
+            ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the payload it cannot open')}
             ${gone('Individual accounts')}
             ${gone('IP addresses or cookies on anonymous routes')}
             ${gone('Any record of who browsed the directory')}
