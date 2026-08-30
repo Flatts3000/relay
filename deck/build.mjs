@@ -576,7 +576,7 @@ const slides = [
   `<section class="slide" data-name="Who this is for">
     <div class="stack">
       <span class="eyebrow">Who this is for</span>
-      <h2 class="k h-lg">Eleven neighbours and a <span class="hl">spreadsheet</span>.</h2>
+      <h2 class="k h-lg">Eleven neighbors and a <span class="hl">spreadsheet</span>.</h2>
       <div class="cols two">
         <div class="stack gap-s">
           <p class="lede">They know who on their block is behind on rent, whose power is about to be cut, which family stopped answering the door. They are good at the part that is hard to systematize.</p>
@@ -626,7 +626,7 @@ const slides = [
         </div>
         <div class="card flag">
           <h3>Payment rails are a surveillance layer</h3>
-          <p>IRS reporting thresholds on money-sharing apps put a durable record behind ordinary transfers between neighbours - the exact mechanism most mutual aid runs on today.</p>
+          <p>IRS reporting thresholds on money-sharing apps put a durable record behind ordinary transfers between neighbors - the exact mechanism most mutual aid runs on today.</p>
         </div>
         <div class="card flag">
           <h3>Co-optation is a live fear</h3>
@@ -648,7 +648,7 @@ const slides = [
       <p class="lede">A directory that logs searches. An intake form that stores a phone number. An analytics tag recording who visited. Each is standard practice, and each manufactures a record that can be leaked, scraped, or lawfully demanded.</p>
       <div class="cols three" style="margin-top:6px">
         <div class="card"><h3>Assume seizure</h3><p>The premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
-        <div class="card"><h3>Minimise, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
+        <div class="card"><h3>Minimize, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
         <div class="card"><h3>Verify without paperwork</h3><p>A fund hub approves them, another group vouches for them, or an established organization refers them. Three light paths. No IDs, no rosters, no documents.</p></div>
       </div>
     </div>
@@ -763,7 +763,7 @@ const slides = [
   `<section class="slide" data-name="Under subpoena">
     <div class="stack">
       <span class="eyebrow">The test that matters</span>
-      <h2 class="k h-lg">Served with a warrant, Relay produces <span class="hl">almost nothing</span>.</h2>
+      <h2 class="k h-lg">Served with a warrant, Relay produces <span class="hl">nothing about the people it serves</span>.</h2>
       <div class="cols two" style="margin-top:4px">
         <div class="card accent">
           <h3>What is there</h3>
@@ -772,13 +772,13 @@ const slides = [
             ${has(I_LIST, 'A public list of groups that consented to be listed')}
             ${has(I_BARS, 'Group-level funding amounts and dates')}
             ${has(I_PIN, 'Coarse region and aid category per request')}
-            ${has(I_PERSON_SM, 'Organizer accounts: an email, which group they work with, and the IP address behind every change they make')}
+            ${has(I_PERSON_SM, 'Organizer accounts: an email, which group they work with, and an IP address and browser string recorded against every sign-in and every change they make')}
           </ul>
         </div>
         <div class="card">
           <h3>What is not there</h3>
           <ul class="inv gone">
-            ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the encrypted message it cannot open')}
+            ${gone('Names, addresses, phones or emails of anyone asking for help - their contact details sit inside the encrypted message Relay cannot open')}
             ${gone('Individual accounts')}
             ${gone('IP addresses or cookies on the anonymous routes - nothing is logged when someone asks for help or browses the directory')}
             ${gone('Any record of who browsed the directory')}
@@ -897,7 +897,7 @@ const slides = [
         <div class="card accent">
           <h3>Nobody is asking you for money</h3>
           <p>Relay is not fundraising. Mythic Works LLC is building it and intends to transfer it to a 501(c)(3), which is not incorporated yet - and until there is a pilot worth pointing at, there is nothing worth raising against.</p>
-          <p style="margin-top:10px">The licence already makes the give-away partly irreversible. Relay is AGPL-3.0, which means the code cannot be made private by anyone - including whoever owns it - and anyone can inspect it or run their own copy.</p>
+          <p style="margin-top:10px">The license already makes the give-away partly irreversible. Relay is AGPL-3.0, which means the code cannot be made private by anyone - including whoever owns it - and anyone can inspect it or run their own copy.</p>
         </div>
         <div class="card">
           <h3>What you would be joining</h3>
