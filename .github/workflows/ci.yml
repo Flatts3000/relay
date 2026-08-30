@@ -27,6 +27,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The deck served at /deck is a committed artifact, so its figures go stale
+      # the moment the tree moves unless something checks. Computing them in the
+      # build only fixed them at the moment a human remembered to run it.
+      - name: Deck figures match the repository
+        run: node deck/check-counts.mjs
+
       - name: Lint frontend
         run: npm run lint:frontend
 

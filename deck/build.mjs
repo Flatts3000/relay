@@ -13,6 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import { createRequire } from 'module';
+import { countAll } from './counts.mjs';
 
 // Resolved from this file, not the working directory, so `node build.mjs` from
 // inside deck/ does not warn that every screenshot is missing and then write
@@ -139,6 +140,12 @@ console.log(
     Object.entries(IMG).map(([k, v]) => [k, v ? Math.round(v.length / 1365) : 0])
   )
 );
+
+// ---- Counted, not typed -----------------------------------------------------
+// Shared with deck/check-counts.mjs, which CI runs so the committed deck cannot
+// quietly drift away from the repository between rebuilds.
+const { tests: testCount, routes: routeCount, ciJobs: ciJobCount } = countAll(ROOT);
+console.log('counted:', testCount, 'tests,', routeCount, 'routes,', ciJobCount, 'CI jobs');
 
 // ---- Design tokens ----------------------------------------------------------
 // Lifted wholesale from frontend/tailwind.config.js: the primary blue ramp, the
@@ -554,7 +561,7 @@ const slides = [
       <h1 class="k h-xl">Infrastructure for <span class="hl">solidarity</span>, built to be useless to anyone who seizes it.</h1>
       <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
       <div class="row" style="margin-top:4px">
-        <span class="chip"><b>E2E</b>&nbsp; encrypted requests</span>
+        <span class="chip"><b>Encrypted</b>&nbsp; so only the group can read it</span>
         <span class="chip"><b>No accounts</b>&nbsp; for individuals</span>
         <span class="chip"><b>AGPL-3.0</b></span>
         <span class="chip"><b>EN / ES</b></span>
@@ -578,7 +585,7 @@ const slides = [
           <p style="margin-top:10px">That is also why it can afford to know nothing about the people receiving aid.</p>
         </div>
       </div>
-      <p class="src">The pattern above is drawn from docs/problem_brief.md and is illustrative of the groups Relay is designed for. No group has been onboarded yet - see slide 12.</p>
+      <p class="src">The pattern above is drawn from docs/problem_brief.md and is illustrative of the groups Relay is designed for. No group has joined yet - see slide 12.</p>
     </div>
   </section>`,
 
@@ -591,7 +598,7 @@ const slides = [
         link between them is safe to cross.</p>
       <div class="gaps">
         ${node(ICON_HUB, 'A stack of pooled coins.', 'Fund hubs',
-          'Raise money centrally. No safe way to tell which groups are real.')}
+          'An organisation that raises money centrally - a solidarity fund, a bail fund, a foundation. No safe way to tell which local groups are real.')}
         ${brk('No safe<br>introduction')}
         ${node(ICON_GROUP, 'Three people joined into a small network.', 'Local groups',
           'Know exactly who needs what. Reachable only by word of mouth and DMs.')}
@@ -599,7 +606,8 @@ const slides = [
         ${node(ICON_PERSON, 'A single person.', 'People in crisis',
           'Will not leave a traceable record just to look for help.')}
       </div>
-      <p class="small muted" style="margin-top:2px">Both failures fall hardest on the people with the most to lose: undocumented residents, people fleeing violence, anyone for whom a database row is a risk.</p>
+      <p class="small" style="margin-top:2px"><b>The one outside signal Relay has:</b> a sitting state legislator, approached independently, named the absence of a safe way to find local aid as her most pressing need. Unattributed here until she agrees to be named.</p>
+      <p class="small muted">Both failures fall hardest on the people with the most to lose: undocumented residents, people fleeing violence, anyone for whom a database row is a risk.</p>
     </div>
   </section>`,
 
@@ -607,7 +615,7 @@ const slides = [
   `<section class="slide" data-name="Why now">
     <div class="stack">
       <span class="eyebrow">Why now</span>
-      <h2 class="k h-lg">The threat model is not hypothetical. <span class="warn">Organizers are being prosecuted.</span></h2>
+      <h2 class="k h-lg">The risk here is not hypothetical. <span class="warn">Organizers are being prosecuted.</span></h2>
       <div class="cols three" style="margin-top:4px">
         <div class="card flag">
           <h3>Charity fraud and money laundering charges</h3>
@@ -638,7 +646,7 @@ const slides = [
       <div class="cols three" style="margin-top:6px">
         <div class="card"><h3>Assume seizure</h3><p>The premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
         <div class="card"><h3>Minimise, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
-        <div class="card"><h3>Verify without paperwork</h3><p>Hub approval, peer attestation, or a sponsor reference. Three lightweight paths. No IDs, no rosters, no documents.</p></div>
+        <div class="card"><h3>Verify without paperwork</h3><p>A fund hub approves them, another group vouches for them, or an established organisation refers them. Three light paths. No IDs, no rosters, no documents.</p></div>
       </div>
     </div>
   </section>`,
@@ -647,7 +655,7 @@ const slides = [
   `<section class="slide" data-name="What Relay is">
     <div class="stack">
       <span class="eyebrow">Scope, stated narrowly on purpose</span>
-      <h2 class="k h-lg">A thin coordination layer. <span class="hl">Nothing more.</span></h2>
+      <h2 class="k h-lg">A thin layer between funds and groups. <span class="hl">Nothing more.</span></h2>
       <div class="cols two">
         <div class="ledger">
           <span class="yes">IS</span><span>A public directory of verified groups, browsable with no account and no tracking</span>
@@ -685,27 +693,27 @@ const slides = [
           <b>Outcomes</b>
           <p>More groups connected to funds, and funds moving faster.</p>
           <p>Aid reaches people who currently go without because searching for it is itself a risk.</p>
-          <p>No new surveillance surface created in the process.</p>
+          <p>Nothing new created that could be used to watch people.</p>
         </div>
       </div>
-      <p class="small muted" style="margin-top:4px">Relay changes nothing about how groups do their work or who they help. The intervention is strictly on the coordination layer, which is why the theory is short.</p>
+      <p class="small muted" style="margin-top:4px">Relay changes nothing about how groups do their work or who they help. It only changes how they find each other, which is why the theory is short.</p>
     </div>
   </section>`,
 
   // 8 GROUPS AND HUBS
   `<section class="slide" data-name="Groups and hubs">
     <div class="stack">
-      <span class="eyebrow">Flow one</span>
+      <span class="eyebrow">How groups get funded</span>
       <h2 class="k h-md">Groups get funded without knowing the right person.</h2>
       <div class="flow" style="margin-top:4px">
-        <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that may be a pseudonym, a service area, aid categories, and a role-based email. Nothing else.</p></div>
-        <div class="step"><b>02 &middot; VERIFY</b><p>Hub approval, a peer group vouching, or a sponsor reference. No documents at any point.</p></div>
+        <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that may be a pseudonym, a service area, aid categories, and a contact address - a shared team one is what groups are asked for. Nothing else.</p></div>
+        <div class="step"><b>02 &middot; VERIFY</b><p>A fund hub approves, another group vouches, or an established organisation refers. No documents at any point.</p></div>
         <div class="step"><b>03 &middot; REQUEST</b><p>An amount, a category, a region. Justification is optional and warns against personal detail.</p></div>
         <div class="step"><b>04 &middot; TRACK</b><p>Submitted, approved, funds sent, acknowledged. No receipts, no narratives, no recipient data.</p></div>
       </div>
       <div class="cols two" style="margin-top:8px;align-items:start">
         ${frame(IMG.verification, 'Hub verification queue', 'clamp(140px,26vh,280px)')}
-        ${frame(IMG.reports, 'Aggregate reporting', 'clamp(140px,26vh,280px)')}
+        ${frame(IMG.reports, 'Totals, never individuals', 'clamp(140px,26vh,280px)')}
       </div>
       <p class="src">Hubs get totals by category, groups supported, and time to funding. A per-person figure is not withheld - it cannot be produced, because the data to produce it is never collected.</p>
     </div>
@@ -714,7 +722,7 @@ const slides = [
   // 9 ANONYMOUS REQUESTS
   `<section class="slide" data-name="Anonymous requests">
     <div class="stack">
-      <span class="eyebrow">Flow two &middot; the hard one</span>
+      <span class="eyebrow">How someone asks for help &middot; the hard one</span>
       <h2 class="k h-md">Someone asks for help, and Relay never learns who they are.</h2>
       <p class="lede">One lockbox. One key, copied and padlocked once per group.
         Relay holds all of it and can open none of it.</p>
@@ -766,7 +774,7 @@ const slides = [
         <div class="card">
           <h3>What is not there</h3>
           <ul class="inv gone">
-            ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the payload it cannot open')}
+            ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the encrypted message it cannot open')}
             ${gone('Individual accounts')}
             ${gone('IP addresses or cookies on anonymous routes')}
             ${gone('Any record of who browsed the directory')}
@@ -775,7 +783,7 @@ const slides = [
         </div>
       </div>
       <div class="row" style="margin-top:6px">
-        <span class="chip"><b>Deleted</b>&nbsp; requests go on confirmation or at 7-day TTL</span>
+        <span class="chip"><b>Deleted</b>&nbsp; requests go once confirmed, or after seven days</span>
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
         <span class="chip"><b>AGPL-3.0</b>&nbsp; the claims are auditable</span>
       </div>
@@ -789,9 +797,9 @@ const slides = [
       <span class="eyebrow">Not a concept</span>
       <h2 class="k h-lg">Built, deployed, and <span class="hl">auditable</span>.</h2>
       <div class="row" style="margin-top:2px;gap:clamp(20px,3vw,54px)">
-        <div class="stat"><span class="n">37</span><span class="l">routes across four roles</span></div>
-        <div class="stat"><span class="n">187</span><span class="l">automated tests</span></div>
-        <div class="stat"><span class="n">10</span><span class="l">CI jobs on every change</span></div>
+        <div class="stat"><span class="n">${routeCount}</span><span class="l">screens across four roles</span></div>
+        <div class="stat"><span class="n">${testCount}</span><span class="l">automated tests</span></div>
+        <div class="stat"><span class="n">${ciJobCount}</span><span class="l">automated checks on every change</span></div>
         <div class="stat"><span class="n">EN / ES</span><span class="l">every screen, both languages</span></div>
       </div>
       <div class="cols two" style="margin-top:8px;align-items:start">
@@ -807,10 +815,10 @@ const slides = [
     <div class="stack">
       <span class="eyebrow">Where it actually stands</span>
       <h2 class="k h-lg">No pilot has run. <span class="warn">Nobody has used this yet.</span></h2>
-      <p class="lede">The build is real and the production database holds zero records, because no group has been onboarded. Saying so plainly is the point - a project asking to be trusted with other people's safety does not get to overstate itself.</p>
+      <p class="lede">The build is real and the production database holds zero records, because no group has joined yet. Nor can one be listed until a fund hub verifies it: both the public directory and the routing of encrypted requests only ever surface groups a hub has approved, so the first hub unlocks both halves at once. Saying so plainly is the point - a project asking to be trusted with other people's safety does not get to overstate itself.</p>
       <div class="cols three" style="margin-top:6px">
-        <div class="card flag"><h3>Paused February 2026</h3><p>Development stopped after the tenth phase shipped, and restarted in August 2026 to repair the deployment and work the backlog down.</p></div>
-        <div class="card flag"><h3>Single host, no alerting</h3><p>One EC2 instance running Docker Compose. An outage earlier this year was found by hand, not by a monitor.</p></div>
+        <div class="card flag"><h3>Paused February 2026</h3><p>Development stopped after the last planned build phase shipped, and restarted in August 2026 to repair the deployment and clear the open issues.</p></div>
+        <div class="card flag"><h3>Single host, no alerting</h3><p>One rented server, running everything. An outage earlier this year was found by hand, not by a monitor.</p></div>
         <div class="card flag"><h3>The nonprofit is intended, not formed</h3><p>Mythic Works LLC is building Relay and means to transfer it to a 501(c)(3). That entity is not incorporated anywhere yet, which is one of the reasons this deck is not asking anyone for money.</p></div>
       </div>
       <p class="small muted" style="margin-top:2px">Every limitation above is a numbered issue in the public tracker, including the uncomfortable ones. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
@@ -852,7 +860,7 @@ const slides = [
       <div class="cols four" style="margin-top:6px">
         <div class="card accent">
           <h3>Someone with roots in mutual aid</h3>
-          <p>The binding constraint, and the one that cannot be coded around. Relationships with hubs and groups, and the standing to say to organizers that this is safe to try.</p>
+          <p>The thing everything else waits on, and the one part that cannot be coded around. Relationships with hubs and groups, and the standing to say to organizers that this is safe to try.</p>
         </div>
         <div class="card accent">
           <h3>Someone to build the organisation</h3>
@@ -860,10 +868,10 @@ const slides = [
         </div>
         <div class="card">
           <h3>Engineers</h3>
-          <p>${OPEN_ISSUES ? `${OPEN_ISSUES} open issues, all public` : 'Every known gap is a public issue'}. Backend coverage around a third, frontend tested only where the encryption lives, and no monitoring at all.</p>
+          <p>${OPEN_ISSUES ? `${OPEN_ISSUES} open issues, all public` : 'Every known gap is a public issue'}. About a third of the server code is covered by tests, the browser side only where the encryption lives, and nothing watches the site for outages.</p>
         </div>
         <div class="card">
-          <h3>Adversarial review</h3>
+          <h3>Someone trying to break it</h3>
           <p>The cryptography has been independently reviewed once. The application around it has not, and that is where this kind of design usually fails.</p>
         </div>
       </div>
@@ -979,7 +987,7 @@ const HTML = `<!doctype html>
 <div class="chrome">
   <div class="prog"></div>
   <div class="chrome-bar">
-    <span class="wm">Relay<b>.</b> <span class="muted">a coordination layer for mutual aid</span></span>
+    <span class="wm">Relay<b>.</b> <span class="muted">connecting local groups and the funds behind them</span></span>
     <nav class="nav"><button class="p" aria-label="Previous slide">&larr;</button><button class="nx" aria-label="Next slide">&rarr;</button></nav>
     <span class="meta"><span class="sec"></span><span class="dot"> &nbsp;&middot;&nbsp; </span><span class="counter"></span></span>
   </div>
