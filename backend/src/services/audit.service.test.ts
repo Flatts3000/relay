@@ -59,8 +59,10 @@ describe('audit log retains nothing that locates a person', () => {
     // The row identifies who acted. That is the accountability the audit log
     // exists for, and it needs no network address to provide it.
     expect(row!.userId).toBe(user.id);
-    expect(Object.keys(row!)).not.toContain('ipAddress');
-    expect(Object.keys(row!)).not.toContain('userAgent');
+    // Deliberately no assertion that the row lacks ipAddress here: this select
+    // projects whatever the Drizzle model declares, so it would pass even if
+    // the migration had never run. The information_schema test above is the
+    // real guarantee.
   });
 
   it('records sign-in and sign-out without a request object', async () => {

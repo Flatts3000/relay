@@ -773,7 +773,7 @@ const slides = [
             ${has(I_LIST, 'A public list of groups that consented to be listed')}
             ${has(I_BARS, 'Group-level funding amounts and dates')}
             ${has(I_PIN, 'Coarse region and aid category per request')}
-            ${has(I_PERSON_SM, 'Organizer accounts: an email, and which group they work with')}
+            ${has(I_PERSON_SM, 'Organizer accounts: an email, which group they work with, and a dated trail of their sign-ins and changes that nothing prunes')}
           </ul>
         </div>
         <div class="card">
@@ -792,7 +792,7 @@ const slides = [
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
         <span class="chip"><b>Open source</b>&nbsp; every claim here can be checked in the code</span>
       </div>
-      <p class="small muted" style="margin-top:2px">The known limits, stated because a partner should press on them: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all, and the login rate limiter holds a caller address in memory for fifteen minutes to make brute forcing a sign-in expensive. Neither is written down. It is written down in public alongside the code, rather than glossed over.</p>
+      <p class="small muted" style="margin-top:2px">The known limits, stated because a partner should press on them: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all, and the login rate limiter holds a caller address in memory for fifteen minutes to make brute forcing a sign-in expensive, though that one is never written to disk. Both are documented in public alongside the code rather than glossed over.</p>
     </div>
   </section>`,
 
