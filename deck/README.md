@@ -1,8 +1,28 @@
 # Relay partner and funder deck
 
-`relay-deck.html` is a single self-contained file: fonts and screenshots are
-base64-embedded, there are no external requests, and it works offline. Open it in
-a browser, or send it to someone as an attachment.
+Served at **relayfunds.org/deck**, and a single self-contained file: fonts and
+screenshots are base64-embedded, there are no external requests, and it works
+offline. Open `frontend/public/deck/index.html` directly, or send it as an
+attachment.
+
+## How it is served, and why it is not in robots.txt
+
+The build writes into `frontend/public/deck/index.html`. Vite copies `public/`
+verbatim, so the deck ships with the frontend build and needs no separate deploy.
+
+It is public but kept out of search results by `X-Robots-Tag: noindex, nofollow,
+noarchive`, set on the `/deck` location in `deploy/nginx.prod.conf`, plus the
+matching `<meta name="robots">` already in the document.
+
+**It is deliberately not disallowed in `robots.txt`, and that is not an
+oversight.** A `Disallow` stops a crawler fetching the page, which means it never
+sees the `noindex` - and the URL can still be indexed from an external link, with
+no snippet. Allowing the fetch and serving `noindex` is what actually keeps it
+out. Listing it would also advertise the path to anyone reading `robots.txt`.
+
+`robots.txt` does now exist, which it did not before, and disallows the
+signed-in routes. Those all redirect to `/login` for an anonymous request, so
+crawling them spends budget on redirect chains and indexes nothing.
 
 Arrow keys, space, click the left and right thirds, or swipe. The URL hash tracks
 the slide, so `#7` links straight to a slide.
@@ -10,9 +30,13 @@ the slide, so `#7` links straight to a slide.
 ## Rebuilding
 
 ```bash
-npm i sharp          # not a repo dependency; only the deck needs it
-node deck/build.mjs
+npm i sharp --no-save   # not a repo dependency; only the deck needs it
+node deck/build.mjs     # writes frontend/public/deck/index.html
 ```
+
+Use `--no-save` so `sharp` does not end up in `package.json`. There is one copy
+of the artifact, in `frontend/public/deck/`; a second in `deck/` would double 1.1
+MB of base64 in every clone.
 
 Screenshots come from `docs/audit_screenshots/ux_audit/`, which is **gitignored** -
 those are regenerated from a seeded local database rather than committed. On a
@@ -24,7 +48,8 @@ Without `sharp` the build embeds the PNGs unoptimised, which works but produces 
 file roughly twice the size.
 
 **Do not commit a rebuild made without the screenshots or without `sharp`.** The
-committed `relay-deck.html` is a 1.1 MB generated artifact, and its diff is a
+committed `frontend/public/deck/index.html` is a 1.1 MB generated artifact
+that now ships to production, and its diff is a
 single line of base64 that nobody can review. A rebuild on a fresh clone silently
 drops all six screenshots; a rebuild without `sharp` silently doubles the file.
 Either one looks like a normal commit and is invisible in review. Check the build
@@ -32,7 +57,7 @@ output before committing:
 
 ```
 image KB: { home: 209, help: 50, directory: 75, reports: 66, queue: 126, verification: 39 }
-wrote deck/relay-deck.html: 1130 KB, 15 slides
+wrote frontend/public/deck/index.html: 1130 KB, 15 slides  ->  served at /deck
 ```
 
 Zeroes in `image KB`, or a total far above ~1.2 MB, mean the artifact is wrong.

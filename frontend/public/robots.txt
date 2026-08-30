@@ -1,0 +1,24 @@
+# Relay - relayfunds.org
+#
+# The signed-in application is disallowed below. Every one of these redirects an
+# unauthenticated request to /login, so crawling them spends crawl budget on
+# redirect chains and indexes nothing useful.
+#
+# /deck is deliberately NOT listed. It is meant to stay out of search results,
+# and a Disallow here would achieve the opposite: a crawler that cannot fetch the
+# page never sees its noindex, and the URL can still be indexed from an external
+# link. It is served with X-Robots-Tag: noindex instead.
+
+User-agent: *
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /inbox
+Disallow: /requests
+Disallow: /groups
+Disallow: /verification
+Disallow: /reports
+Disallow: /settings
+Disallow: /admin
+Disallow: /onboarding
+Disallow: /login
+Disallow: /api/
