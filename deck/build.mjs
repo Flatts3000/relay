@@ -773,7 +773,7 @@ const slides = [
             ${has(I_LIST, 'A public list of groups that consented to be listed')}
             ${has(I_BARS, 'Group-level funding amounts and dates')}
             ${has(I_PIN, 'Coarse region and aid category per request')}
-            ${has(I_PERSON_SM, 'Organizer accounts: an email, which group they work with, and an IP address and browser string recorded against every sign-in and every change they make')}
+            ${has(I_PERSON_SM, 'Organizer accounts: an email, and which group they work with')}
           </ul>
         </div>
         <div class="card">
@@ -781,7 +781,7 @@ const slides = [
           <ul class="inv gone">
             ${gone('Names, addresses, phones or emails of anyone asking for help - their contact details sit inside the encrypted message Relay cannot open')}
             ${gone('Individual accounts')}
-            ${gone('IP addresses or cookies on the anonymous routes - nothing is logged when someone asks for help or browses the directory')}
+            ${gone('IP addresses or cookies in anything Relay stores - none reaches the database or the application logs')}
             ${gone('Any record of who browsed the directory')}
             ${gone('Any record of who received what')}
           </ul>
@@ -792,7 +792,7 @@ const slides = [
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
         <span class="chip"><b>Open source</b>&nbsp; every claim here can be checked in the code</span>
       </div>
-      <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is written down in public alongside the code, rather than glossed over.</p>
+      <p class="small muted" style="margin-top:2px">The known limits, stated because a partner should press on them: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all, and the login rate limiter holds a caller address in memory for fifteen minutes to make brute forcing a sign-in expensive. Neither is written down. It is written down in public alongside the code, rather than glossed over.</p>
     </div>
   </section>`,
 
