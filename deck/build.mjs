@@ -11,10 +11,15 @@
 // this deck goes to people deciding whether to trust the project with other
 // people's safety, and a single invented figure would be fatal to that.
 import fs from 'fs';
+import path from 'path';
 import { createRequire } from 'module';
 
-const DIR = 'deck';
-const SHOTS = 'docs/audit_screenshots/ux_audit';
+// Resolved from this file, not the working directory, so `node build.mjs` from
+// inside deck/ does not warn that every screenshot is missing and then write
+// deck/deck/relay-deck.html while reporting success.
+const DIR = import.meta.dirname;
+const ROOT = path.resolve(DIR, '..');
+const SHOTS = path.join(ROOT, 'docs', 'audit_screenshots', 'ux_audit');
 
 // sharp is optional: without it the PNGs are embedded as-is, which works but
 // produces a much larger file.
@@ -22,13 +27,7 @@ let sharp = null;
 try {
   sharp = createRequire(import.meta.url)('sharp');
 } catch {
-  try {
-    sharp = createRequire(
-      'file:///C:/Users/User/AppData/Local/Temp/claude/F--relayfundsapp/a23ee527-9c1d-4683-86f7-9db12f7be5b9/scratchpad/deckbuild/index.js'
-    )('sharp');
-  } catch {
-    console.warn('sharp not found - embedding PNGs unoptimised. `npm i sharp` for a smaller file.');
-  }
+  console.warn('sharp not found - embedding PNGs unoptimised. `npm i sharp` for a smaller file.');
 }
 
 // ---- Fonts: fetch the latin woff2 for each face and base64-embed ------------
@@ -40,30 +39,67 @@ const FAMILIES = [
 
 let FONT_CSS = '';
 for (const [spec, fam] of FAMILIES) {
-  const css = await (
-    await fetch(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`, {
+  // Failures here are reported, not swallowed and not fatal. Without this the
+  // build printed "font embedded" for every family whether or not a single
+  // @font-face rule was produced - so a proxy, an outage or a non-200 yielded a
+  // deck with no webfonts and a log that said everything was fine.
+  let embedded = 0;
+  try {
+    const res = await fetch(`https://fonts.googleapis.com/css2?family=${spec}&display=swap`, {
       headers: {
         // Without a modern UA Google serves ttf, which is roughly three times
         // the size for no benefit.
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
       },
-    })
-  ).text();
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const css = await res.text();
 
-  // Latin only. The deck ships in English; pulling every subset would triple
-  // the file for glyphs nothing renders.
-  const blocks = css.split('@font-face').filter((b) => b.includes('U+0000-00FF'));
-  for (const block of blocks) {
-    const url = block.match(/url\((https:[^)]+\.woff2)\)/)?.[1];
-    if (!url) continue;
-    const buf = Buffer.from(await (await fetch(url)).arrayBuffer());
-    FONT_CSS +=
-      '@font-face' +
-      block.replace(/url\(https:[^)]+\.woff2\)/, `url(data:font/woff2;base64,${buf.toString('base64')})`);
+    // Latin only. The deck ships in English; pulling every subset would triple
+    // the file for glyphs nothing renders.
+    const blocks = css.split('@font-face').filter((b) => b.includes('U+0000-00FF'));
+    for (const block of blocks) {
+      const url = block.match(/url\((https:[^)]+\.woff2)\)/)?.[1];
+      if (!url) continue;
+      const fontRes = await fetch(url);
+      if (!fontRes.ok) throw new Error(`woff2 HTTP ${fontRes.status}`);
+      const buf = Buffer.from(await fontRes.arrayBuffer());
+      FONT_CSS +=
+        '@font-face' +
+        block.replace(
+          /url\(https:[^)]+\.woff2\)/,
+          `url(data:font/woff2;base64,${buf.toString('base64')})`
+        );
+      embedded++;
+    }
+    if (embedded === 0) throw new Error('no latin @font-face blocks matched');
+  } catch (err) {
+    console.warn(`font NOT embedded: ${fam} (${err.message}) - falling back to system fonts`);
+    continue;
   }
-  console.log('font embedded:', fam);
+  console.log(`font embedded: ${fam} (${embedded} face(s))`);
 }
+
+// ---- Live figures ----------------------------------------------------------
+// Counted at build time rather than typed in. The hardcoded figure was stale
+// eight minutes after it was written, which is the argument against hardcoding
+// it in a deck whose stated rule is that every number is measured.
+let OPEN_ISSUES = null;
+try {
+  const { execSync } = await import('node:child_process');
+  const out = execSync('gh issue list --state open --limit 200 --json number --jq "length"', {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+    cwd: ROOT,
+  });
+  const n = Number(out.trim());
+  if (Number.isInteger(n) && n > 0) OPEN_ISSUES = n;
+} catch {
+  // gh missing or unauthenticated. The slide drops the count rather than
+  // guessing at it.
+}
+console.log('open issues:', OPEN_ISSUES ?? 'unavailable, omitting the count');
 
 // ---- Screenshots: width-limited JPEG -> data URI ----------------------------
 async function shot(file, width = 1200, quality = 74) {
@@ -140,6 +176,7 @@ h1,h2,h3,h4,p{margin:0}
 .muted{color:var(--ink-3)}
 .src{font-family:var(--mono);font-size:.62rem;color:var(--ink-3);letter-spacing:.02em;line-height:1.6}
 .stack{display:flex;flex-direction:column;gap:clamp(12px,1.9vh,24px);min-height:0}
+.stack.gap-s{gap:clamp(9px,1.2vh,14px)}
 .row{display:flex;gap:clamp(12px,1.5vw,24px);flex-wrap:wrap}
 .cols{display:grid;gap:clamp(14px,1.6vw,26px);min-height:0}
 .two{grid-template-columns:1.02fr .98fr;align-items:center}
@@ -192,7 +229,11 @@ h1,h2,h3,h4,p{margin:0}
 .nav button{font-family:var(--mono);font-size:.7rem;color:var(--ink-2);background:rgba(255,255,255,.04);
   border:1px solid var(--line);border-radius:7px;width:30px;height:25px;cursor:pointer;transition:.15s}
 .nav button:hover{color:var(--ink);border-color:var(--teal-dim);background:var(--teal-glow)}
-.zone{position:absolute;top:0;bottom:44px;width:20%;z-index:4;cursor:pointer}
+/* pan-y so a vertical drag in the side strips still scrolls the slide, which
+   matters under the mobile breakpoint below where .slide becomes scrollable and
+   these strips cover 40% of the width. Hidden outright on small screens: swipe
+   already navigates there, and the strips only get in the way. */
+.zone{position:absolute;top:0;bottom:44px;width:20%;z-index:4;cursor:pointer;touch-action:pan-y}
 .zone.l{left:0}.zone.r{right:0}
 :focus-visible{outline:2px solid var(--teal);outline-offset:3px}
 .toc{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
@@ -209,20 +250,11 @@ h1,h2,h3,h4,p{margin:0}
 .byline span{font-size:.9rem;color:var(--ink-3)}
 .byline a{font-family:var(--mono);font-size:.86rem;color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-dim)}
 .byline a:hover{color:var(--ink)}
-.money{display:flex;flex-direction:column;gap:9px}
-.line{display:grid;grid-template-columns:1fr auto;gap:2px 16px;align-items:baseline;padding-bottom:9px;border-bottom:1px solid var(--line)}
-.line:last-child{border-bottom:none}
-.line .w{font-size:.93rem;color:var(--ink)}
-.line .w em{font-style:normal;display:block;font-size:.79rem;color:var(--ink-3);margin-top:3px;line-height:1.45}
-.line .v{font-family:var(--mono);color:var(--teal);font-weight:600;font-size:.9rem;white-space:nowrap}
-/* An unset amount must read as unset. .line .v out-specifies .todo, so the
-   placeholder chips were rendering in the accent colour and looked like real
-   figures at a glance. */
-.line .v.todo{color:var(--amber);font-weight:400}
 @media (max-width:900px){
   .two,.three,.four,.flow{grid-template-columns:1fr}
   .shot{display:none}
   .slide{justify-content:flex-start;padding-top:56px;overflow-y:auto}
+  .zone{display:none}
 }
 @media (prefers-reduced-motion:reduce){.slide{transition:none}.pulse{animation:none}.prog{transition:none}}
 `;
@@ -451,7 +483,7 @@ const slides = [
       <div class="row" style="margin-top:2px;gap:clamp(20px,3vw,54px)">
         <div class="stat"><span class="n">37</span><span class="l">routes across four roles</span></div>
         <div class="stat"><span class="n">187</span><span class="l">automated tests</span></div>
-        <div class="stat"><span class="n">12</span><span class="l">checks on every change</span></div>
+        <div class="stat"><span class="n">10</span><span class="l">CI jobs on every change</span></div>
         <div class="stat"><span class="n">EN / ES</span><span class="l">every screen, both languages</span></div>
       </div>
       <div class="cols two" style="margin-top:8px;align-items:start">
@@ -520,7 +552,7 @@ const slides = [
         </div>
         <div class="card">
           <h3>Engineers</h3>
-          <p>Nine open issues, all public. Backend coverage around a third, frontend tested only where the encryption lives, and no monitoring at all.</p>
+          <p>${OPEN_ISSUES ? `${OPEN_ISSUES} open issues, all public` : 'Every known gap is a public issue'}. Backend coverage around a third, frontend tested only where the encryption lives, and no monitoring at all.</p>
         </div>
         <div class="card">
           <h3>Adversarial review</h3>
@@ -571,7 +603,7 @@ const JS = `
 (function(){
   var slides=[].slice.call(document.querySelectorAll('.slide'));
   var prog=document.querySelector('.prog'),counter=document.querySelector('.counter'),sec=document.querySelector('.sec');
-  var i=0,n=slides.length;
+  var i=0,n=slides.length,swiped=false;
   function show(next){
     next=Math.max(0,Math.min(n-1,next));
     var cur=slides[i];
@@ -590,13 +622,23 @@ const JS = `
     else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1)}
     else if(e.key==='Home'){show(0)}else if(e.key==='End'){show(n-1)}
   });
-  document.querySelector('.zone.l').addEventListener('click',function(){go(-1)});
-  document.querySelector('.zone.r').addEventListener('click',function(){go(1)});
+  document.querySelector('.zone.l').addEventListener('click',function(){if(!swiped)go(-1)});
+  document.querySelector('.zone.r').addEventListener('click',function(){if(!swiped)go(1)});
   document.querySelector('.nav .p').addEventListener('click',function(){go(-1)});
   document.querySelector('.nav .nx').addEventListener('click',function(){go(1)});
-  var sx=null;
-  document.addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
-  document.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)go(dx<0?1:-1);sx=null},{passive:true});
+  // A swipe must not also register as a tap. touchstart is passive, so nothing
+  // calls preventDefault, and a drag beginning and ending inside a .zone still
+  // synthesises a click on it - advancing twice. swiped suppresses the click
+  // that immediately follows. The vertical guard stops a scroll with sideways
+  // drift changing slide on mobile, where slides scroll.
+  var sx=null, sy=null;
+  document.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(sx===null)return;
+    var dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){swiped=true;go(dx<0?1:-1);setTimeout(function(){swiped=false},400)}
+    sx=null;sy=null;
+  },{passive:true});
   var h=parseInt((location.hash||'').replace('#',''),10);
   show(isNaN(h)?0:h-1);
 })();

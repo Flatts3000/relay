@@ -27,6 +27,13 @@ export default defineConfig({
       },
     },
   },
+  // `vite preview` has its own server and its own default (4173), and walks
+  // ports exactly like the dev server does. Pinning one without the other
+  // leaves the same squatting behaviour one command away.
+  preview: {
+    port: Number(process.env['PREVIEW_PORT'] ?? 4173),
+    strictPort: true,
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

@@ -21,7 +21,21 @@ affected slides simply render without them. To get them back, seed a local
 database and run a capture pass over the routes (see `docs/ux_audit_results.md`).
 
 Without `sharp` the build embeds the PNGs unoptimised, which works but produces a
-file several times larger.
+file roughly twice the size.
+
+**Do not commit a rebuild made without the screenshots or without `sharp`.** The
+committed `relay-deck.html` is a 1.1 MB generated artifact, and its diff is a
+single line of base64 that nobody can review. A rebuild on a fresh clone silently
+drops all six screenshots; a rebuild without `sharp` silently doubles the file.
+Either one looks like a normal commit and is invisible in review. Check the build
+output before committing:
+
+```
+image KB: { home: 209, help: 50, directory: 75, reports: 66, queue: 126, verification: 39 }
+wrote deck/relay-deck.html: 1130 KB, 15 slides
+```
+
+Zeroes in `image KB`, or a total far above ~1.2 MB, mean the artifact is wrong.
 
 ## The rule this deck is written under
 
@@ -85,14 +99,15 @@ statistic.
 
 ## Current facts, and where they came from
 
-| Claim                                     | Source                                                                                                                                |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| 37 routes across four roles               | route paths in `frontend/src/App.tsx`, excluding the 404 and the dev-only design system; cross-checked against the page components    |
-| 187 automated tests                       | 148 backend + 39 frontend, from `npm test`                                                                                            |
-| Checks on every change                    | the job list in `.github/workflows/ci.yml`                                                                                            |
-| Zero records in production                | `select count(*)` against the production database, 2026-08-29                                                                         |
-| Paused February 2026, resumed August 2026 | commit history                                                                                                                        |
-| Cryptography independently reviewed       | stated by the project owner; the reviewer, date and scope are still unrecorded ([#14](https://github.com/Flatts3000/relay/issues/14)) |
+| Claim                                     | Source                                                                                                                                                                      |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 37 routes across four roles               | route paths in `frontend/src/App.tsx`, excluding the 404 and the dev-only design system; cross-checked against the page components                                          |
+| 187 automated tests                       | 148 backend + 39 frontend, from `npm test`                                                                                                                                  |
+| Open issue count on slide 14              | counted at build time via `gh issue list`; the slide drops the number entirely if `gh` is missing or unauthenticated                                                        |
+| 10 CI jobs on every change                | the job definitions in `.github/workflows/ci.yml`. `gh pr checks` reports 12 runs, because CodeQL and the container scan each emit two - the job count is the stable figure |
+| Zero records in production                | `select count(*)` against the production database, 2026-08-29                                                                                                               |
+| Paused February 2026, resumed August 2026 | commit history                                                                                                                                                              |
+| Cryptography independently reviewed       | stated by the project owner; the reviewer, date and scope are still unrecorded ([#14](https://github.com/Flatts3000/relay/issues/14))                                       |
 
 Re-check these before sending. The test counts and route count in particular
 drift with every merge, and a deck that is quietly six weeks stale is its own
