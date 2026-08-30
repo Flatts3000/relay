@@ -72,7 +72,7 @@
   --primary-400:#4a90d9; --primary:#2e6eb5; --primary-600:#1d5a9e;
   --primary-700:#164a84; --primary-900:#0c2d52;
   --teal:#14b8a6; --teal-50:#f0fdfa; --teal-200:#99f6e4; --teal-700:#0f766e;
-  --amber:#d97706; --amber-50:#fffbeb; --amber-300:#fcd34d;
+  --amber:#d97706; --amber-50:#fffbeb; --amber-300:#fcd34d; --amber-700:#b45309;
   --red:#dc2626;
 
   --page:#f9fafb;
@@ -82,7 +82,6 @@
 
   --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
-  --serif:var(--sans);
 
   --r-sm:6px; --r:8px; --r-lg:12px;
   --sh-sm:0 1px 2px rgba(0,0,0,.05);
@@ -152,7 +151,9 @@ h1,h2,h3,h4,p{margin:0}
 .card.accent{border-color:var(--primary-200);background:var(--primary-50)}
 .card.accent h3{color:var(--primary-700)}
 .card.flag{border-color:var(--amber-300);background:var(--amber-50)}
-.card.flag h3{color:var(--amber)}
+/* amber-700, not amber-600: heading-sized body text on the amber ground needs
+   4.5:1 and amber-600 gives 3.07:1. */
+.card.flag h3{color:var(--amber-700)}
 .stat .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(1.5rem,3vw,2.6rem);
   color:var(--primary-600);font-weight:600;letter-spacing:-.02em;line-height:1}
 .stat .l{display:block;margin-top:7px;font-size:.7rem;letter-spacing:.03em;color:var(--ink-3);font-family:var(--mono);line-height:1.4}
@@ -164,11 +165,11 @@ h1,h2,h3,h4,p{margin:0}
   background:var(--surface);box-shadow:var(--sh-sm);max-width:100%}
 .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pl 2.4s ease-in-out infinite}
 @keyframes pl{0%,100%{opacity:1}50%{opacity:.3}}
-.todo{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--amber);
+.todo{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--amber-700);
   border:1px dashed var(--amber-300);border-radius:var(--r-sm);padding:.3em .65em;background:var(--amber-50)}
 .shot{margin:0;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);background:var(--surface);
   box-shadow:var(--sh-lg)}
-.shot .bar{display:flex;align-items:center;gap:6px;padding:8px 11px;background:#f3f4f6;border-bottom:1px solid var(--line);height:auto}
+.shot .bar{display:flex;align-items:center;gap:6px;padding:8px 11px;background:#f3f4f6;border-bottom:1px solid var(--line)}
 .shot .bar span{width:8px;height:8px;border-radius:50%;background:#d1d5db}
 .shot .bar em{margin-left:9px;font-style:normal;font-family:var(--mono);font-size:.64rem;color:var(--ink-3)}
 .shot .shotimg{height:var(--h,clamp(180px,38vh,400px));overflow:hidden;background:var(--page)}
@@ -200,27 +201,40 @@ h1,h2,h3,h4,p{margin:0}
 /* Chrome. One opaque bar - no mask, no full-viewport overlay, nothing to ghost. */
 .chrome{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line)}
 .prog{height:2px;width:0;background:var(--primary);transition:width .34s ease}
-.bar{height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+/* .chrome-bar, not .bar: the screenshot frames already own a .bar (their fake
+   browser title bar), and a bare .bar here leaked justify-content:space-between
+   into every one of them, spraying the traffic-light dots across the frame. */
+.chrome-bar{height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:0 clamp(14px,4vw,28px);font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;color:var(--ink-3)}
-.bar .wm{color:var(--ink-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar .wm b{color:var(--primary-600)}
-.bar .meta{white-space:nowrap}
+.chrome-bar .wm{color:var(--ink-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chrome-bar .wm b{color:var(--primary-600)}
+.chrome-bar .meta{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .nav{display:flex;gap:6px}
 .nav button{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);background:var(--surface);
-  border:1px solid var(--line);border-radius:var(--r-sm);width:44px;height:34px;cursor:pointer;transition:.15s}
+  border:1px solid var(--line);border-radius:var(--r-sm);width:44px;height:44px;cursor:pointer;transition:.15s}
 .nav button:hover{color:var(--primary-700);border-color:var(--primary-200);background:var(--primary-50)}
 .zone{position:fixed;top:0;bottom:54px;width:17%;z-index:10;cursor:pointer;touch-action:pan-y}
 .zone.l{left:0}.zone.r{right:0}
 :focus-visible{outline:2px solid var(--primary-600);outline-offset:3px}
 
 @media (max-width:900px){
-  .two,.three,.four,.flow{grid-template-columns:1fr}
+  .two,.three,.four,.flow,.toc{grid-template-columns:1fr}
+  /* .toc was left at three columns on every width, which nothing caught because
+     it only clips below about 360px - at 320px its third column ran 27px past
+     the viewport. Stacked, its column rules have to become row rules. */
+  .toc>div{border-right:none;border-bottom:1px solid var(--line)}
+  .toc>div:last-child{border-bottom:none}
   .shot{display:none}
   /* The page scrolls now, so a tall slide makes the document taller instead of
      being clipped inside a nested scroller. */
   .slide{justify-content:flex-start;padding-top:clamp(28px,5vh,48px)}
   .zone{display:none}
-  .bar .wm{display:none}
+  .chrome-bar .wm{display:none}
+}
+/* Under ~360px the section name and its separator are the first thing to go,
+   so the slide counter always stays legible. */
+@media (max-width:360px){
+  .chrome-bar .sec,.chrome-bar .dot{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   .slide.active{animation:none}.pulse{animation:none}.prog{transition:none}
@@ -550,10 +564,10 @@ h1,h2,h3,h4,p{margin:0}
 <div class="zone r" aria-hidden="true"></div>
 <div class="chrome">
   <div class="prog"></div>
-  <div class="bar">
+  <div class="chrome-bar">
     <span class="wm">Relay<b>.</b> <span class="muted">a coordination layer for mutual aid</span></span>
     <nav class="nav"><button class="p" aria-label="Previous slide">&larr;</button><button class="nx" aria-label="Next slide">&rarr;</button></nav>
-    <span class="meta"><span class="sec"></span> &nbsp;&middot;&nbsp; <span class="counter"></span></span>
+    <span class="meta"><span class="sec"></span><span class="dot"> &nbsp;&middot;&nbsp; </span><span class="counter"></span></span>
   </div>
 </div>
 <script>
@@ -575,9 +589,18 @@ h1,h2,h3,h4,p{margin:0}
     if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));
   }
   function go(d){show(i+d)}
+  // Space and PageDown page through a tall slide before they advance.
+  // Advancing on the first press was right when the deck was a fixed, clipped
+  // box and nothing ever scrolled. Now a slide taller than the viewport extends
+  // the document, and jumping immediately would silently skip everything still
+  // below the fold - on a 390x700 phone that was 368px of unread slide 4.
+  // The arrows still advance at once; they are the deliberate "next" gesture.
+  function atBottom(){return window.scrollY+window.innerHeight>=document.documentElement.scrollHeight-2}
   document.addEventListener('keydown',function(e){
-    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(1)}
-    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1)}
+    if(e.key==='ArrowRight'){e.preventDefault();go(1)}
+    else if(e.key==='ArrowLeft'){e.preventDefault();go(-1)}
+    else if(e.key==='PageDown'||e.key===' '){if(!atBottom())return;e.preventDefault();go(1)}
+    else if(e.key==='PageUp'){if(window.scrollY>2)return;e.preventDefault();go(-1)}
     else if(e.key==='Home'){show(0)}else if(e.key==='End'){show(n-1)}
   });
   document.querySelector('.zone.l').addEventListener('click',function(){if(!swiped)go(-1)});
