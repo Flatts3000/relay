@@ -561,8 +561,9 @@ const slides = [
   `<section class="slide" data-name="Relay">
     <div class="stack">
       <div class="badge"><span class="pulse"></span> RELAYFUNDS.ORG &nbsp;&middot;&nbsp; BUILT AND DEPLOYED &middot; ONE CONTRIBUTOR &middot; LOOKING FOR PEOPLE, NOT MONEY</div>
-      <h1 class="k h-xl">Infrastructure for <span class="hl">solidarity</span>, built to be useless to anyone who seizes it.</h1>
-      <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
+      <h1 class="k h-xl">The money exists. It cannot <span class="hl">find the people doing the work</span>.</h1>
+      <p class="lede">Mutual aid is neighbors covering each other's costs directly - a block, a church, a school group, putting money together for someone's rent, power bill or groceries. Larger funds raise money centrally to back that work. Today the two sides find each other by word of mouth, or not at all.</p>
+      <p class="lede">Relay is that missing connection. Someone can ask a group for help without leaving a trail, and Relay never decides who deserves aid and never touches the money.</p>
       <div class="row" style="margin-top:4px">
         <span class="chip"><b>Encrypted</b>&nbsp; so only the group can read it</span>
         <span class="chip"><b>No accounts</b>&nbsp; for people asking for help</span>
@@ -576,19 +577,19 @@ const slides = [
   `<section class="slide" data-name="Who this is for">
     <div class="stack">
       <span class="eyebrow">Who this is for</span>
-      <h2 class="k h-lg">Eleven neighbors and a <span class="hl">spreadsheet</span>.</h2>
+      <h2 class="k h-lg">A block. A church basement. A <span class="hl">school parents' group</span>.</h2>
       <div class="cols two">
         <div class="stack gap-s">
           <p class="lede">They know who on their block is behind on rent, whose power is about to be cut, which family stopped answering the door. They are good at the part that is hard to systematize.</p>
           <p class="lede">What they do not have is a way to reach the fund that would cover it - without already knowing somebody who knows somebody. So the money sits in one place and the knowledge sits in another.</p>
         </div>
         <div class="card accent">
-          <h3>The unit of trust is the group</h3>
+          <h3>Relay deals with groups, never with individuals</h3>
           <p>Relay works at group level and nowhere else. Groups are accountable for the money, groups make every distribution decision, groups hold the local relationships. Relay's whole job is to stop the introduction being a prerequisite.</p>
           <p style="margin-top:10px">That is also why it can afford to know nothing about the people receiving aid.</p>
         </div>
       </div>
-      <p class="src">The pattern above is drawn from docs/problem_brief.md and is illustrative of the groups Relay is designed for. No group has joined yet - see slide 12.</p>
+      <p class="src">docs/problem_brief.md describes mutual aid in the U.S., and specifically in Minnesota, as operating through block-level, school-based, church-based and informal networks, with money easier to raise centrally and aid better distributed locally. No group has joined Relay yet - see slide 12.</p>
     </div>
   </section>`,
 
@@ -622,19 +623,19 @@ const slides = [
       <div class="cols three" style="margin-top:4px">
         <div class="card flag">
           <h3>Charity fraud and money laundering charges</h3>
-          <p>Three Atlanta Solidarity Fund organizers were arrested in May 2023 over what Nonprofit Quarterly describes as routine nonprofit reimbursements. The money laundering charges were dropped in September 2024; racketeering charges under a 61-defendant RICO indictment remain outstanding.</p>
+          <p>Three Atlanta Solidarity Fund organizers were arrested in May 2023 over what Nonprofit Quarterly describes as routine nonprofit reimbursements. The money laundering charges were dropped in September 2024; racketeering charges remain, under a 61-defendant indictment brought using RICO, a law written to prosecute organized crime.</p>
         </div>
         <div class="card flag">
-          <h3>Payment rails are a surveillance layer</h3>
-          <p>IRS reporting thresholds on money-sharing apps put a durable record behind ordinary transfers between neighbors - the exact mechanism most mutual aid runs on today.</p>
+          <h3>The apps people use to send money keep records</h3>
+          <p>Tax reporting rules on money-sharing apps put a record behind ordinary transfers between neighbors - the exact way most mutual aid moves money today.</p>
         </div>
         <div class="card flag">
-          <h3>Co-optation is a live fear</h3>
-          <p>Organizers actively worry that philanthropic structure and compliance requirements defang the work. Any tool entering this space is read against that suspicion, and should be.</p>
+          <h3>Organizers fear being changed by the money</h3>
+          <p>Organizers worry that foundation structure and its compliance rules blunt the work. Any tool arriving in this space is judged against that suspicion, and should be.</p>
         </div>
       </div>
       <div class="quote" style="margin-top:8px">
-        <p>The sector's own recommendations to mutual aid funds include decentralised organizing to reduce surveillance vulnerability, and parallel structures where visibility is a risk.</p>
+        <p>The sector's own recommendations to mutual aid funds include decentralized organizing to reduce surveillance vulnerability, and parallel structures where visibility is a risk.</p>
         <cite>Nonprofit Quarterly, "Protecting Solidarity: Countering Attacks on Mutual Aid Funds" &middot; Relay's design brief, arrived at independently</cite>
       </div>
     </div>
@@ -645,10 +646,10 @@ const slides = [
     <div class="stack">
       <span class="eyebrow">Why this is hard to build</span>
       <h2 class="k h-lg">Every obvious solution makes people <span class="hl">less safe</span>.</h2>
-      <p class="lede">A directory that logs searches. An intake form that stores a phone number. An analytics tag recording who visited. Each is standard practice, and each manufactures a record that can be leaked, scraped, or lawfully demanded.</p>
+      <p class="lede">A directory that logs searches. An intake form that stores a phone number. A tracking script recording who visited. Each is standard practice, and each manufactures a record that can be leaked, scraped, or lawfully demanded.</p>
       <div class="cols three" style="margin-top:6px">
-        <div class="card"><h3>Assume seizure</h3><p>The premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
-        <div class="card"><h3>Minimize, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
+        <div class="card"><h3>Assume it will be taken</h3><p>The premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
+        <div class="card"><h3>Do not collect it in the first place</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
         <div class="card"><h3>Verify without paperwork</h3><p>A fund hub approves them, another group vouches for them, or an established organization refers them. Three light paths. No IDs, no rosters, no documents.</p></div>
       </div>
     </div>
@@ -674,32 +675,32 @@ const slides = [
     </div>
   </section>`,
 
-  // 7 THEORY OF CHANGE
-  `<section class="slide" data-name="Theory of change">
+  // 7 HOW IT WORKS
+  `<section class="slide" data-name="How it works">
     <div class="stack">
-      <span class="eyebrow">Theory of change</span>
+      <span class="eyebrow">How it is meant to work</span>
       <h2 class="k h-md">Remove the introduction requirement, and the existing system works better.</h2>
       <div class="toc" style="margin-top:6px">
         <div>
-          <b>Activities</b>
+          <b>What it does</b>
           <p>A verified public directory of groups.</p>
           <p>A group-level funding request and payout workflow.</p>
           <p>Encrypted anonymous help requests routed to matching groups.</p>
         </div>
         <div>
-          <b>Outputs</b>
+          <b>What that changes</b>
           <p>Groups reach hubs without a personal introduction.</p>
           <p>Hubs vet groups without collecting sensitive documents.</p>
           <p>People reach groups without creating a traceable record.</p>
         </div>
         <div>
-          <b>Outcomes</b>
+          <b>What that leads to</b>
           <p>More groups connected to funds, and funds moving faster.</p>
           <p>Aid reaches people who currently go without because searching for it is itself a risk.</p>
           <p>Nothing new created that could be used to watch people.</p>
         </div>
       </div>
-      <p class="small muted" style="margin-top:4px">Relay changes nothing about how groups do their work or who they help. It only changes how they find each other, which is why the theory is short.</p>
+      <p class="small muted" style="margin-top:4px">Relay changes nothing about how groups do their work or who they help. It only changes how they find each other, which is why this is short.</p>
     </div>
   </section>`,
 
@@ -755,7 +756,7 @@ const slides = [
           ART_OFF
         )}
       </div>
-      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. Cryptography independently reviewed.</p>
+      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. An independent expert reviewed the cryptography and found the design sound - that review is not yet written up in the repository (issue #14), which makes it the one claim on this slide you cannot check for yourself.</p>
     </div>
   </section>`,
 
@@ -791,7 +792,7 @@ const slides = [
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
         <span class="chip"><b>Open source</b>&nbsp; every claim here can be checked in the code</span>
       </div>
-      <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is documented in the repository rather than glossed.</p>
+      <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is written down in public alongside the code, rather than glossed over.</p>
     </div>
   </section>`,
 
@@ -799,7 +800,7 @@ const slides = [
   `<section class="slide" data-name="What exists">
     <div class="stack">
       <span class="eyebrow">Not a concept</span>
-      <h2 class="k h-lg">Built, deployed, and <span class="hl">auditable</span>.</h2>
+      <h2 class="k h-lg">Built, deployed, and <span class="hl">open to inspection</span>.</h2>
       <div class="row" style="margin-top:2px;gap:clamp(20px,3vw,54px)">
         <div class="stat"><span class="n">${routeCount}</span><span class="l">screens across four roles</span></div>
         <div class="stat"><span class="n">${testCount}</span><span class="l">automated tests</span></div>
@@ -810,7 +811,7 @@ const slides = [
         ${frame(IMG.directory, 'Public group directory', 'clamp(150px,30vh,320px)')}
         ${frame(IMG.queue, 'Hub funding queue', 'clamp(150px,30vh,320px)')}
       </div>
-      <p class="src">Live at relayfunds.org. React, Node and PostgreSQL on a single host behind Caddy. Every pull request runs lint, typecheck, both test suites, a migrations job diffing the applied schema against the definitions, container builds, dependency audit, CodeQL and Trivy.</p>
+      <p class="src">Live at relayfunds.org. For anyone who wants the technical detail: React, Node and PostgreSQL on a single server. Every pull request runs lint, typecheck, both test suites, a migrations job diffing the applied schema against the definitions, container builds, dependency audit, CodeQL and Trivy.</p>
     </div>
   </section>`,
 
@@ -825,7 +826,7 @@ const slides = [
         <div class="card flag"><h3>Single host, no alerting</h3><p>One rented server, running everything. An outage earlier this year was found by hand, not by a monitor.</p></div>
         <div class="card flag"><h3>The nonprofit is intended, not formed</h3><p>Mythic Works LLC is building Relay and means to transfer it to a 501(c)(3). That entity is not incorporated anywhere yet, which is one of the reasons this deck is not asking anyone for money.</p></div>
       </div>
-      <p class="small muted" style="margin-top:2px">Every limitation above is a numbered issue in the public tracker, including the uncomfortable ones. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
+      <p class="small muted" style="margin-top:2px">Where a limitation is an engineering problem it is a numbered issue in the public tracker, including the uncomfortable ones. Being paused, and having no nonprofit yet, are facts about the project rather than bugs, so they are not. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
     </div>
   </section>`,
 
@@ -837,7 +838,7 @@ const slides = [
       <div class="cols two" style="margin-top:4px">
         <div class="stack gap-s">
           <p class="small"><b style="color:var(--ink)">A partner provides:</b> one fund hub willing to route real money through the workflow, introductions to three to five local groups, and honest feedback when it does not work.</p>
-          <p class="small"><b style="color:var(--ink)">Relay provides:</b> the platform, onboarding, support throughout, and a facilitator. No cost to participants.</p>
+          <p class="small"><b style="color:var(--ink)">Relay provides:</b> the software, help getting groups set up, support throughout, and someone to run the pilot. No cost to participants.</p>
           <p class="small"><b style="color:var(--ink)">Participation is opt-in and endable by any party at any time.</b> If it does not clearly help, it stops - written into the proposal, not implied.</p>
         </div>
         <div class="card">
@@ -860,7 +861,7 @@ const slides = [
     <div class="stack">
       <span class="eyebrow">What is missing</span>
       <h2 class="k h-lg">The hard part is built. What is missing is <span class="hl">people</span>.</h2>
-      <p class="lede">The repository has one contributor. Everything on the previous slides was made by one person, which is why the engineering is the part that is finished and everything else is not.</p>
+      <p class="lede">One person has written all of it. Everything on the previous slides was made by that one person, which is why the engineering is the part that is finished and everything else is not.</p>
       <div class="cols four" style="margin-top:6px">
         <div class="card accent">
           <h3>Someone with roots in mutual aid</h3>
@@ -872,7 +873,7 @@ const slides = [
         </div>
         <div class="card">
           <h3>Engineers</h3>
-          <p>${OPEN_ISSUES ? `${OPEN_ISSUES} open issues, all public` : 'Every known gap is a public issue'}. About a third of the server code is covered by tests, the browser side only where the encryption lives, and nothing watches the site for outages.</p>
+          <p>${OPEN_ISSUES ? `${OPEN_ISSUES} known problems, every one of them written down in public` : 'Every known gap is a public issue'}. About a third of the server code is covered by tests, the browser side only where the encryption lives, and nothing watches the site for outages.</p>
         </div>
         <div class="card">
           <h3>Someone trying to break it</h3>
