@@ -26,8 +26,14 @@ COPY --from=builder /app/drizzle ./drizzle
 # which it did, on every deploy from 2026-08-29 (#64). Migrations run from
 # dist/migrate.js, which is built from the same sources as the server.
 
+# Production dependencies only. The second install this replaced -
+# `npm install drizzle-kit tsx`, which ran before NODE_ENV=production and so
+# reinstalled every devDependency - was the only reason dotenv was present,
+# since src/env.ts imports it and it was declared as a devDependency. It is a
+# runtime dependency now, which is what it always was in practice. Dropping the
+# install also stops shipping eslint, vitest, typescript, tsx and drizzle-kit
+# into production.
 RUN npm install --omit=dev && \
-    npm install drizzle-kit tsx && \
     npm cache clean --force
 
 USER nodejs

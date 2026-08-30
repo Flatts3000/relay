@@ -37,12 +37,16 @@ async function main(): Promise<void> {
   console.log('Migrations up to date.');
 }
 
-main()
-  .then(() => closePool())
-  .catch(async (error) => {
-    console.error('Migration failed:', error);
-    // Reported, not swallowed: the pool is closed so the process can exit
-    // cleanly, but the migration error above is what the deploy acts on.
-    await closePool().catch((closeError) => console.error('Closing pool failed:', closeError));
-    process.exit(1);
-  });
+// try/finally rather than .then(closePool).catch(...): chaining the catch after
+// the close meant a pool.end() rejection on the SUCCESS path was reported as
+// "Migration failed", closed the pool a second time - which pg rejects with
+// "Called end on pool more than once" - and exited 1, aborting a deploy whose
+// migrations had in fact applied.
+try {
+  await main();
+} catch (error) {
+  console.error('Migration failed:', error);
+  process.exitCode = 1;
+} finally {
+  await closePool();
+}

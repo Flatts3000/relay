@@ -227,7 +227,7 @@ jobs:
       #
       # Run twice, because a migrator that is not idempotent fails on the second
       # deploy rather than the first.
-      - name: Run the migration entrypoint, twice
+      - name: Build and run the compiled migration entrypoint, twice
         working-directory: backend
         env:
           NODE_ENV: test
@@ -240,8 +240,9 @@ jobs:
           set -euo pipefail
           PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d postgres \
             -v ON_ERROR_STOP=1 -c "CREATE DATABASE relay_entrypoint;"
-          npm run db:migrate
-          npm run db:migrate
+          npm run build
+          node dist/migrate.js
+          node dist/migrate.js
           rows=$(PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d relay_entrypoint -tAc \
             "SELECT count(*) FROM drizzle.__drizzle_migrations;")
           files=$(ls drizzle/*.sql | wc -l)

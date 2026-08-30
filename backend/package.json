@@ -23,6 +23,7 @@
     "db:check-journal": "node scripts/check-migration-journal.js && npx tsx ../node_modules/drizzle-kit/bin.cjs check"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "@aws-sdk/client-ses": "^3.983.0",
     "@react-email/components": "^1.0.8",
     "@react-email/render": "^2.0.4",
@@ -44,7 +45,6 @@
     "@types/react": "^19.2.14",
     "@types/supertest": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.11",
-    "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.9.0",
     "globals": "^15.9.0",
