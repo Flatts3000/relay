@@ -155,7 +155,7 @@ ${FONT_CSS}
   --primary-700:#164a84; --primary-900:#0c2d52;
   --teal:#14b8a6; --teal-50:#f0fdfa; --teal-200:#99f6e4; --teal-700:#0f766e;
   --amber:#d97706; --amber-50:#fffbeb; --amber-300:#fcd34d; --amber-700:#b45309;
-  --red:#dc2626;
+  --red:#dc2626; --red-700:#b91c1c;
 
   --page:#f9fafb;
   --surface:#ffffff;
@@ -264,6 +264,23 @@ h1,h2,h3,h4,p{margin:0}
 .lock .p{display:flex;flex-direction:column;gap:9px;background:var(--surface);
   border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(12px,1.2vw,16px);box-shadow:var(--sh-sm)}
 .lock .art{display:block;width:100%;height:auto;max-width:300px;margin:0 auto}
+/* The two coordination failures, drawn: three parties, two broken links. */
+.gaps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:clamp(8px,1.2vw,18px);align-items:center}
+.gaps .node{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:clamp(14px,1.5vw,22px);box-shadow:var(--sh-sm);text-align:center}
+.gaps .node svg{display:block;margin:0 auto 12px;width:clamp(46px,4.2vw,64px);height:auto}
+.gaps .node b{display:block;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:5px}
+.gaps .node p{font-size:.86rem;color:var(--ink-2);line-height:1.45}
+.gaps .brk{text-align:center}
+.gaps .brk svg{display:block;margin:0 auto 7px;width:clamp(48px,4.6vw,68px);height:auto}
+/* An inventory of what a warrant actually reaches: each line carries its own
+   mark, and the absent ones are drawn as struck-through ghosts. */
+.inv{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(7px,.9vh,11px)}
+.inv li{display:flex;align-items:flex-start;gap:10px;font-size:.88rem;color:var(--ink-2);line-height:1.4}
+.inv svg{flex:0 0 20px;width:20px;height:20px;margin-top:1px}
+.inv.gone li{color:var(--ink-3)}
+.gaps .brk span{font-family:var(--mono);font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--red-700);line-height:1.35;display:block}
 .lock b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;
   text-transform:uppercase;color:var(--primary-600)}
 .lock p{font-size:.84rem;color:var(--ink-2);line-height:1.45}
@@ -311,6 +328,9 @@ h1,h2,h3,h4,p{margin:0}
 
 @media (max-width:900px){
   .two,.three,.four,.flow,.toc,.lock{grid-template-columns:1fr}
+  /* Stacked, the broken links sit between the parties as they do across. */
+  .gaps{grid-template-columns:1fr}
+  .gaps .brk svg{width:56px}
   /* Each lockbox panel turns into a row - small drawing beside its text -
      rather than four full-width illustrations stacked down the phone. */
   .lock .p{flex-direction:row;align-items:center;gap:14px}
@@ -356,6 +376,7 @@ const C = {
   amberL: '#fcd34d',
   amberBg: '#fffbeb',
   red: '#dc2626',
+  red7: '#b91c1c',
   tint: '#f0f7ff',
   page: '#f9fafb',
 };
@@ -466,6 +487,52 @@ const ART_OFF = `
   <path d="M76 116 124 90" stroke="${C.red}" stroke-width="2.6" stroke-linecap="round"/>
 `;
 
+// ---- The two coordination failures -----------------------------------------
+// Money pools in one place, local knowledge sits in another, and the people who
+// need both cannot safely reach either. Three parties, two broken links.
+const ICON_HUB = `
+  <path d="M12 26v9c0 4.1 9 7.5 20 7.5s20-3.4 20-7.5v-9" fill="#fff" stroke="${C.box}" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="32" cy="26" rx="20" ry="7.5" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>
+  <path d="M12 13v9c0 4.1 9 7.5 20 7.5s20-3.4 20-7.5v-9" fill="#fff" stroke="${C.box}" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="32" cy="13" rx="20" ry="7.5" fill="${C.lid}" stroke="${C.box}" stroke-width="2.5"/>`;
+
+const ICON_GROUP = `
+  <path d="M28 17 18 33M36 17 46 33M21 40h22" stroke="${C.box}" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="32" cy="12" r="7.5" fill="${C.lid}" stroke="${C.box}" stroke-width="2.5"/>
+  <circle cx="14" cy="40" r="7.5" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>
+  <circle cx="50" cy="40" r="7.5" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>`;
+
+const ICON_PERSON = `
+  <circle cx="32" cy="16" r="9" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>
+  <path d="M14 46v-2c0-9.9 8-18 18-18s18 8.1 18 18v2" fill="#fff" stroke="${C.box}"
+    stroke-width="2.5" stroke-linecap="round"/>`;
+
+const BREAK = `<svg viewBox="0 0 72 40" role="img" aria-label="A connection broken in the middle.">
+  <path d="M3 20h20M49 20h20" stroke="${C.dash}" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M29 30 35 10M39 30 45 10" stroke="${C.red7}" stroke-width="3.2" stroke-linecap="round"/>
+</svg>`;
+
+const node = (icon, alt, title, body) =>
+  `<div class="node"><svg viewBox="0 0 64 56" role="img" aria-label="${alt}">${icon}</svg>
+   <b>${title}</b><p>${body}</p></div>`;
+
+const brk = (label) => `<div class="brk">${BREAK}<span>${label}</span></div>`;
+
+// ---- Warrant inventory ------------------------------------------------------
+// One mark per line, so the shape of the answer is legible before the words are.
+const I = (body) => `<svg viewBox="0 0 22 22" aria-hidden="true">${body}</svg>`;
+const I_LOCK = I(`<path d="M7 9.5V7a4 4 0 0 1 8 0v2.5" fill="none" stroke="${C.blue}" stroke-width="2"/>
+  <rect x="4" y="9.5" width="14" height="9.5" rx="2.5" fill="${C.blue}"/>`);
+const I_LIST = I(`<path d="M3 6h16M3 11h16M3 16h10" stroke="${C.blue}" stroke-width="2" stroke-linecap="round"/>`);
+const I_BARS = I(`<path d="M5 18v-6M11 18V5M17 18v-9" stroke="${C.blue}" stroke-width="2.6" stroke-linecap="round"/>`);
+const I_PIN = I(`<path d="M11 19s6-6.2 6-10a6 6 0 1 0-12 0c0 3.8 6 10 6 10z" fill="none" stroke="${C.blue}" stroke-width="2"/>
+  <circle cx="11" cy="9" r="2.2" fill="${C.blue}"/>`);
+const I_GONE = I(`<rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="${C.dash}"
+    stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="${C.red7}" stroke-width="2.2" stroke-linecap="round"/>`);
+
+const has = (icon, text) => `<li>${icon}<span>${text}</span></li>`;
+const gone = (text) => `<li>${I_GONE}<span>${text}</span></li>`;
+
 const lockArt = (label, body, alt, art) =>
   `<div class="p">${svg(alt, art)}<div><b>${label}</b><p>${body}</p></div></div>`;
 
@@ -519,15 +586,17 @@ const slides = [
     <div class="stack">
       <span class="eyebrow">Two coordination failures</span>
       <h2 class="k h-lg">Not a fundraising problem. A <span class="hl">discovery and trust</span> problem.</h2>
-      <div class="cols two" style="margin-top:6px">
-        <div class="card">
-          <h3>Groups cannot find hubs. Hubs cannot vet groups.</h3>
-          <p>Money is easier to raise centrally; aid is better distributed locally. The link between them runs on word of mouth, DMs and Google Forms. New and smaller groups never get connected, and hubs have no safe way to tell who is real without demanding paperwork that excludes exactly the groups doing the work.</p>
-        </div>
-        <div class="card">
-          <h3>People in crisis cannot search for help safely.</h3>
-          <p>Directories are fragmented, stale, or need an account. An email or phone number creates a traceable record. People avoid looking at all rather than leave a trail - so the aid exists, and does not reach them.</p>
-        </div>
+      <p class="lede">Money pools in one place. Local knowledge sits in another. Neither
+        link between them is safe to cross.</p>
+      <div class="gaps">
+        ${node(ICON_HUB, 'A stack of pooled coins.', 'Fund hubs',
+          'Raise money centrally. No safe way to tell which groups are real.')}
+        ${brk('No safe<br>introduction')}
+        ${node(ICON_GROUP, 'Three people joined into a small network.', 'Local groups',
+          'Know exactly who needs what. Reachable only by word of mouth and DMs.')}
+        ${brk('No safe<br>way to search')}
+        ${node(ICON_PERSON, 'A single person.', 'People in crisis',
+          'Will not leave a traceable record just to look for help.')}
       </div>
       <p class="small muted" style="margin-top:2px">Both failures fall hardest on the people with the most to lose: undocumented residents, people fleeing violence, anyone for whom a database row is a risk.</p>
     </div>
@@ -686,11 +755,22 @@ const slides = [
       <div class="cols two" style="margin-top:4px">
         <div class="card accent">
           <h3>What is there</h3>
-          <p>Encrypted blobs nobody at Relay can open. A public list of groups that already consented to being listed. Group-level funding amounts and dates. Coarse region and aid category on each request.</p>
+          <ul class="inv">
+            ${has(I_LOCK, 'Encrypted blobs nobody at Relay can open')}
+            ${has(I_LIST, 'A public list of groups that consented to be listed')}
+            ${has(I_BARS, 'Group-level funding amounts and dates')}
+            ${has(I_PIN, 'Coarse region and aid category per request')}
+          </ul>
         </div>
         <div class="card">
           <h3>What is not there</h3>
-          <p>No names, addresses, phone numbers or emails of anyone seeking aid - contact details live inside the encrypted payload. No individual accounts. No IP addresses or cookies on anonymous routes. No record of who browsed the directory. No record of who received what.</p>
+          <ul class="inv gone">
+            ${gone('Names, addresses, phone numbers, emails')}
+            ${gone('Individual accounts')}
+            ${gone('IP addresses or cookies on anonymous routes')}
+            ${gone('Any record of who browsed the directory')}
+            ${gone('Any record of who received what')}
+          </ul>
         </div>
       </div>
       <div class="row" style="margin-top:6px">
