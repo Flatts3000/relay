@@ -609,7 +609,7 @@ h1,h2,h3,h4,p{margin:0}
             <li><svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 19s6-6.2 6-10a6 6 0 1 0-12 0c0 3.8 6 10 6 10z" fill="none" stroke="#2e6eb5" stroke-width="2"/>
   <circle cx="11" cy="9" r="2.2" fill="#2e6eb5"/></svg><span>Coarse region and aid category per request</span></li>
             <li><svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="7.5" r="3.6" fill="none" stroke="#2e6eb5" stroke-width="2"/>
-  <path d="M4.5 18.5v-1a6.5 6.5 0 0 1 13 0v1" fill="none" stroke="#2e6eb5" stroke-width="2" stroke-linecap="round"/></svg><span>Organizer accounts: an email, which group they work with, and an IP address and browser string recorded against every sign-in and every change they make</span></li>
+  <path d="M4.5 18.5v-1a6.5 6.5 0 0 1 13 0v1" fill="none" stroke="#2e6eb5" stroke-width="2" stroke-linecap="round"/></svg><span>Organizer accounts: an email, which group they work with, and a dated trail of their sign-ins and changes that nothing prunes</span></li>
           </ul>
         </div>
         <div class="card">
@@ -620,7 +620,7 @@ h1,h2,h3,h4,p{margin:0}
             <li><svg viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="#cbd5e1"
     stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="#b91c1c" stroke-width="2.2" stroke-linecap="round"/></svg><span>Individual accounts</span></li>
             <li><svg viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="#cbd5e1"
-    stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="#b91c1c" stroke-width="2.2" stroke-linecap="round"/></svg><span>IP addresses or cookies on the anonymous routes - nothing is logged when someone asks for help or browses the directory</span></li>
+    stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="#b91c1c" stroke-width="2.2" stroke-linecap="round"/></svg><span>IP addresses or cookies in anything Relay stores - none reaches the database or the application logs</span></li>
             <li><svg viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="#cbd5e1"
     stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="#b91c1c" stroke-width="2.2" stroke-linecap="round"/></svg><span>Any record of who browsed the directory</span></li>
             <li><svg viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="#cbd5e1"
@@ -633,7 +633,7 @@ h1,h2,h3,h4,p{margin:0}
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
         <span class="chip"><b>Open source</b>&nbsp; every claim here can be checked in the code</span>
       </div>
-      <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is written down in public alongside the code, rather than glossed over.</p>
+      <p class="small muted" style="margin-top:2px">The known limits, stated because a partner should press on them: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all, and the login rate limiter holds a caller address in memory for fifteen minutes to make brute forcing a sign-in expensive, though that one is never written to disk. Both are documented in public alongside the code rather than glossed over.</p>
     </div>
   </section>
 <section class="slide" data-name="What exists">

@@ -306,7 +306,6 @@ audit_log (authenticated routes only)
 ├── resource_type
 ├── resource_id
 ├── metadata (jsonb)
-├── ip_address
 ├── created_at
 ```
 
