@@ -538,6 +538,9 @@ const I_PIN = I(`<path d="M11 19s6-6.2 6-10a6 6 0 1 0-12 0c0 3.8 6 10 6 10z" fil
 const I_GONE = I(`<rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="${C.dash}"
     stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="${C.red7}" stroke-width="2.2" stroke-linecap="round"/>`);
 
+const I_PERSON_SM = I(`<circle cx="11" cy="7.5" r="3.6" fill="none" stroke="${C.blue}" stroke-width="2"/>
+  <path d="M4.5 18.5v-1a6.5 6.5 0 0 1 13 0v1" fill="none" stroke="${C.blue}" stroke-width="2" stroke-linecap="round"/>`);
+
 const has = (icon, text) => `<li>${icon}<span>${text}</span></li>`;
 const gone = (text) => `<li>${I_GONE}<span>${text}</span></li>`;
 
@@ -562,8 +565,8 @@ const slides = [
       <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
       <div class="row" style="margin-top:4px">
         <span class="chip"><b>Encrypted</b>&nbsp; so only the group can read it</span>
-        <span class="chip"><b>No accounts</b>&nbsp; for individuals</span>
-        <span class="chip"><b>AGPL-3.0</b></span>
+        <span class="chip"><b>No accounts</b>&nbsp; for people asking for help</span>
+        <span class="chip"><b>Open source</b>&nbsp; nobody can take it private</span>
         <span class="chip"><b>EN / ES</b></span>
       </div>
     </div>
@@ -769,6 +772,7 @@ const slides = [
             ${has(I_LIST, 'A public list of groups that consented to be listed')}
             ${has(I_BARS, 'Group-level funding amounts and dates')}
             ${has(I_PIN, 'Coarse region and aid category per request')}
+            ${has(I_PERSON_SM, 'Organiser accounts: an email, which group they work with, and the IP address behind each signed-in action')}
           </ul>
         </div>
         <div class="card">
@@ -776,7 +780,7 @@ const slides = [
           <ul class="inv gone">
             ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the encrypted message it cannot open')}
             ${gone('Individual accounts')}
-            ${gone('IP addresses or cookies on anonymous routes')}
+            ${gone('IP addresses or cookies on the anonymous routes - nothing is logged when someone asks for help or browses the directory')}
             ${gone('Any record of who browsed the directory')}
             ${gone('Any record of who received what')}
           </ul>
@@ -785,7 +789,7 @@ const slides = [
       <div class="row" style="margin-top:6px">
         <span class="chip"><b>Deleted</b>&nbsp; requests go once confirmed, or after seven days</span>
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
-        <span class="chip"><b>AGPL-3.0</b>&nbsp; the claims are auditable</span>
+        <span class="chip"><b>Open source</b>&nbsp; every claim here can be checked in the code</span>
       </div>
       <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is documented in the repository rather than glossed.</p>
     </div>
@@ -885,7 +889,7 @@ const slides = [
       <span class="eyebrow">Next</span>
       <h2 class="k h-lg">Two conversations worth having: <span class="hl">a hub, and a co-founder</span>.</h2>
       <div class="cols three" style="margin-top:6px">
-        <div class="card"><h3>Try it</h3><p>A fund hub routes one cycle of real requests through it, or a network puts three to five groups through onboarding.</p></div>
+        <div class="card"><h3>Try it</h3><p>A fund hub routes one cycle of real requests through it, or a network signs three to five local groups up.</p></div>
         <div class="card accent"><h3>Join it</h3><p>Come in as a co-founder on the organising, the organisation, or the engineering. See the previous slide for where the holes are.</p></div>
         <div class="card"><h3>Pass it on</h3><p>An introduction to one hub is worth more right now than anything else anyone could offer.</p></div>
       </div>
@@ -893,7 +897,7 @@ const slides = [
         <div class="card accent">
           <h3>Nobody is asking you for money</h3>
           <p>Relay is not fundraising. Mythic Works LLC is building it and intends to transfer it to a 501(c)(3), which is not incorporated yet - and until there is a pilot worth pointing at, there is nothing worth raising against.</p>
-          <p style="margin-top:10px">The AGPL-3.0 licence already makes the give-away partly irreversible: the code cannot be closed by anyone, including its current owner.</p>
+          <p style="margin-top:10px">The licence already makes the give-away partly irreversible. Relay is AGPL-3.0, which means the code cannot be made private by anyone - including whoever owns it - and anyone can inspect it or run their own copy.</p>
         </div>
         <div class="card">
           <h3>What you would be joining</h3>
