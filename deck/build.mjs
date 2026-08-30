@@ -756,7 +756,7 @@ const slides = [
           ART_OFF
         )}
       </div>
-      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. Cryptography independently reviewed.</p>
+      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. An independent expert reviewed the cryptography and found the design sound - that review is not yet written up in the repository (issue #14), which makes it the one claim on this slide you cannot check for yourself.</p>
     </div>
   </section>`,
 
@@ -826,7 +826,7 @@ const slides = [
         <div class="card flag"><h3>Single host, no alerting</h3><p>One rented server, running everything. An outage earlier this year was found by hand, not by a monitor.</p></div>
         <div class="card flag"><h3>The nonprofit is intended, not formed</h3><p>Mythic Works LLC is building Relay and means to transfer it to a 501(c)(3). That entity is not incorporated anywhere yet, which is one of the reasons this deck is not asking anyone for money.</p></div>
       </div>
-      <p class="small muted" style="margin-top:2px">Every limitation above is a numbered issue in the public tracker, including the uncomfortable ones. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
+      <p class="small muted" style="margin-top:2px">Where a limitation is an engineering problem it is a numbered issue in the public tracker, including the uncomfortable ones. Being paused, and having no nonprofit yet, are facts about the project rather than bugs, so they are not. What that buys a partner: the thing you would be piloting exists today and can be examined line by line, rather than described.</p>
     </div>
   </section>`,
 
