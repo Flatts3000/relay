@@ -21,12 +21,21 @@ export const auditLog = pgTable('audit_log', {
   entityType: varchar('entity_type', { length: 50 }).notNull(),
   entityId: uuid('entity_id'),
   metadata: jsonb('metadata'),
-  // No ipAddress or user_agent column, deliberately. Both were written on every
-  // authenticated write and on every login and logout, and neither was ever read
-  // - the admin audit view selects its columns explicitly and includes neither.
-  // Joined against users and the membership tables they made a durable map of
-  // organizer email -> group -> IP address -> activity timeline, for exactly the
-  // people this project's threat model is about. See #70.
+  // Declared but never written, and on their way out. See #70.
+  //
+  // Both were recorded against every authenticated write and every login and
+  // logout, and neither was ever read: the admin audit view selects its columns
+  // explicitly and includes neither. Joined against users and the membership
+  // tables they made a durable map of organizer email -> group -> IP address ->
+  // activity timeline, for exactly the people this threat model is about.
+  //
+  // Nothing populates them as of this release. They cannot be dropped in the
+  // same one: deploy.sh migrates while the previous backend is still serving,
+  // and that image names ip_address in every audit INSERT, so removing the
+  // column would break it - and the rollback path would restore that same image
+  // against the migrated schema. The drop follows once this code is deployed.
+  ipAddress: varchar('ip_address', { length: 45 }),
+  userAgent: varchar('user_agent', { length: 500 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -60,8 +60,11 @@ describe('audit log retains nothing that locates a person', () => {
     // The row identifies who acted. That is the accountability the audit log
     // exists for, and it needs no network address to provide it.
     expect(row!.userId).toBe(user.id);
-    expect(Object.keys(row!)).not.toContain('ipAddress');
-    expect(Object.keys(row!)).not.toContain('userAgent');
+    // The columns still exist and the model still declares them until the
+    // follow-up release drops them, so the assertion is that nothing puts a
+    // value in either - not that the fields are absent.
+    expect(row!.ipAddress).toBeNull();
+    expect(row!.userAgent).toBeNull();
   });
 
   it('records sign-in and sign-out without a request object', async () => {
