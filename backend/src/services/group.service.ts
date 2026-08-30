@@ -3,7 +3,6 @@ import { db } from '../db/index.js';
 import { groups, groupHubMemberships, type Group, type NewGroup } from '../db/schema/index.js';
 import { discardInvitesForGroup } from './invite-cleanup.service.js';
 import { logAuditEvent } from './audit.service.js';
-import type { Request } from 'express';
 import type {
   CreateGroupInput,
   UpdateGroupInput,
@@ -47,8 +46,7 @@ function toGroupResponse(
 export async function createGroup(
   input: CreateGroupInput,
   userId: string,
-  hubId: string,
-  req: Request
+  hubId: string
 ): Promise<GroupResponse> {
   // The group and its hub membership are written together. Verification status
   // lives on the membership, not on the group, so a group without one is
@@ -89,7 +87,6 @@ export async function createGroup(
           aidCategories: input.aidCategories,
           hubId,
         },
-        req,
       },
       tx
     );
@@ -204,8 +201,7 @@ export async function listGroups(
 export async function updateGroup(
   groupId: string,
   input: UpdateGroupInput,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<GroupResponse | null> {
   // First check if group exists and is not deleted
   const existing = await db
@@ -251,7 +247,6 @@ export async function updateGroup(
     metadata: {
       changes: input,
     },
-    req,
   });
 
   return toGroupResponse(updated);
@@ -260,7 +255,7 @@ export async function updateGroup(
 /**
  * Soft delete a group
  */
-export async function deleteGroup(groupId: string, userId: string, req: Request): Promise<boolean> {
+export async function deleteGroup(groupId: string, userId: string): Promise<boolean> {
   const existing = await db
     .select()
     .from(groups)
@@ -287,7 +282,6 @@ export async function deleteGroup(groupId: string, userId: string, req: Request)
     metadata: {
       name: existing[0].name,
     },
-    req,
   });
 
   return true;
@@ -357,8 +351,7 @@ export function canUserModifyGroup(
 export async function setGroupBroadcastKey(
   groupId: string,
   input: BroadcastKeyInput,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<{ invitesDiscarded: number }> {
   return db.transaction(async (tx) => {
     // Routed through the cleanup service rather than deleting the rows here. A
@@ -386,7 +379,6 @@ export async function setGroupBroadcastKey(
         // No key material in the audit trail. That a key was set is the fact
         // worth keeping; which key it was is not.
         metadata: { field: 'broadcastKey', invitesDiscarded: discardedCount },
-        req,
       },
       tx
     );

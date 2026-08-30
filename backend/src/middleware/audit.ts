@@ -99,7 +99,6 @@ export const auditMiddleware: RequestHandler = (
           statusCode: res.statusCode,
           requestId: req.requestId,
         },
-        req,
       }).catch((err) => {
         // Log error but don't fail the request
         console.error('Failed to log audit event:', err);
@@ -137,7 +136,6 @@ export function createAuditMiddleware(
           metadata: {
             requestId: req.requestId,
           },
-          req,
         }).catch((err) => {
           console.error('Failed to log audit event:', err);
         });

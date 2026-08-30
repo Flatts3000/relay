@@ -8,7 +8,6 @@ import {
   type FundingRequest,
 } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
-import type { Request } from 'express';
 import type {
   CreateFundingRequestInput,
   FundingRequestResponse,
@@ -86,8 +85,7 @@ function isValidTransition(currentStatus: RequestStatus, newStatus: RequestStatu
 export async function createFundingRequest(
   groupId: string,
   input: CreateFundingRequestInput,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<FundingRequestResponse> {
   // Get group info and verify it exists
   const group = await db
@@ -146,7 +144,6 @@ export async function createFundingRequest(
       category: input.category,
       urgency: input.urgency,
     },
-    req,
   });
 
   return toFundingRequestResponse(request, group[0].name);
@@ -300,8 +297,7 @@ export async function getFundingRequestHistory(
 export async function approveFundingRequest(
   requestId: string,
   hubId: string,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<FundingRequestResponse> {
   const requestData = await getFundingRequest(requestId, hubId, null, 'hub_admin');
 
@@ -336,7 +332,6 @@ export async function approveFundingRequest(
       groupId: requestData.groupId,
       amount: requestData.amount,
     },
-    req,
   });
 
   return toFundingRequestResponse(updateResult[0]!, requestData.groupName);
@@ -349,8 +344,7 @@ export async function declineFundingRequest(
   requestId: string,
   hubId: string,
   userId: string,
-  reason: string,
-  req: Request
+  reason: string
 ): Promise<FundingRequestResponse> {
   const requestData = await getFundingRequest(requestId, hubId, null, 'hub_admin');
 
@@ -386,7 +380,6 @@ export async function declineFundingRequest(
       groupId: requestData.groupId,
       reason,
     },
-    req,
   });
 
   return toFundingRequestResponse(updateResult[0]!, requestData.groupName);
@@ -399,8 +392,7 @@ export async function requestClarification(
   requestId: string,
   hubId: string,
   userId: string,
-  message: string,
-  req: Request
+  message: string
 ): Promise<FundingRequestResponse> {
   const requestData = await getFundingRequest(requestId, hubId, null, 'hub_admin');
 
@@ -431,7 +423,6 @@ export async function requestClarification(
       groupId: requestData.groupId,
       message,
     },
-    req,
   });
 
   return toFundingRequestResponse(updateResult[0]!, requestData.groupName);
@@ -443,8 +434,7 @@ export async function requestClarification(
 export async function markFundsSent(
   requestId: string,
   hubId: string,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<FundingRequestResponse> {
   const requestData = await getFundingRequest(requestId, hubId, null, 'hub_admin');
 
@@ -477,7 +467,6 @@ export async function markFundsSent(
       action: 'mark_funds_sent',
       groupId: requestData.groupId,
     },
-    req,
   });
 
   return toFundingRequestResponse(updateResult[0]!, requestData.groupName);
@@ -489,8 +478,7 @@ export async function markFundsSent(
 export async function acknowledgeReceipt(
   requestId: string,
   groupId: string,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<FundingRequestResponse> {
   const requestData = await getFundingRequest(requestId, null, groupId, 'group_coordinator');
 
@@ -523,7 +511,6 @@ export async function acknowledgeReceipt(
       action: 'acknowledge',
       groupId,
     },
-    req,
   });
 
   return toFundingRequestResponse(updateResult[0]!, requestData.groupName);

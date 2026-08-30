@@ -21,8 +21,12 @@ export const auditLog = pgTable('audit_log', {
   entityType: varchar('entity_type', { length: 50 }).notNull(),
   entityId: uuid('entity_id'),
   metadata: jsonb('metadata'),
-  ipAddress: varchar('ip_address', { length: 45 }),
-  userAgent: varchar('user_agent', { length: 500 }),
+  // No ipAddress or user_agent column, deliberately. Both were written on every
+  // authenticated write and on every login and logout, and neither was ever read
+  // - the admin audit view selects its columns explicitly and includes neither.
+  // Joined against users and the membership tables they made a durable map of
+  // organizer email -> group -> IP address -> activity timeline, for exactly the
+  // people this project's threat model is about. See #70.
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

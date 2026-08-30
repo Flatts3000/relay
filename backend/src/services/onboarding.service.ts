@@ -13,7 +13,6 @@ import { generateExpiresAt, generateToken, hashToken } from '../utils/crypto.js'
 import { createSessionForUser } from './auth.service.js';
 import { sendOnboardingInviteEmail } from './email.service.js';
 import { logAuditEvent } from './audit.service.js';
-import type { Request } from 'express';
 import type { OnboardingInvite } from '../db/schema/index.js';
 
 const INVITE_EXPIRY_HOURS = 72;
@@ -60,8 +59,7 @@ export type SafeOnboardingInvite = Omit<OnboardingInvite, 'token'>;
 
 export async function createOnboardingInvite(
   input: CreateInviteInput,
-  inviterId: string,
-  req: Request
+  inviterId: string
 ): Promise<SafeOnboardingInvite> {
   // Check for existing active invite with same email+role+target
   const existing = await db
@@ -184,7 +182,6 @@ export async function createOnboardingInvite(
       targetHubId: input.targetHubId,
       targetGroupId: input.targetGroupId,
     },
-    req,
   });
 
   // Deliberately without the token. The stored value is a hash the accept route
@@ -307,11 +304,7 @@ export async function getInviteContext(token: string): Promise<InviteContext | n
 
 // ---------- Revoke invite ----------
 
-export async function revokeInvite(
-  inviteId: string,
-  userId: string,
-  req: Request
-): Promise<boolean> {
+export async function revokeInvite(inviteId: string, userId: string): Promise<boolean> {
   const now = new Date();
   const result = await db
     .update(onboardingInvites)
@@ -333,7 +326,6 @@ export async function revokeInvite(
     entityType: 'onboarding_invite',
     entityId: inviteId,
     metadata: { email: result[0]!.email },
-    req,
   });
 
   return true;

@@ -87,7 +87,7 @@ authRouter.post('/verify', authVerifyRateLimiter, async (req, res) => {
     }
 
     // Log successful login
-    await logLogin(result.user!.id, req);
+    await logLogin(result.user!.id);
 
     res.json({
       user: {
@@ -127,7 +127,7 @@ authRouter.get('/me', authenticate, (req, res) => {
 
 // Logout
 authRouter.post('/logout', authenticate, async (req, res) => {
-  await logLogout(req.user!.id, req);
+  await logLogout(req.user!.id);
   await invalidateSession(req.sessionToken!);
 
   res.json({ message: 'Logged out successfully' });

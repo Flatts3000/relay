@@ -8,7 +8,6 @@ import {
   type VerificationRequest,
 } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
-import type { Request } from 'express';
 import type {
   CreateVerificationRequestInput,
   VerificationRequestResponse,
@@ -51,8 +50,7 @@ export async function createVerificationRequest(
   groupId: string,
   hubId: string,
   input: CreateVerificationRequestInput,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<VerificationRequestResponse> {
   // Get group info
   const group = await db
@@ -122,7 +120,6 @@ export async function createVerificationRequest(
       hubId,
       method: input.method,
     },
-    req,
   });
 
   return toVerificationRequestResponse(request, group[0].name, group[0].serviceArea, 0);
@@ -235,8 +232,7 @@ export async function getVerificationRequest(
 export async function approveVerificationRequest(
   requestId: string,
   hubId: string,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<VerificationRequestResponse> {
   const requestData = await getVerificationRequest(requestId, hubId);
 
@@ -293,7 +289,6 @@ export async function approveVerificationRequest(
       action: 'approve',
       groupId: requestData.groupId,
     },
-    req,
   });
 
   return toVerificationRequestResponse(
@@ -311,8 +306,7 @@ export async function denyVerificationRequest(
   requestId: string,
   hubId: string,
   userId: string,
-  reason: string,
-  req: Request
+  reason: string
 ): Promise<VerificationRequestResponse> {
   const requestData = await getVerificationRequest(requestId, hubId);
 
@@ -347,7 +341,6 @@ export async function denyVerificationRequest(
       groupId: requestData.groupId,
       reason,
     },
-    req,
   });
 
   return toVerificationRequestResponse(
@@ -364,8 +357,7 @@ export async function denyVerificationRequest(
 export async function revokeGroupVerification(
   groupId: string,
   hubId: string,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<void> {
   // Verify the group exists
   const group = await db
@@ -410,7 +402,6 @@ export async function revokeGroupVerification(
     metadata: {
       action: 'revoke_verification',
     },
-    req,
   });
 }
 
@@ -420,8 +411,7 @@ export async function revokeGroupVerification(
 export async function submitPeerAttestation(
   requestId: string,
   attestingGroupId: string,
-  userId: string,
-  req: Request
+  userId: string
 ): Promise<PeerAttestationResponse> {
   // Get the verification request
   const request = await db
@@ -512,7 +502,6 @@ export async function submitPeerAttestation(
       attestingGroupId,
       targetGroupId: request[0].groupId,
     },
-    req,
   });
 
   return {

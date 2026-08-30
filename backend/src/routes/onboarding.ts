@@ -82,7 +82,7 @@ onboardingRouter.post('/invites', authenticate, async (req, res) => {
       return;
     }
 
-    const invite = await createOnboardingInvite(input, user.id, req);
+    const invite = await createOnboardingInvite(input, user.id);
     res.status(201).json(invite);
   } catch (err) {
     if (err instanceof z.ZodError) {
@@ -127,7 +127,7 @@ onboardingRouter.delete('/invites/:id', authenticate, async (req, res) => {
   const user = req.user!;
   const inviteId = req.params['id']!;
 
-  const revoked = await revokeInvite(inviteId, user.id, req);
+  const revoked = await revokeInvite(inviteId, user.id);
   if (!revoked) {
     res.status(404).json({ error: 'Invite not found or already expired' });
     return;
@@ -404,7 +404,7 @@ onboardingRouter.delete('/hub/:hubId/members/:userId', authenticate, async (req,
     return;
   }
 
-  const removed = await removeHubMember(targetUserId, hubId, user.id, req);
+  const removed = await removeHubMember(targetUserId, hubId, user.id);
   if (!removed) {
     res.status(404).json({ error: 'Member not found' });
     return;
@@ -460,7 +460,7 @@ onboardingRouter.delete('/group/:groupId/members/:userId', authenticate, async (
     return;
   }
 
-  const removed = await removeGroupMember(targetUserId, groupId, user.id, req);
+  const removed = await removeGroupMember(targetUserId, groupId, user.id);
   if (!removed) {
     res.status(404).json({ error: 'Member not found' });
     return;

@@ -36,7 +36,7 @@ groupsRouter.post('/', authenticate, requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const group = await createGroup(input, user.id, user.hubId, req);
+    const group = await createGroup(input, user.id, user.hubId);
 
     res.status(201).json({ group });
   } catch (err) {
@@ -171,7 +171,7 @@ groupsRouter.put('/me/broadcast-key', authenticate, requireGroupCoordinator, asy
     }
 
     const input = broadcastKeySchema.parse(req.body);
-    const result = await setGroupBroadcastKey(user.groupId, input, user.id, req);
+    const result = await setGroupBroadcastKey(user.groupId, input, user.id);
 
     res.json(result);
   } catch (err) {
@@ -243,7 +243,7 @@ groupsRouter.patch('/:id', authenticate, async (req, res) => {
       return;
     }
 
-    const group = await updateGroup(id, input, user.id, req);
+    const group = await updateGroup(id, input, user.id);
 
     if (!group) {
       res.status(404).json({ error: 'Group not found' });
@@ -294,7 +294,7 @@ groupsRouter.delete('/:id', authenticate, requireHubAdmin, async (req, res) => {
       return;
     }
 
-    const deleted = await deleteGroup(id, user.id, req);
+    const deleted = await deleteGroup(id, user.id);
 
     if (!deleted) {
       res.status(404).json({ error: 'Group not found' });

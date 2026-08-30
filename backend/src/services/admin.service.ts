@@ -13,7 +13,6 @@ import {
   groupHubMemberships,
 } from '../db/schema/index.js';
 import { logAuditEvent } from './audit.service.js';
-import type { Request } from 'express';
 import type {
   ListQuery,
   ListGroupsAdminQuery,
@@ -363,12 +362,7 @@ export async function getUser(userId: string) {
   };
 }
 
-export async function updateUserRole(
-  userId: string,
-  newRole: string,
-  adminUserId: string,
-  req: Request
-) {
+export async function updateUserRole(userId: string, newRole: string, adminUserId: string) {
   const [existing] = await db
     .select()
     .from(users)
@@ -392,13 +386,12 @@ export async function updateUserRole(
     entityType: 'user',
     entityId: userId,
     metadata: { oldRole, newRole },
-    req,
   });
 
   return updated;
 }
 
-export async function softDeleteUser(userId: string, adminUserId: string, req: Request) {
+export async function softDeleteUser(userId: string, adminUserId: string) {
   const [existing] = await db
     .select()
     .from(users)
@@ -416,7 +409,6 @@ export async function softDeleteUser(userId: string, adminUserId: string, req: R
     entityType: 'user',
     entityId: userId,
     metadata: { email: existing.email, role: existing.role },
-    req,
   });
 
   return true;
@@ -646,11 +638,7 @@ export async function getVerificationRequest(requestId: string) {
   };
 }
 
-export async function approveVerificationRequest(
-  requestId: string,
-  adminUserId: string,
-  req: Request
-) {
+export async function approveVerificationRequest(requestId: string, adminUserId: string) {
   const [existing] = await db
     .select()
     .from(verificationRequests)
@@ -691,7 +679,6 @@ export async function approveVerificationRequest(
     entityType: 'verification_request',
     entityId: requestId,
     metadata: { groupId: existing.groupId },
-    req,
   });
 
   return { success: true };
@@ -700,8 +687,7 @@ export async function approveVerificationRequest(
 export async function denyVerificationRequest(
   requestId: string,
   adminUserId: string,
-  reason: string,
-  req: Request
+  reason: string
 ) {
   const [existing] = await db
     .select()
@@ -731,7 +717,6 @@ export async function denyVerificationRequest(
     entityType: 'verification_request',
     entityId: requestId,
     metadata: { groupId: existing.groupId, reason },
-    req,
   });
 
   return { success: true };
@@ -753,11 +738,7 @@ async function recordStatusChange(
   });
 }
 
-export async function adminApproveFundingRequest(
-  requestId: string,
-  adminUserId: string,
-  req: Request
-) {
+export async function adminApproveFundingRequest(requestId: string, adminUserId: string) {
   const [existing] = await db
     .select()
     .from(fundingRequests)
@@ -784,7 +765,6 @@ export async function adminApproveFundingRequest(
     entityType: 'funding_request',
     entityId: requestId,
     metadata: { amount: existing.amount },
-    req,
   });
 
   return { success: true };
@@ -793,8 +773,7 @@ export async function adminApproveFundingRequest(
 export async function adminDeclineFundingRequest(
   requestId: string,
   adminUserId: string,
-  reason: string,
-  req: Request
+  reason: string
 ) {
   const [existing] = await db
     .select()
@@ -822,13 +801,12 @@ export async function adminDeclineFundingRequest(
     entityType: 'funding_request',
     entityId: requestId,
     metadata: { reason },
-    req,
   });
 
   return { success: true };
 }
 
-export async function adminMarkFundsSent(requestId: string, adminUserId: string, req: Request) {
+export async function adminMarkFundsSent(requestId: string, adminUserId: string) {
   const [existing] = await db
     .select()
     .from(fundingRequests)
@@ -855,17 +833,12 @@ export async function adminMarkFundsSent(requestId: string, adminUserId: string,
     entityType: 'funding_request',
     entityId: requestId,
     metadata: { amount: existing.amount },
-    req,
   });
 
   return { success: true };
 }
 
-export async function adminAcknowledgeFunding(
-  requestId: string,
-  adminUserId: string,
-  req: Request
-) {
+export async function adminAcknowledgeFunding(requestId: string, adminUserId: string) {
   const [existing] = await db
     .select()
     .from(fundingRequests)
@@ -892,7 +865,6 @@ export async function adminAcknowledgeFunding(
     entityType: 'funding_request',
     entityId: requestId,
     metadata: {},
-    req,
   });
 
   return { success: true };
