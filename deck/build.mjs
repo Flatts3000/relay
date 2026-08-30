@@ -538,6 +538,9 @@ const I_PIN = I(`<path d="M11 19s6-6.2 6-10a6 6 0 1 0-12 0c0 3.8 6 10 6 10z" fil
 const I_GONE = I(`<rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="${C.dash}"
     stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="${C.red7}" stroke-width="2.2" stroke-linecap="round"/>`);
 
+const I_PERSON_SM = I(`<circle cx="11" cy="7.5" r="3.6" fill="none" stroke="${C.blue}" stroke-width="2"/>
+  <path d="M4.5 18.5v-1a6.5 6.5 0 0 1 13 0v1" fill="none" stroke="${C.blue}" stroke-width="2" stroke-linecap="round"/>`);
+
 const has = (icon, text) => `<li>${icon}<span>${text}</span></li>`;
 const gone = (text) => `<li>${I_GONE}<span>${text}</span></li>`;
 
@@ -562,8 +565,8 @@ const slides = [
       <p class="lede">Relay connects local mutual aid groups to the funds that back them, and lets people ask those groups for help without leaving a trail. It never decides who deserves aid and never touches distribution.</p>
       <div class="row" style="margin-top:4px">
         <span class="chip"><b>Encrypted</b>&nbsp; so only the group can read it</span>
-        <span class="chip"><b>No accounts</b>&nbsp; for individuals</span>
-        <span class="chip"><b>AGPL-3.0</b></span>
+        <span class="chip"><b>No accounts</b>&nbsp; for people asking for help</span>
+        <span class="chip"><b>Open source</b>&nbsp; nobody can take it private</span>
         <span class="chip"><b>EN / ES</b></span>
       </div>
     </div>
@@ -573,10 +576,10 @@ const slides = [
   `<section class="slide" data-name="Who this is for">
     <div class="stack">
       <span class="eyebrow">Who this is for</span>
-      <h2 class="k h-lg">Eleven neighbours and a <span class="hl">spreadsheet</span>.</h2>
+      <h2 class="k h-lg">Eleven neighbors and a <span class="hl">spreadsheet</span>.</h2>
       <div class="cols two">
         <div class="stack gap-s">
-          <p class="lede">They know who on their block is behind on rent, whose power is about to be cut, which family stopped answering the door. They are good at the part that is hard to systematise.</p>
+          <p class="lede">They know who on their block is behind on rent, whose power is about to be cut, which family stopped answering the door. They are good at the part that is hard to systematize.</p>
           <p class="lede">What they do not have is a way to reach the fund that would cover it - without already knowing somebody who knows somebody. So the money sits in one place and the knowledge sits in another.</p>
         </div>
         <div class="card accent">
@@ -598,7 +601,7 @@ const slides = [
         link between them is safe to cross.</p>
       <div class="gaps">
         ${node(ICON_HUB, 'A stack of pooled coins.', 'Fund hubs',
-          'An organisation that raises money centrally - a solidarity fund, a bail fund, a foundation. No safe way to tell which local groups are real.')}
+          'An organization that raises money centrally - a solidarity fund, a bail fund, a foundation. No safe way to tell which local groups are real.')}
         ${brk('No safe<br>introduction')}
         ${node(ICON_GROUP, 'Three people joined into a small network.', 'Local groups',
           'Know exactly who needs what. Reachable only by word of mouth and DMs.')}
@@ -623,7 +626,7 @@ const slides = [
         </div>
         <div class="card flag">
           <h3>Payment rails are a surveillance layer</h3>
-          <p>IRS reporting thresholds on money-sharing apps put a durable record behind ordinary transfers between neighbours - the exact mechanism most mutual aid runs on today.</p>
+          <p>IRS reporting thresholds on money-sharing apps put a durable record behind ordinary transfers between neighbors - the exact mechanism most mutual aid runs on today.</p>
         </div>
         <div class="card flag">
           <h3>Co-optation is a live fear</h3>
@@ -645,8 +648,8 @@ const slides = [
       <p class="lede">A directory that logs searches. An intake form that stores a phone number. An analytics tag recording who visited. Each is standard practice, and each manufactures a record that can be leaked, scraped, or lawfully demanded.</p>
       <div class="cols three" style="margin-top:6px">
         <div class="card"><h3>Assume seizure</h3><p>The premise is that the database will one day be read by someone hostile. Not that it might be - that it will.</p></div>
-        <div class="card"><h3>Minimise, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
-        <div class="card"><h3>Verify without paperwork</h3><p>A fund hub approves them, another group vouches for them, or an established organisation refers them. Three light paths. No IDs, no rosters, no documents.</p></div>
+        <div class="card"><h3>Minimize, do not protect</h3><p>Data never collected cannot be leaked. Relay holds no individual records to secure in the first place.</p></div>
+        <div class="card"><h3>Verify without paperwork</h3><p>A fund hub approves them, another group vouches for them, or an established organization refers them. Three light paths. No IDs, no rosters, no documents.</p></div>
       </div>
     </div>
   </section>`,
@@ -707,7 +710,7 @@ const slides = [
       <h2 class="k h-md">Groups get funded without knowing the right person.</h2>
       <div class="flow" style="margin-top:4px">
         <div class="step"><b>01 &middot; JOIN</b><p>A group registers with a name that may be a pseudonym, a service area, aid categories, and a contact address - a shared team one is what groups are asked for. Nothing else.</p></div>
-        <div class="step"><b>02 &middot; VERIFY</b><p>A fund hub approves, another group vouches, or an established organisation refers. No documents at any point.</p></div>
+        <div class="step"><b>02 &middot; VERIFY</b><p>A fund hub approves, another group vouches, or an established organization refers. No documents at any point.</p></div>
         <div class="step"><b>03 &middot; REQUEST</b><p>An amount, a category, a region. Justification is optional and warns against personal detail.</p></div>
         <div class="step"><b>04 &middot; TRACK</b><p>Submitted, approved, funds sent, acknowledged. No receipts, no narratives, no recipient data.</p></div>
       </div>
@@ -760,7 +763,7 @@ const slides = [
   `<section class="slide" data-name="Under subpoena">
     <div class="stack">
       <span class="eyebrow">The test that matters</span>
-      <h2 class="k h-lg">Served with a warrant, Relay produces <span class="hl">almost nothing</span>.</h2>
+      <h2 class="k h-lg">Served with a warrant, Relay produces <span class="hl">nothing about the people it serves</span>.</h2>
       <div class="cols two" style="margin-top:4px">
         <div class="card accent">
           <h3>What is there</h3>
@@ -769,14 +772,15 @@ const slides = [
             ${has(I_LIST, 'A public list of groups that consented to be listed')}
             ${has(I_BARS, 'Group-level funding amounts and dates')}
             ${has(I_PIN, 'Coarse region and aid category per request')}
+            ${has(I_PERSON_SM, 'Organizer accounts: an email, which group they work with, and an IP address and browser string recorded against every sign-in and every change they make')}
           </ul>
         </div>
         <div class="card">
           <h3>What is not there</h3>
           <ul class="inv gone">
-            ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the encrypted message it cannot open')}
+            ${gone('Names, addresses, phones or emails of anyone asking for help - their contact details sit inside the encrypted message Relay cannot open')}
             ${gone('Individual accounts')}
-            ${gone('IP addresses or cookies on anonymous routes')}
+            ${gone('IP addresses or cookies on the anonymous routes - nothing is logged when someone asks for help or browses the directory')}
             ${gone('Any record of who browsed the directory')}
             ${gone('Any record of who received what')}
           </ul>
@@ -785,7 +789,7 @@ const slides = [
       <div class="row" style="margin-top:6px">
         <span class="chip"><b>Deleted</b>&nbsp; requests go once confirmed, or after seven days</span>
         <span class="chip"><b>Hashed</b>&nbsp; every credential at rest</span>
-        <span class="chip"><b>AGPL-3.0</b>&nbsp; the claims are auditable</span>
+        <span class="chip"><b>Open source</b>&nbsp; every claim here can be checked in the code</span>
       </div>
       <p class="small muted" style="margin-top:2px">The known limit, stated because a partner should press on it: coarse routing metadata - region and aid category - is stored in the clear so requests can be delivered at all. It is documented in the repository rather than glossed.</p>
     </div>
@@ -863,7 +867,7 @@ const slides = [
           <p>The thing everything else waits on, and the one part that cannot be coded around. Relationships with hubs and groups, and the standing to say to organizers that this is safe to try.</p>
         </div>
         <div class="card accent">
-          <h3>Someone to build the organisation</h3>
+          <h3>Someone to build the organization</h3>
           <p>The 501(c)(3) is intended and not incorporated. Formation, a board, the operating and governance side. Nobody is doing this today.</p>
         </div>
         <div class="card">
@@ -885,20 +889,20 @@ const slides = [
       <span class="eyebrow">Next</span>
       <h2 class="k h-lg">Two conversations worth having: <span class="hl">a hub, and a co-founder</span>.</h2>
       <div class="cols three" style="margin-top:6px">
-        <div class="card"><h3>Try it</h3><p>A fund hub routes one cycle of real requests through it, or a network puts three to five groups through onboarding.</p></div>
-        <div class="card accent"><h3>Join it</h3><p>Come in as a co-founder on the organising, the organisation, or the engineering. See the previous slide for where the holes are.</p></div>
+        <div class="card"><h3>Try it</h3><p>A fund hub routes one cycle of real requests through it, or a network signs three to five local groups up.</p></div>
+        <div class="card accent"><h3>Join it</h3><p>Come in as a co-founder on the organizing, the organization, or the engineering. See the previous slide for where the holes are.</p></div>
         <div class="card"><h3>Pass it on</h3><p>An introduction to one hub is worth more right now than anything else anyone could offer.</p></div>
       </div>
       <div class="cols two" style="margin-top:8px;align-items:start">
         <div class="card accent">
           <h3>Nobody is asking you for money</h3>
           <p>Relay is not fundraising. Mythic Works LLC is building it and intends to transfer it to a 501(c)(3), which is not incorporated yet - and until there is a pilot worth pointing at, there is nothing worth raising against.</p>
-          <p style="margin-top:10px">The AGPL-3.0 licence already makes the give-away partly irreversible: the code cannot be closed by anyone, including its current owner.</p>
+          <p style="margin-top:10px">The license already makes the give-away partly irreversible. Relay is AGPL-3.0, which means the code cannot be made private by anyone - including whoever owns it - and anyone can inspect it or run their own copy.</p>
         </div>
         <div class="card">
           <h3>What you would be joining</h3>
           <p>Real code, deployed, open, and reviewed. No users, no revenue, no staff, and a nonprofit that has not been formed. A single small server and the builder's time is the entire cost base, carried directly.</p>
-          <p style="margin-top:10px">Everything about the organisation is still open, which is the argument for coming in now rather than later.</p>
+          <p style="margin-top:10px">Everything about the organization is still open, which is the argument for coming in now rather than later.</p>
         </div>
       </div>
       <div class="row" style="margin-top:10px;align-items:center">
