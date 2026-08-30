@@ -27,6 +27,37 @@ crawling them spends budget on redirect chains and indexes nothing.
 Arrow keys, space, click the left and right thirds, or swipe. The URL hash tracks
 the slide, so `#7` links straight to a slide.
 
+## Design
+
+The deck takes its palette, type and shape from `frontend/tailwind.config.js`
+rather than inventing its own: the primary blue ramp, the teal and amber
+accents, Inter for headings and body, JetBrains Mono for labels and figures, the
+6/8/12px radii and the three shadows. Surfaces are the app's own - `#f9fafb`
+ground, white cards, `#e5e7eb` rules.
+
+It used to be a dark deck with headlines set in Instrument Serif, on the
+reasoning that the product blue disappears against a dark ground. That was true
+and the conclusion was backwards: the fix was to stop using a dark ground. Two
+things fell out of the change. The embedded screenshots are of the light app, so
+they now sit flush in their frames instead of glowing out of a dark page, and
+the deck stopped being the only Relay surface set in a typeface Relay does not
+use.
+
+### Why the shell is plain document flow
+
+The slides are ordinary blocks. There is no `position:fixed` container, no
+absolutely positioned slides, no mask overlay and no nested scroller, and only
+one slide is ever painted - the incoming slide animates itself rather than
+crossfading against the outgoing one.
+
+That is deliberate and worth keeping. The earlier shell had all five, and on iOS
+the combination ghosted: the browser retained a stale tile of the slide and
+painted the relaid-out copy over it, so a single slide appeared twice at two
+different offsets, its own lede running underneath its own heading and card. It
+did not reproduce in desktop Chromium or WebKit, which is what a compositing bug
+looks like from the outside. If a future change wants a fancier transition, it
+needs testing on a real iOS device, not just in a headless browser.
+
 ## Rebuilding
 
 ```bash

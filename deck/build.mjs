@@ -40,9 +40,9 @@ try {
 
 // ---- Fonts: fetch the latin woff2 for each face and base64-embed ------------
 const FAMILIES = [
-  ['Instrument+Serif', 'Instrument Serif', '400'],
-  ['Inter:wght@400;500;600', 'Inter', '400 600'],
-  ['JetBrains+Mono:wght@400;500;600', 'JetBrains Mono', '400 600'],
+  // Inter and JetBrains Mono only - the two faces the product itself uses.
+  ['Inter:wght@400;500;600;700', 'Inter'],
+  ['JetBrains+Mono:wght@400;500;600', 'JetBrains Mono'],
 ];
 
 let FONT_CSS = '';
@@ -142,47 +142,81 @@ console.log(
 );
 
 // ---- Design tokens ----------------------------------------------------------
-// Ground and accent come from the product's own Tailwind config: primary-700
-// #164a84 and accent.teal.500 #14b8a6. Teal carries the accent because the
-// product blue disappears against a dark ground.
+// Lifted wholesale from frontend/tailwind.config.js: the primary blue ramp, the
+// teal and amber accents, the 6/8/12px radii and the three shadows. The deck
+// used to invent its own dark palette on the grounds that the product blue
+// disappears against a dark ground. The answer to that was to stop using a dark
+// ground, not to change the brand - the app itself is light (gray-50 surfaces,
+// white cards), and the embedded screenshots are of that light app.
 const CSS = `
 ${FONT_CSS}
 :root{
-  --page:#060B12; --deep:#0A1420; --card:#0F1C2B; --card2:#0C1725;
-  --teal:#2DD4BF; --teal-dim:#14B8A6; --teal-glow:rgba(45,212,191,.14);
-  --amber:#FBBF24;
-  --ink:#F1F5F9; --ink-2:#A8B8CC; --ink-3:#64788F; --line:rgba(255,255,255,.09);
-  --serif:'Instrument Serif',Georgia,serif;
-  --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --primary-50:#f0f7ff; --primary-100:#dbeafe; --primary-200:#b4d3f5;
+  --primary-400:#4a90d9; --primary:#2e6eb5; --primary-600:#1d5a9e;
+  --primary-700:#164a84; --primary-900:#0c2d52;
+  --teal:#14b8a6; --teal-50:#f0fdfa; --teal-200:#99f6e4; --teal-700:#0f766e;
+  --amber:#d97706; --amber-50:#fffbeb; --amber-300:#fcd34d; --amber-700:#b45309;
+  --red:#dc2626;
+
+  --page:#f9fafb;
+  --surface:#ffffff;
+  --ink:#111827; --ink-2:#4b5563; --ink-3:#6b7280;
+  --line:#e5e7eb;
+
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+
+  --r-sm:6px; --r:8px; --r-lg:12px;
+  --sh-sm:0 1px 2px rgba(0,0,0,.05);
+  --sh-md:0 4px 12px rgba(0,0,0,.08);
+  --sh-lg:0 8px 24px rgba(0,0,0,.1);
 }
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--page)}
-.deck{position:fixed;inset:0;overflow:hidden;color:var(--ink);font-family:var(--sans);
-  -webkit-font-smoothing:antialiased;background:
-  radial-gradient(1100px 680px at 84% -12%, rgba(45,212,191,.07), transparent 60%),
-  radial-gradient(900px 760px at -5% 108%, rgba(22,74,132,.30), transparent 58%),
-  linear-gradient(180deg,#08111C 0%, var(--page) 62%)}
-.deck::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.45;
-  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-  background-size:62px 62px;mask-image:radial-gradient(120% 88% at 50% 0%,#000 22%,transparent 74%)}
-.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
-  padding:clamp(26px,5.6vh,60px) clamp(28px,6.6vw,104px) clamp(60px,8vh,84px);
-  opacity:0;transition:opacity .45s ease, transform .45s ease;transform:translateY(9px)}
-.slide.active{display:flex;opacity:1;transform:none;z-index:2}
-.slide.leaving{display:flex;opacity:0;z-index:1}
+html{-webkit-text-size-adjust:100%}
+html,body{margin:0;background:var(--page)}
+body{color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:54px}
+
+/* Ordinary document flow, deliberately.
+   The previous shell was position:fixed with overflow:hidden, slides absolutely
+   positioned at inset:0, a mask-image compositing overlay on top, and the slide
+   itself a nested scroller. On iOS that combination ghosts: the browser keeps a
+   stale tile of the slide and paints the relaid-out copy over it, so a single
+   slide appeared twice at two different offsets - its own lede running under its
+   own heading and card. Reported from an iOS in-app browser and not reproducible
+   in desktop Chromium or WebKit, which is the signature of a compositing bug
+   rather than a layout one.
+   Nothing here is fixed except one opaque 52px bar, nothing is absolutely
+   positioned over anything, and only ever one slide is painted, so there is no
+   stale layer to keep and nothing to keep it under. */
+.deck{position:relative}
+.slide{
+  display:none;
+  /* less the fixed chrome bar, so a slide that fits does not scroll the page */
+  min-height:calc(100vh - 54px); min-height:calc(100dvh - 54px);
+  flex-direction:column;justify-content:center;
+  padding:clamp(30px,5.6vh,64px) clamp(22px,6.4vw,104px) clamp(40px,6vh,72px);
+  background:
+    radial-gradient(880px 560px at 88% -12%, rgba(46,110,181,.07), transparent 62%),
+    radial-gradient(720px 600px at -8% 108%, rgba(20,184,166,.06), transparent 58%);
+}
+/* One element animating itself, rather than a crossfade between two painted
+   slides. The old .leaving state kept the outgoing slide displayed for 470ms,
+   which is what put two copies on screen at once in the first place. */
+.slide.active{display:flex;animation:enter .34s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+
 h1,h2,h3,h4,p{margin:0}
-.k{font-family:var(--serif);font-weight:400;line-height:1.03;letter-spacing:-.005em;text-wrap:balance}
-.h-xl{font-size:clamp(2.4rem,6.2vw,5.2rem)}
-.h-lg{font-size:clamp(2rem,4.6vw,3.7rem)}
-.h-md{font-size:clamp(1.6rem,3.2vw,2.5rem)}
-.hl{color:var(--teal)}
+.k{font-family:var(--sans);font-weight:700;line-height:1.08;letter-spacing:-.028em;text-wrap:balance;color:var(--ink)}
+.h-xl{font-size:clamp(2.1rem,5.2vw,4.2rem)}
+.h-lg{font-size:clamp(1.7rem,3.9vw,3rem)}
+.h-md{font-size:clamp(1.35rem,2.7vw,2rem)}
+.hl{color:var(--primary-600)}
 .warn{color:var(--amber)}
-.eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.2em;font-size:.66rem;font-weight:500;color:var(--teal)}
-.lede{font-size:clamp(.98rem,1.45vw,1.32rem);line-height:1.52;color:var(--ink-2);max-width:64ch}
-.small{font-size:clamp(.84rem,1vw,.98rem);color:var(--ink-2);line-height:1.5}
+.eyebrow{font-family:var(--mono);text-transform:uppercase;letter-spacing:.18em;font-size:.68rem;font-weight:600;color:var(--primary-600)}
+.lede{font-size:clamp(1rem,1.4vw,1.28rem);line-height:1.55;color:var(--ink-2);max-width:64ch}
+.small{font-size:clamp(.85rem,1vw,.97rem);color:var(--ink-2);line-height:1.5}
 .muted{color:var(--ink-3)}
-.src{font-family:var(--mono);font-size:.62rem;color:var(--ink-3);letter-spacing:.02em;line-height:1.6}
+.src{font-family:var(--mono);font-size:.64rem;color:var(--ink-3);letter-spacing:.02em;line-height:1.6}
 .stack{display:flex;flex-direction:column;gap:clamp(12px,1.9vh,24px);min-height:0}
 .stack.gap-s{gap:clamp(9px,1.2vh,14px)}
 .row{display:flex;gap:clamp(12px,1.5vw,24px);flex-wrap:wrap}
@@ -190,81 +224,104 @@ h1,h2,h3,h4,p{margin:0}
 .two{grid-template-columns:1.02fr .98fr;align-items:center}
 .three{grid-template-columns:repeat(3,1fr)}
 .four{grid-template-columns:repeat(4,1fr)}
-.chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.03em;color:var(--ink);border:1px solid var(--line);
-  border-radius:999px;padding:.5em 1em;background:rgba(255,255,255,.02)}
-.chip b{color:var(--teal);font-weight:500}
-.card{background:linear-gradient(180deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--line);
-  border-radius:13px;padding:clamp(14px,1.5vw,22px)}
-.card h3{font-family:var(--sans);font-weight:600;font-size:.99rem;color:var(--ink);margin-bottom:6px;line-height:1.25}
-.card p{font-size:.89rem;color:var(--ink-2);line-height:1.5}
-.card.accent{border-color:var(--teal-dim);background:linear-gradient(180deg,rgba(45,212,191,.13),var(--card2))}
-.card.flag{border-color:rgba(251,191,36,.4);background:linear-gradient(180deg,rgba(251,191,36,.09),var(--card2))}
-.card.flag h3{color:var(--amber)}
+.chip{font-family:var(--mono);font-size:.72rem;letter-spacing:.03em;color:var(--ink-2);border:1px solid var(--line);
+  border-radius:999px;padding:.5em 1em;background:var(--surface);box-shadow:var(--sh-sm)}
+.chip b{color:var(--primary-600);font-weight:600}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:clamp(14px,1.5vw,22px);box-shadow:var(--sh-sm)}
+.card h3{font-family:var(--sans);font-weight:600;font-size:1rem;color:var(--ink);margin-bottom:6px;line-height:1.25}
+.card p{font-size:.9rem;color:var(--ink-2);line-height:1.55}
+.card.accent{border-color:var(--primary-200);background:var(--primary-50)}
+.card.accent h3{color:var(--primary-700)}
+.card.flag{border-color:var(--amber-300);background:var(--amber-50)}
+/* amber-700, not amber-600: heading-sized body text on the amber ground needs
+   4.5:1 and amber-600 gives 3.07:1. */
+.card.flag h3{color:var(--amber-700)}
 .stat .n{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:clamp(1.5rem,3vw,2.6rem);
-  color:var(--teal);font-weight:600;letter-spacing:-.02em;line-height:1}
+  color:var(--primary-600);font-weight:600;letter-spacing:-.02em;line-height:1}
 .stat .l{display:block;margin-top:7px;font-size:.7rem;letter-spacing:.03em;color:var(--ink-3);font-family:var(--mono);line-height:1.4}
 .dl{display:grid;grid-template-columns:auto 1fr;gap:9px 18px;align-items:baseline}
-.dl dt{font-family:var(--mono);font-size:.74rem;color:var(--teal);letter-spacing:.03em;white-space:nowrap}
-.dl dd{margin:0;color:var(--ink-2);font-size:.92rem;line-height:1.45}
+.dl dt{font-family:var(--mono);font-size:.74rem;color:var(--primary-600);letter-spacing:.03em;white-space:nowrap}
+.dl dd{margin:0;color:var(--ink-2);font-size:.93rem;line-height:1.45}
 .badge{display:inline-flex;align-self:flex-start;align-items:center;gap:8px;font-family:var(--mono);font-size:.7rem;
   letter-spacing:.05em;color:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;
-  background:rgba(255,255,255,.02);max-width:100%}
+  background:var(--surface);box-shadow:var(--sh-sm);max-width:100%}
 .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pl 2.4s ease-in-out infinite}
 @keyframes pl{0%,100%{opacity:1}50%{opacity:.3}}
-.todo{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--amber);
-  border:1px dashed rgba(251,191,36,.55);border-radius:6px;padding:.3em .65em;background:rgba(251,191,36,.07)}
-.shot{margin:0;border-radius:11px;overflow:hidden;border:1px solid var(--line);background:#08101c;
-  box-shadow:0 28px 58px -28px rgba(0,0,0,.85)}
-.shot .bar{display:flex;align-items:center;gap:6px;padding:8px 11px;background:#0A1524;border-bottom:1px solid var(--line)}
-.shot .bar span{width:8px;height:8px;border-radius:50%;background:#22314a}
+.todo{display:inline-block;font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;color:var(--amber-700);
+  border:1px dashed var(--amber-300);border-radius:var(--r-sm);padding:.3em .65em;background:var(--amber-50)}
+.shot{margin:0;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--line);background:var(--surface);
+  box-shadow:var(--sh-lg)}
+.shot .bar{display:flex;align-items:center;gap:6px;padding:8px 11px;background:#f3f4f6;border-bottom:1px solid var(--line)}
+.shot .bar span{width:8px;height:8px;border-radius:50%;background:#d1d5db}
 .shot .bar em{margin-left:9px;font-style:normal;font-family:var(--mono);font-size:.64rem;color:var(--ink-3)}
 .shot .shotimg{height:var(--h,clamp(180px,38vh,400px));overflow:hidden;background:var(--page)}
 .shot img{display:block;width:100%;height:auto;object-fit:cover;object-position:top}
-.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;counter-reset:s}
-.step{border:1px solid var(--line);border-radius:11px;padding:clamp(12px,1.3vw,18px);background:rgba(255,255,255,.02);position:relative}
-.step b{display:block;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--teal);margin-bottom:7px}
-.step p{font-size:.86rem;color:var(--ink-2);line-height:1.45}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.step{border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(12px,1.3vw,18px);background:var(--surface);box-shadow:var(--sh-sm)}
+.step b{display:block;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--primary-600);margin-bottom:7px}
+.step p{font-size:.87rem;color:var(--ink-2);line-height:1.45}
 .ledger{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:.9rem;align-items:baseline}
-.ledger .yes{font-family:var(--mono);font-size:.72rem;color:var(--teal)}
-.ledger .no{font-family:var(--mono);font-size:.72rem;color:#F87171}
+.ledger .yes{font-family:var(--mono);font-size:.72rem;color:var(--teal-700)}
+.ledger .no{font-family:var(--mono);font-size:.72rem;color:var(--red)}
 .ledger span:nth-child(even){color:var(--ink-2);line-height:1.45}
-.footer{position:absolute;left:0;right:0;bottom:0;height:44px;display:flex;align-items:center;justify-content:space-between;
-  padding:0 clamp(28px,6.6vw,104px);font-family:var(--mono);font-size:.68rem;letter-spacing:.05em;color:var(--ink-3);z-index:5}
-.footer .wm{color:var(--ink-2);font-weight:500}
-.footer .wm b{color:var(--teal)}
-.prog{position:absolute;left:0;bottom:0;height:2px;background:var(--teal);transition:width .45s ease;z-index:6}
-.nav{position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:7}
-.nav button{font-family:var(--mono);font-size:.7rem;color:var(--ink-2);background:rgba(255,255,255,.04);
-  border:1px solid var(--line);border-radius:7px;width:30px;height:25px;cursor:pointer;transition:.15s}
-.nav button:hover{color:var(--ink);border-color:var(--teal-dim);background:var(--teal-glow)}
-/* pan-y so a vertical drag in the side strips still scrolls the slide, which
-   matters under the mobile breakpoint below where .slide becomes scrollable and
-   these strips cover 40% of the width. Hidden outright on small screens: swipe
-   already navigates there, and the strips only get in the way. */
-.zone{position:absolute;top:0;bottom:44px;width:20%;z-index:4;cursor:pointer;touch-action:pan-y}
-.zone.l{left:0}.zone.r{right:0}
-:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
-.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.toc>div{padding:clamp(14px,1.5vw,20px);background:rgba(255,255,255,.02);border-right:1px solid var(--line)}
-.toc>div:last-child{border-right:none;background:linear-gradient(180deg,rgba(45,212,191,.12),var(--card2))}
-.toc b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:9px}
-.toc p{font-size:.86rem;color:var(--ink-2);line-height:1.5;margin-bottom:7px}
+.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:var(--r-lg);
+  overflow:hidden;background:var(--surface);box-shadow:var(--sh-sm)}
+.toc>div{padding:clamp(14px,1.5vw,20px);border-right:1px solid var(--line)}
+.toc>div:last-child{border-right:none;background:var(--primary-50)}
+.toc b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--primary-600);margin-bottom:9px}
+.toc p{font-size:.87rem;color:var(--ink-2);line-height:1.5;margin-bottom:7px}
 .toc p:last-child{margin-bottom:0}
-.quote{border-left:2px solid var(--teal-dim);padding:2px 0 2px clamp(14px,1.6vw,22px)}
-.quote p{font-family:var(--serif);font-size:clamp(1.25rem,2.3vw,1.9rem);line-height:1.28;color:var(--ink);letter-spacing:-.005em}
+.quote{border-left:3px solid var(--primary-200);padding:2px 0 2px clamp(14px,1.6vw,22px)}
+.quote p{font-family:var(--sans);font-weight:600;font-size:clamp(1.2rem,2.2vw,1.75rem);line-height:1.32;color:var(--ink);letter-spacing:-.02em}
 .quote cite{display:block;margin-top:12px;font-style:normal;font-family:var(--mono);font-size:.66rem;letter-spacing:.05em;color:var(--ink-3)}
 .byline{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-top:12px;padding-top:14px;border-top:1px solid var(--line)}
 .byline b{font-family:var(--sans);font-weight:600;font-size:1.02rem;color:var(--ink)}
 .byline span{font-size:.9rem;color:var(--ink-3)}
-.byline a{font-family:var(--mono);font-size:.86rem;color:var(--teal);text-decoration:none;border-bottom:1px solid var(--teal-dim)}
-.byline a:hover{color:var(--ink)}
+.byline a{font-family:var(--mono);font-size:.86rem;color:var(--primary-600);text-decoration:none;border-bottom:1px solid var(--primary-200)}
+.byline a:hover{color:var(--primary-700)}
+
+/* Chrome. One opaque bar - no mask, no full-viewport overlay, nothing to ghost. */
+.chrome{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line)}
+.prog{height:2px;width:0;background:var(--primary);transition:width .34s ease}
+/* .chrome-bar, not .bar: the screenshot frames already own a .bar (their fake
+   browser title bar), and a bare .bar here leaked justify-content:space-between
+   into every one of them, spraying the traffic-light dots across the frame. */
+.chrome-bar{height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 clamp(14px,4vw,28px);font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;color:var(--ink-3)}
+.chrome-bar .wm{color:var(--ink-2);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chrome-bar .wm b{color:var(--primary-600)}
+.chrome-bar .meta{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.nav{display:flex;gap:6px}
+.nav button{font-family:var(--mono);font-size:.8rem;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-sm);width:44px;height:44px;cursor:pointer;transition:.15s}
+.nav button:hover{color:var(--primary-700);border-color:var(--primary-200);background:var(--primary-50)}
+.zone{position:fixed;top:0;bottom:54px;width:17%;z-index:10;cursor:pointer;touch-action:pan-y}
+.zone.l{left:0}.zone.r{right:0}
+:focus-visible{outline:2px solid var(--primary-600);outline-offset:3px}
+
 @media (max-width:900px){
-  .two,.three,.four,.flow{grid-template-columns:1fr}
+  .two,.three,.four,.flow,.toc{grid-template-columns:1fr}
+  /* .toc was left at three columns on every width, which nothing caught because
+     it only clips below about 360px - at 320px its third column ran 27px past
+     the viewport. Stacked, its column rules have to become row rules. */
+  .toc>div{border-right:none;border-bottom:1px solid var(--line)}
+  .toc>div:last-child{border-bottom:none}
   .shot{display:none}
-  .slide{justify-content:flex-start;padding-top:56px;overflow-y:auto}
+  /* The page scrolls now, so a tall slide makes the document taller instead of
+     being clipped inside a nested scroller. */
+  .slide{justify-content:flex-start;padding-top:clamp(28px,5vh,48px)}
   .zone{display:none}
+  .chrome-bar .wm{display:none}
 }
-@media (prefers-reduced-motion:reduce){.slide{transition:none}.pulse{animation:none}.prog{transition:none}}
+/* Under ~360px the section name and its separator are the first thing to go,
+   so the slide counter always stays legible. */
+@media (max-width:360px){
+  .chrome-bar .sec,.chrome-bar .dot{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .slide.active{animation:none}.pulse{animation:none}.prog{transition:none}
+}
 `;
 
 function frame(src, label, h) {
@@ -614,10 +671,11 @@ const JS = `
   var i=0,n=slides.length,swiped=false;
   function show(next){
     next=Math.max(0,Math.min(n-1,next));
-    var cur=slides[i];
-    slides.forEach(function(s){s.classList.remove('active','leaving')});
-    if(cur!==slides[next]){cur.classList.add('leaving');setTimeout(function(){cur.classList.remove('leaving')},470)}
+    slides.forEach(function(s){s.classList.remove('active')});
     slides[next].classList.add('active');
+    // The document scrolls now rather than each slide, so a long slide would
+    // otherwise hand the next one its scroll position and open it part way down.
+    if(next!==i)window.scrollTo(0,0);
     i=next;
     prog.style.width=((i+1)/n*100)+'%';
     counter.textContent=('0'+(i+1)).slice(-2)+' / '+('0'+n).slice(-2);
@@ -625,9 +683,18 @@ const JS = `
     if(location.hash!=='#'+(i+1))history.replaceState(null,'','#'+(i+1));
   }
   function go(d){show(i+d)}
+  // Space and PageDown page through a tall slide before they advance.
+  // Advancing on the first press was right when the deck was a fixed, clipped
+  // box and nothing ever scrolled. Now a slide taller than the viewport extends
+  // the document, and jumping immediately would silently skip everything still
+  // below the fold - on a 390x700 phone that was 368px of unread slide 4.
+  // The arrows still advance at once; they are the deliberate "next" gesture.
+  function atBottom(){return window.scrollY+window.innerHeight>=document.documentElement.scrollHeight-2}
   document.addEventListener('keydown',function(e){
-    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(1)}
-    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1)}
+    if(e.key==='ArrowRight'){e.preventDefault();go(1)}
+    else if(e.key==='ArrowLeft'){e.preventDefault();go(-1)}
+    else if(e.key==='PageDown'||e.key===' '){if(!atBottom())return;e.preventDefault();go(1)}
+    else if(e.key==='PageUp'){if(window.scrollY>2)return;e.preventDefault();go(-1)}
     else if(e.key==='Home'){show(0)}else if(e.key==='End'){show(n-1)}
   });
   document.querySelector('.zone.l').addEventListener('click',function(){if(!swiped)go(-1)});
@@ -663,15 +730,17 @@ const HTML = `<!doctype html>
 <body>
 <main class="deck">
   ${slides.join('\n')}
-  <div class="zone l" aria-hidden="true"></div>
-  <div class="zone r" aria-hidden="true"></div>
-  <div class="footer">
-    <span class="wm">Relay<b>.</b> <span class="muted">a coordination layer for mutual aid</span></span>
-    <span><span class="sec"></span> &nbsp;&middot;&nbsp; <span class="counter"></span></span>
-  </div>
-  <nav class="nav"><button class="p" aria-label="Previous slide">&larr;</button><button class="nx" aria-label="Next slide">&rarr;</button></nav>
-  <div class="prog"></div>
 </main>
+<div class="zone l" aria-hidden="true"></div>
+<div class="zone r" aria-hidden="true"></div>
+<div class="chrome">
+  <div class="prog"></div>
+  <div class="chrome-bar">
+    <span class="wm">Relay<b>.</b> <span class="muted">a coordination layer for mutual aid</span></span>
+    <nav class="nav"><button class="p" aria-label="Previous slide">&larr;</button><button class="nx" aria-label="Next slide">&rarr;</button></nav>
+    <span class="meta"><span class="sec"></span><span class="dot"> &nbsp;&middot;&nbsp; </span><span class="counter"></span></span>
+  </div>
+</div>
 <script>${JS}</script>
 </body></html>`;
 
