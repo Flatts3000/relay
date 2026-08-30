@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import { anonymousKeyGenerator } from './rate-limit.js';
@@ -27,6 +27,23 @@ async function keyFor(app: express.Express, forwardedFor: string): Promise<strin
 }
 
 describe('anonymousKeyGenerator', () => {
+  // The key is a SHA-256 of the address salted with a bucket that rotates every
+  // five minutes, so two requests taken either side of a boundary hash
+  // differently by design. Every assertion below that two keys are equal was
+  // therefore a coin flip on wall-clock timing, and four of them are equality
+  // assertions. CI lost that flip on 2026-08-30: the run started at 01:54:43 and
+  // the IPv6 prefix case asserted at 01:55:06, straddling 01:55:00.
+  //
+  // Date.now is pinned rather than the timers faked, because these tests drive
+  // real HTTP through supertest and fake timers would stall it.
+  beforeEach(() => {
+    vi.spyOn(Date, 'now').mockReturnValue(1_772_000_000_000);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('ignores a client-supplied X-Forwarded-For prefix', async () => {
     const app = keyProbeApp(1);
 
@@ -74,6 +91,20 @@ describe('anonymousKeyGenerator', () => {
     const b = await keyFor(app, '2001:db8:9999:9900::1');
 
     expect(a).not.toBe(b);
+  });
+
+  it('rotates the salt between five-minute windows', async () => {
+    const app = keyProbeApp(1);
+
+    const before = await keyFor(app, '203.0.113.10');
+    vi.spyOn(Date, 'now').mockReturnValue(1_772_000_000_000 + 5 * 60 * 1000);
+    const after = await keyFor(app, '203.0.113.10');
+
+    // Same client, deliberately different key: the rotation is what stops a
+    // stored key being a durable identifier for an address. This also pins the
+    // pinning - if the Date.now spy above were not taking effect, both calls
+    // would land in the same real window and these would match.
+    expect(after).not.toBe(before);
   });
 
   it('never returns anything resembling the raw address', async () => {
