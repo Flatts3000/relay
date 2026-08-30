@@ -21,6 +21,14 @@ const DIR = import.meta.dirname;
 const ROOT = path.resolve(DIR, '..');
 const SHOTS = path.join(ROOT, 'docs', 'audit_screenshots', 'ux_audit');
 
+// Written into the frontend's public/ directory, which Vite copies verbatim into
+// the build, so the deck ships with the app and is served at /deck.
+//
+// One copy, not two: the file is 1.1 MB of base64 and keeping a second in deck/
+// would double that in every clone and in every commit that touches it.
+const OUT_DIR = path.join(ROOT, 'frontend', 'public', 'deck');
+const OUT = path.join(OUT_DIR, 'index.html');
+
 // sharp is optional: without it the PNGs are embedded as-is, which works but
 // produces a much larger file.
 let sharp = null;
@@ -667,6 +675,12 @@ const HTML = `<!doctype html>
 <script>${JS}</script>
 </body></html>`;
 
-fs.mkdirSync(DIR, { recursive: true });
-fs.writeFileSync(`${DIR}/relay-deck.html`, HTML);
-console.log('wrote deck/relay-deck.html:', Math.round(HTML.length / 1024), 'KB,', slides.length, 'slides');
+fs.mkdirSync(OUT_DIR, { recursive: true });
+fs.writeFileSync(OUT, HTML);
+console.log(
+  'wrote frontend/public/deck/index.html:',
+  Math.round(HTML.length / 1024),
+  'KB,',
+  slides.length,
+  'slides  ->  served at /deck'
+);
