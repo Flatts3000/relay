@@ -21,7 +21,10 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/drizzle ./drizzle
-COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
+# drizzle.config.ts is deliberately NOT copied. It imports ./src/env.js, and
+# this stage ships dist/ rather than src/, so it can only ever fail here -
+# which it did, on every deploy from 2026-08-29 (#64). Migrations run from
+# dist/migrate.js, which is built from the same sources as the server.
 
 RUN npm install --omit=dev && \
     npm install drizzle-kit tsx && \

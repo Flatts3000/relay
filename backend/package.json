@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist node_modules",
     "db:generate": "npx tsx ../node_modules/drizzle-kit/bin.cjs generate",
-    "db:migrate": "npx tsx ../node_modules/drizzle-kit/bin.cjs migrate",
+    "db:migrate": "tsx src/migrate.ts",
     "db:push": "npx tsx ../node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "npx tsx ../node_modules/drizzle-kit/bin.cjs studio",
     "db:seed": "tsx src/db/seed.ts",

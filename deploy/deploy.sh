@@ -79,11 +79,20 @@ docker compose -f "$COMPOSE_FILE" build
 PREV_BACKEND=$(docker compose -f "$COMPOSE_FILE" images -q backend 2>/dev/null || echo "")
 PREV_FRONTEND=$(docker compose -f "$COMPOSE_FILE" images -q frontend 2>/dev/null || echo "")
 
-# Start services
-echo "Starting services..."
-docker compose -f "$COMPOSE_FILE" up -d
+# Database first, and migrations before anything starts serving.
+#
+# The old order was: recreate every container, then migrate. A migration
+# failure therefore left the new code already running against the old schema,
+# and because the health gate below sits after this step, neither the gate nor
+# the rollback it triggers was reachable for this class of failure. That is not
+# hypothetical - it is what every deploy did from 2026-08-29 (#64).
+#
+# Bringing up only postgres keeps the previous backend and frontend serving
+# while the schema moves. If the migration fails, set -e aborts here with the
+# old, working containers untouched.
+echo "Starting database..."
+docker compose -f "$COMPOSE_FILE" up -d postgres
 
-# Wait for postgres to be ready
 echo "Waiting for postgres..."
 for i in $(seq 1 $MAX_RETRIES); do
   if docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U relay -d relay &>/dev/null; then
@@ -97,9 +106,14 @@ for i in $(seq 1 $MAX_RETRIES); do
   sleep "$RETRY_INTERVAL"
 done
 
-# Run database migrations
+# A one-off container from the image just built, so the migration runs the same
+# code the new server will. --no-deps because postgres is already up.
 echo "Running database migrations..."
-docker compose -f "$COMPOSE_FILE" exec -T backend npx drizzle-kit migrate
+docker compose -f "$COMPOSE_FILE" run --rm --no-deps backend node dist/migrate.js
+
+# Start the rest
+echo "Starting services..."
+docker compose -f "$COMPOSE_FILE" up -d
 
 # Health check
 echo "Checking health..."
