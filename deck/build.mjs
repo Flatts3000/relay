@@ -174,6 +174,24 @@ const ciJobCount = (() => {
   return (afterJobs.match(/^ {2}[A-Za-z][\w-]*:\s*$/gm) || []).length;
 })();
 
+// A broken pattern here would ship "0 automated tests", which is worse than the
+// stale number this replaced: a reader can discount a figure that is merely out
+// of date, but a confident zero reads as the truth. The floors sit far below the
+// real values and far above anything a broken pattern would produce.
+for (const [label, value, floor] of [
+  ['tests', testCount, 50],
+  ['routes', routeCount, 10],
+  ['CI jobs', ciJobCount, 5],
+]) {
+  if (value < floor) {
+    throw new Error(
+      `Counted only ${value} ${label}, below the sanity floor of ${floor}. The ` +
+        'pattern that counts them has probably stopped matching. Fix the pattern ' +
+        'rather than lowering the floor - this number goes in front of partners.'
+    );
+  }
+}
+
 console.log('counted:', testCount, 'tests,', routeCount, 'routes,', ciJobCount, 'CI jobs');
 
 // ---- Design tokens ----------------------------------------------------------
