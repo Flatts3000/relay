@@ -773,7 +773,7 @@ const slides = [
             ${has(I_LIST, 'A public list of groups that consented to be listed')}
             ${has(I_BARS, 'Group-level funding amounts and dates')}
             ${has(I_PIN, 'Coarse region and aid category per request')}
-            ${has(I_PERSON_SM, 'Organizer accounts: an email, and which group they work with')}
+            ${has(I_PERSON_SM, 'Organizer accounts: an email, which group they work with, and an IP address and browser string recorded against every sign-in and every change they make')}
           </ul>
         </div>
         <div class="card">
@@ -781,7 +781,7 @@ const slides = [
           <ul class="inv gone">
             ${gone('Names, addresses, phones or emails of anyone asking for help - their contact details sit inside the encrypted message Relay cannot open')}
             ${gone('Individual accounts')}
-            ${gone('IP addresses or cookies, for anyone at all - none reaches the database or the application logs, and nothing whatever is recorded when someone asks for help or browses the directory')}
+            ${gone('IP addresses or cookies on the anonymous routes - nothing is logged when someone asks for help or browses the directory')}
             ${gone('Any record of who browsed the directory')}
             ${gone('Any record of who received what')}
           </ul>

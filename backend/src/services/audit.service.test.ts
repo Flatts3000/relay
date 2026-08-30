@@ -16,25 +16,31 @@ import { createTestUser } from '../test/helpers.js';
  * held indefinitely, for exactly the people this project's threat model is
  * about.
  *
- * The schema assertion is the load-bearing one. Deleting the code that writes a
- * column leaves the column, and the next person to add a convenient `req` will
- * not know it was removed on purpose - so the test is written against the
- * database rather than against the service.
+ * This release stops the writing. Dropping the columns has to wait for a second
+ * deploy: deploy.sh migrates while the previous containers are still serving,
+ * and the old image names ip_address in every audit INSERT, so dropping it here
+ * would break the running backend - and the rollback path would restore that
+ * same image against the migrated schema.
+ *
+ * The assertions read the raw columns rather than the Drizzle model, because the
+ * model no longer declares them and the point is what reaches the table.
  */
 describe('audit log retains nothing that locates a person', () => {
-  it('has no ip_address or user_agent column at all', async () => {
-    const result = await db.execute<{ column_name: string }>(sql`
-      SELECT column_name FROM information_schema.columns
-      WHERE table_schema = 'public' AND table_name = 'audit_log'
+  it('leaves ip_address and user_agent empty on every row it writes', async () => {
+    const user = await createTestUser({ role: 'hub_admin', email: 'audit-empty@test.org' });
+
+    await logAuditEvent({ userId: user.id, action: 'approve', entityType: 'funding_request' });
+
+    // Raw SQL, because the schema no longer declares these columns - which is
+    // the point. They still exist in the database until the follow-up release
+    // drops them, so what this proves is that nothing writes to them any more.
+    const result = await db.execute<{ ip_address: string | null; user_agent: string | null }>(sql`
+      SELECT ip_address, user_agent FROM audit_log WHERE user_id = ${user.id}
     `);
-    const columns = result.rows.map((r) => r.column_name);
 
-    expect(columns).not.toContain('ip_address');
-    expect(columns).not.toContain('user_agent');
-
-    // Guards against the assertion passing because the table went missing.
-    expect(columns).toContain('user_id');
-    expect(columns).toContain('action');
+    expect(result.rows).toHaveLength(1);
+    expect(result.rows[0]!.ip_address).toBeNull();
+    expect(result.rows[0]!.user_agent).toBeNull();
   });
 
   it('writes an entry that is attributable to a user and nothing else', async () => {

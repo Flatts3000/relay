@@ -78,13 +78,6 @@
       "when": 1787958016250,
       "tag": "0010_clear_plaintext_invite_tokens",
       "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1788110927781,
-      "tag": "0011_drop_audit_ip_and_user_agent",
-      "breakpoints": true
     }
   ]
 }
