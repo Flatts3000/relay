@@ -134,11 +134,17 @@ Enabled. `ci.yml` runs on every pull request: lint and typecheck, both test suit
 job, builds, Docker builds, Terraform validate, dependency audit, CodeQL and Trivy. `deploy.yml`
 handles production.
 
-Two things it does not do. There is no OIDC anywhere - no workflow requests an `id-token`
+One thing it does not do. There is no OIDC anywhere - no workflow requests an `id-token`
 permission, and the production host holds a static IAM key
-([#11](https://github.com/Flatts3000/relay/issues/11)). And coverage thresholds are configured in
-both workspaces but never enforced, because no job runs `test:coverage`
-([#6](https://github.com/Flatts3000/relay/issues/6)).
+([#11](https://github.com/Flatts3000/relay/issues/11)).
+
+Coverage thresholds _are_ enforced, in both workspaces, contrary to what this file said until
+2026-08-30: `ci.yml` runs `test:coverage` for the frontend and the backend, so a drop fails the
+build. The backend uses global floors and clears them by three to four points; the frontend uses
+per-file floors of 95 on the two client-side encryption modules rather than a global figure, which
+would be about 2% across ~100 files. Measured 2026-08-30: backend 33% of statements, frontend 1.9%
+global with the crypto modules at 100%. The remaining gap to the 80% floor in
+`rules/common/testing.md` is [#6](https://github.com/Flatts3000/relay/issues/6).
 
 ## Build Commands
 
