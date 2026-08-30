@@ -128,7 +128,6 @@ async function shot(file, width = 1200, quality = 74) {
 
 const IMG = {
   home: await shot('home_desktop_v2.png', 1200, 70),
-  help: await shot('help_broadcast_desktop_v2.png', 1000, 76),
   directory: await shot('directory_desktop_v2.png', 1200, 76),
   reports: await shot('hub_reports_desktop_v2.png', 1200, 76),
   queue: await shot('hub_requests_desktop_v2.png', 1100, 74),
@@ -156,7 +155,7 @@ ${FONT_CSS}
   --primary-700:#164a84; --primary-900:#0c2d52;
   --teal:#14b8a6; --teal-50:#f0fdfa; --teal-200:#99f6e4; --teal-700:#0f766e;
   --amber:#d97706; --amber-50:#fffbeb; --amber-300:#fcd34d; --amber-700:#b45309;
-  --red:#dc2626;
+  --red:#dc2626; --red-700:#b91c1c;
 
   --page:#f9fafb;
   --surface:#ffffff;
@@ -258,6 +257,33 @@ h1,h2,h3,h4,p{margin:0}
 .shot .shotimg{height:var(--h,clamp(180px,38vh,400px));overflow:hidden;background:var(--page)}
 .shot img{display:block;width:100%;height:auto;object-fit:cover;object-position:top}
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+/* The lockbox diagram on the anonymous-request slide. Inline SVG rather than an
+   image: it stays sharp at any size, costs about 4KB against 50KB for the
+   screenshot it replaced, and inherits the palette instead of baking it in. */
+.lock{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.4vw,20px)}
+.lock .p{display:flex;flex-direction:column;gap:9px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(12px,1.2vw,16px);box-shadow:var(--sh-sm)}
+.lock .art{display:block;width:100%;height:auto;max-width:300px;margin:0 auto}
+/* The two coordination failures, drawn: three parties, two broken links. */
+.gaps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:clamp(8px,1.2vw,18px);align-items:center}
+.gaps .node{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:clamp(14px,1.5vw,22px);box-shadow:var(--sh-sm);text-align:center}
+.gaps .node svg{display:block;margin:0 auto 12px;width:clamp(46px,4.2vw,64px);height:auto}
+.gaps .node h3{font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:5px}
+.gaps .node p{font-size:.86rem;color:var(--ink-2);line-height:1.45}
+.gaps .brk{text-align:center}
+.gaps .brk svg{display:block;margin:0 auto 7px;width:clamp(48px,4.6vw,68px);height:auto}
+/* An inventory of what a warrant actually reaches: each line carries its own
+   mark, and the absent ones are drawn as struck-through ghosts. */
+.inv{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(7px,.9vh,11px)}
+.inv li{display:flex;align-items:flex-start;gap:10px;font-size:.88rem;color:var(--ink-2);line-height:1.4}
+.inv svg{flex:0 0 20px;width:20px;height:20px;margin-top:1px}
+.inv.gone li{color:var(--ink-3)}
+.gaps .brk span{font-family:var(--mono);font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--red-700);line-height:1.35;display:block}
+.lock b{display:block;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--primary-600);margin-bottom:6px}
+.lock p{font-size:.84rem;color:var(--ink-2);line-height:1.45}
 .step{border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(12px,1.3vw,18px);background:var(--surface);box-shadow:var(--sh-sm)}
 .step b{display:block;font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--primary-600);margin-bottom:7px}
 .step p{font-size:.87rem;color:var(--ink-2);line-height:1.45}
@@ -301,7 +327,14 @@ h1,h2,h3,h4,p{margin:0}
 :focus-visible{outline:2px solid var(--primary-600);outline-offset:3px}
 
 @media (max-width:900px){
-  .two,.three,.four,.flow,.toc{grid-template-columns:1fr}
+  .two,.three,.four,.flow,.toc,.lock{grid-template-columns:1fr}
+  /* Stacked, the broken links sit between the parties as they do across. */
+  .gaps{grid-template-columns:1fr}
+  .gaps .brk svg{width:56px}
+  /* Each lockbox panel turns into a row - small drawing beside its text -
+     rather than four full-width illustrations stacked down the phone. */
+  .lock .p{flex-direction:row;align-items:center;gap:14px}
+  .lock .art{width:124px;flex:0 0 124px;max-width:none;margin:0}
   /* .toc was left at three columns on every width, which nothing caught because
      it only clips below about 360px - at 320px its third column ran 27px past
      the viewport. Stacked, its column rules have to become row rules. */
@@ -323,6 +356,186 @@ h1,h2,h3,h4,p{margin:0}
   .slide.active{animation:none}.pulse{animation:none}.prog{transition:none}
 }
 `;
+
+// ---- Lockbox diagram --------------------------------------------------------
+// Four drawings for the anonymous-request slide. Plain geometry, no <text>: the
+// labels live in the HTML beside each panel, so they stay selectable, translate
+// with the page and do not need the webfont to have loaded.
+const C = {
+  ink: '#9ca3af',
+  line: '#e5e7eb',
+  dash: '#cbd5e1',
+  box: '#b4d3f5',
+  lid: '#dbeafe',
+  blue: '#2e6eb5',
+  seal: '#0c2d52',
+  blueD: '#164a84',
+  blueL: '#4a90d9',
+  key: '#1d5a9e',
+  teal: '#14b8a6',
+  amber: '#d97706',
+  amberL: '#fcd34d',
+  amberBg: '#fffbeb',
+  red: '#dc2626',
+  red7: '#b91c1c',
+  tint: '#f0f7ff',
+  page: '#f9fafb',
+};
+
+// A closed padlock: shackle down into both shoulders of the body.
+const padlock = (x, y, fill, sc = 1) =>
+  `<g transform="translate(${x},${y}) scale(${sc})">
+     <path d="M5 10V7.5a5 5 0 0 1 10 0V10" fill="none" stroke="${fill}" stroke-width="2.6" stroke-linecap="round"/>
+     <rect x="0" y="10" width="20" height="15" rx="3.5" fill="${fill}"/>
+     <circle cx="10" cy="16" r="2" fill="#fff"/><rect x="9" y="16" width="2" height="4.5" rx="1" fill="#fff"/>
+   </g>`;
+
+// The same padlock sprung: the left leg of the shackle has lifted clear.
+const padlockOpen = (x, y, fill, sc = 1) =>
+  `<g transform="translate(${x},${y}) scale(${sc})">
+     <path d="M15 10V7a5 5 0 0 0-10 0" fill="none" stroke="${fill}" stroke-width="2.6" stroke-linecap="round"/>
+     <rect x="0" y="10" width="20" height="15" rx="3.5" fill="${fill}"/>
+     <circle cx="10" cy="16" r="2" fill="#fff"/><rect x="9" y="16" width="2" height="4.5" rx="1" fill="#fff"/>
+   </g>`;
+
+const key = (x, y, stroke, sc = 1) =>
+  `<g transform="translate(${x},${y}) scale(${sc})">
+     <circle cx="4.5" cy="4.5" r="3.6" fill="none" stroke="${stroke}" stroke-width="2.1"/>
+     <path d="M8.3 4.5h9.4m-3.4 0v3.2m3.4-3.2v3.9" fill="none" stroke="${stroke}" stroke-width="2.1" stroke-linecap="round"/>
+   </g>`;
+
+const arrow = (x, y, len = 14) =>
+  `<path d="M${x} ${y}h${len}m-4.5-4.5 4.5 4.5-4.5 4.5" fill="none" stroke="${C.ink}"
+     stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+// A key copy, shut behind one group's padlock. The colour varies per group only
+// to make "one each, and different" legible at a glance.
+const wrapped = (x, y, lock) =>
+  `<g transform="translate(${x},${y})">
+     <rect x="0" y="0" width="52" height="40" rx="7" fill="${C.tint}" stroke="${C.box}" stroke-width="2"/>
+     ${key(7, 13, C.key)}
+     ${padlock(32, 9, lock, 0.62)}
+   </g>`;
+
+const svg = (label, body) =>
+  `<svg class="art" viewBox="0 0 200 132" role="img" aria-label="${label}">${body}</svg>`;
+
+const ART_SEAL = `
+  <rect x="6" y="12" width="34" height="44" rx="4" fill="#fff" stroke="${C.line}" stroke-width="2"/>
+  <path d="M14 24h18M14 32h18M14 40h11" stroke="${C.ink}" stroke-width="2.4" stroke-linecap="round"/>
+  ${arrow(48, 34)}
+  <rect x="74" y="22" width="72" height="38" rx="5" fill="#fff" stroke="${C.box}" stroke-width="2"/>
+  <rect x="70" y="14" width="80" height="12" rx="4" fill="${C.lid}" stroke="${C.box}" stroke-width="2"/>
+  ${padlock(100, 28, C.seal)}
+  ${wrapped(6, 82, C.blue)}
+  ${wrapped(74, 82, C.blueL)}
+  ${wrapped(142, 82, C.blueD)}
+`;
+
+const ART_SERVER = `
+  <rect x="5" y="8" width="190" height="116" rx="12" fill="${C.page}" stroke="${C.dash}"
+    stroke-width="2" stroke-dasharray="7 6"/>
+  <rect x="22" y="34" width="66" height="34" rx="5" fill="#fff" stroke="${C.box}" stroke-width="2"/>
+  <rect x="18" y="26" width="74" height="12" rx="4" fill="${C.lid}" stroke="${C.box}" stroke-width="2"/>
+  ${padlock(45, 40, C.seal, 0.85)}
+  <g transform="translate(110,24)">
+    <rect x="0" y="0" width="64" height="22" rx="6" fill="#fff" stroke="${C.box}" stroke-width="2"/>
+    ${padlock(7, 3, C.blue, 0.62)}<path d="M28 11h26" stroke="${C.lid}" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(110,52)">
+    <rect x="0" y="0" width="64" height="22" rx="6" fill="#fff" stroke="${C.box}" stroke-width="2"/>
+    ${padlock(7, 3, C.blueL, 0.62)}<path d="M28 11h26" stroke="${C.lid}" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(110,80)">
+    <rect x="0" y="0" width="64" height="22" rx="6" fill="#fff" stroke="${C.box}" stroke-width="2"/>
+    ${padlock(7, 3, C.blueD, 0.62)}<path d="M28 11h26" stroke="${C.lid}" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(24,80)">
+    ${key(0, 0, C.ink, 1.5)}
+    <path d="M-5 21 35-7" stroke="${C.red7}" stroke-width="3.4" stroke-linecap="round"/>
+  </g>
+`;
+
+const ART_OPEN = `
+  <rect x="6" y="14" width="62" height="26" rx="8" fill="#fff" stroke="${C.line}" stroke-width="2"/>
+  <circle cx="18" cy="27" r="3.2" fill="${C.ink}"/><circle cx="30" cy="27" r="3.2" fill="${C.ink}"/>
+  <circle cx="42" cy="27" r="3.2" fill="${C.ink}"/><circle cx="54" cy="27" r="3.2" fill="${C.ink}"/>
+  ${arrow(74, 27, 10)}
+  ${key(92, 22, C.key)}
+  ${arrow(122, 27, 10)}
+  ${padlockOpen(148, 14, C.blue)}
+  <g transform="translate(40,64)">
+    <rect x="0" y="1" width="86" height="11" rx="4" fill="${C.lid}" stroke="${C.box}"
+      stroke-width="2" transform="rotate(-15 5 7)"/>
+    <rect x="0" y="14" width="86" height="42" rx="5" fill="#fff" stroke="${C.box}" stroke-width="2"/>
+    <path d="M12 28h32M12 37h24" stroke="${C.ink}" stroke-width="2.4" stroke-linecap="round"/>
+    <rect x="54" y="24" width="26" height="18" rx="6" fill="${C.amberBg}" stroke="${C.amberL}" stroke-width="2"/>
+    <path d="M60 33h14" stroke="${C.amber}" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+`;
+
+const ART_OFF = `
+  <rect x="6" y="22" width="64" height="44" rx="10" fill="#fff" stroke="${C.line}" stroke-width="2"/>
+  <path d="M18 38h40M18 50h26" stroke="${C.ink}" stroke-width="2.4" stroke-linecap="round"/>
+  <rect x="130" y="22" width="64" height="44" rx="10" fill="#fff" stroke="${C.line}" stroke-width="2"/>
+  <path d="M142 38h40M142 50h26" stroke="${C.ink}" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M70 44h60" stroke="${C.amber}" stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="82" y="34" width="36" height="20" rx="6" fill="${C.amberBg}" stroke="${C.amberL}" stroke-width="2"/>
+  <path d="M89 44h22" stroke="${C.amber}" stroke-width="2.6" stroke-linecap="round"/>
+  <rect x="52" y="88" width="96" height="30" rx="9" fill="none" stroke="${C.dash}"
+    stroke-width="2" stroke-dasharray="7 6"/>
+  <path d="M84 103h32" stroke="${C.dash}" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M76 116 124 90" stroke="${C.red}" stroke-width="2.6" stroke-linecap="round"/>
+`;
+
+// ---- The two coordination failures -----------------------------------------
+// Money pools in one place, local knowledge sits in another, and the people who
+// need both cannot safely reach either. Three parties, two broken links.
+const ICON_HUB = `
+  <path d="M12 26v9c0 4.1 9 7.5 20 7.5s20-3.4 20-7.5v-9" fill="#fff" stroke="${C.box}" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="32" cy="26" rx="20" ry="7.5" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>
+  <path d="M12 13v9c0 4.1 9 7.5 20 7.5s20-3.4 20-7.5v-9" fill="#fff" stroke="${C.box}" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="32" cy="13" rx="20" ry="7.5" fill="${C.lid}" stroke="${C.box}" stroke-width="2.5"/>`;
+
+const ICON_GROUP = `
+  <path d="M28 17 18 33M36 17 46 33M21 40h22" stroke="${C.box}" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="32" cy="12" r="7.5" fill="${C.lid}" stroke="${C.box}" stroke-width="2.5"/>
+  <circle cx="14" cy="40" r="7.5" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>
+  <circle cx="50" cy="40" r="7.5" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>`;
+
+const ICON_PERSON = `
+  <circle cx="32" cy="16" r="9" fill="#fff" stroke="${C.box}" stroke-width="2.5"/>
+  <path d="M14 46v-2c0-9.9 8-18 18-18s18 8.1 18 18v2" fill="#fff" stroke="${C.box}"
+    stroke-width="2.5" stroke-linecap="round"/>`;
+
+const BREAK = `<svg viewBox="0 0 72 40" role="img" aria-label="A connection broken in the middle.">
+  <path d="M3 20h20M49 20h20" stroke="${C.dash}" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M29 30 35 10M39 30 45 10" stroke="${C.red7}" stroke-width="3.2" stroke-linecap="round"/>
+</svg>`;
+
+const node = (icon, alt, title, body) =>
+  `<div class="node"><svg viewBox="0 0 64 56" role="img" aria-label="${alt}">${icon}</svg>
+   <h3>${title}</h3><p>${body}</p></div>`;
+
+const brk = (label) => `<div class="brk">${BREAK}<span>${label}</span></div>`;
+
+// ---- Warrant inventory ------------------------------------------------------
+// One mark per line, so the shape of the answer is legible before the words are.
+const I = (body) => `<svg viewBox="0 0 22 22" aria-hidden="true">${body}</svg>`;
+const I_LOCK = I(`<path d="M7 9.5V7a4 4 0 0 1 8 0v2.5" fill="none" stroke="${C.blue}" stroke-width="2"/>
+  <rect x="4" y="9.5" width="14" height="9.5" rx="2.5" fill="${C.blue}"/>`);
+const I_LIST = I(`<path d="M3 6h16M3 11h16M3 16h10" stroke="${C.blue}" stroke-width="2" stroke-linecap="round"/>`);
+const I_BARS = I(`<path d="M5 18v-6M11 18V5M17 18v-9" stroke="${C.blue}" stroke-width="2.6" stroke-linecap="round"/>`);
+const I_PIN = I(`<path d="M11 19s6-6.2 6-10a6 6 0 1 0-12 0c0 3.8 6 10 6 10z" fill="none" stroke="${C.blue}" stroke-width="2"/>
+  <circle cx="11" cy="9" r="2.2" fill="${C.blue}"/>`);
+const I_GONE = I(`<rect x="3" y="5" width="16" height="12" rx="3" fill="none" stroke="${C.dash}"
+    stroke-width="2" stroke-dasharray="4 3"/><path d="M5.5 17 16.5 5" stroke="${C.red7}" stroke-width="2.2" stroke-linecap="round"/>`);
+
+const has = (icon, text) => `<li>${icon}<span>${text}</span></li>`;
+const gone = (text) => `<li>${I_GONE}<span>${text}</span></li>`;
+
+const lockArt = (label, body, alt, art) =>
+  `<div class="p">${svg(alt, art)}<div><b>${label}</b><p>${body}</p></div></div>`;
 
 function frame(src, label, h) {
   if (!src) return '';
@@ -374,15 +587,17 @@ const slides = [
     <div class="stack">
       <span class="eyebrow">Two coordination failures</span>
       <h2 class="k h-lg">Not a fundraising problem. A <span class="hl">discovery and trust</span> problem.</h2>
-      <div class="cols two" style="margin-top:6px">
-        <div class="card">
-          <h3>Groups cannot find hubs. Hubs cannot vet groups.</h3>
-          <p>Money is easier to raise centrally; aid is better distributed locally. The link between them runs on word of mouth, DMs and Google Forms. New and smaller groups never get connected, and hubs have no safe way to tell who is real without demanding paperwork that excludes exactly the groups doing the work.</p>
-        </div>
-        <div class="card">
-          <h3>People in crisis cannot search for help safely.</h3>
-          <p>Directories are fragmented, stale, or need an account. An email or phone number creates a traceable record. People avoid looking at all rather than leave a trail - so the aid exists, and does not reach them.</p>
-        </div>
+      <p class="lede">Money pools in one place. Local knowledge sits in another. Neither
+        link between them is safe to cross.</p>
+      <div class="gaps">
+        ${node(ICON_HUB, 'A stack of pooled coins.', 'Fund hubs',
+          'Raise money centrally. No safe way to tell which groups are real.')}
+        ${brk('No safe<br>introduction')}
+        ${node(ICON_GROUP, 'Three people joined into a small network.', 'Local groups',
+          'Know exactly who needs what. Reachable only by word of mouth and DMs.')}
+        ${brk('No safe<br>way to search')}
+        ${node(ICON_PERSON, 'A single person.', 'People in crisis',
+          'Will not leave a traceable record just to look for help.')}
       </div>
       <p class="small muted" style="margin-top:2px">Both failures fall hardest on the people with the most to lose: undocumented residents, people fleeing violence, anyone for whom a database row is a risk.</p>
     </div>
@@ -501,18 +716,35 @@ const slides = [
     <div class="stack">
       <span class="eyebrow">Flow two &middot; the hard one</span>
       <h2 class="k h-md">Someone asks for help, and Relay never learns who they are.</h2>
-      <div class="cols two">
-        <div class="flow" style="grid-template-columns:1fr">
-          <div class="step"><b>ON THEIR DEVICE</b><p>They pick an area and what they need, write a message, and include a way to be reached. The browser generates a key, encrypts the message, and wraps that key separately for each verified group serving the area.</p></div>
-          <div class="step"><b>ON THE SERVER</b><p>Relay stores ciphertext it cannot read, plus one wrapped key per recipient group. No account, no cookie, no IP logged on this route.</p></div>
-          <div class="step"><b>ON THE GROUP'S DEVICE</b><p>A coordinator unlocks with their group passphrase and sees the message, the contact details, and a safe word.</p></div>
-          <div class="step"><b>OFF RELAY ENTIRELY</b><p>The group makes contact directly and repeats the safe word, so the person knows the call is genuine. Relay is not in that conversation.</p></div>
-        </div>
-        <div class="stack gap-s">
-          ${frame(IMG.help, 'Request help anonymously', 'clamp(190px,42vh,440px)')}
-          <p class="src">TweetNaCl. secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations; the passphrase never leaves the browser. Cryptography independently reviewed.</p>
-        </div>
+      <p class="lede">One lockbox. One key, copied and padlocked once per group.
+        Relay holds all of it and can open none of it.</p>
+      <div class="lock">
+        ${lockArt(
+          'ON THEIR DEVICE',
+          'Sealed in the browser. One copy of the key is locked for each group serving the area.',
+          'A written message is sealed inside a lockbox, and the key to that box is copied three times, each copy shut behind a different group\'s padlock.',
+          ART_SEAL
+        )}
+        ${lockArt(
+          'ON THE SERVER',
+          'Relay holds what it cannot open. No account, no cookie, no IP on this route.',
+          'Relay\'s store holds the sealed lockbox and the locked key copies. A key symbol struck through shows Relay holds no key to any of them.',
+          ART_SERVER
+        )}
+        ${lockArt(
+          "ON THE GROUP'S DEVICE",
+          'The group passphrase opens their copy of the key, and only theirs.',
+          'A passphrase produces the group key, which springs open that group\'s padlock and then the lockbox, revealing the message and a safe-word tag.',
+          ART_OPEN
+        )}
+        ${lockArt(
+          'OFF RELAY ENTIRELY',
+          'They talk directly. The safe word proves the call is genuine.',
+          'Two parties talk directly, with the safe word passing between them. Relay is drawn below as an empty dashed outline, struck through, because it is not part of the exchange.',
+          ART_OFF
+        )}
       </div>
+      <p class="src">TweetNaCl: secretbox for the payload, box for per-group key wrapping with a fresh ephemeral keypair each time. Group keys derive from a coordinator passphrase via PBKDF2-HMAC-SHA256 at 600,000 iterations, and the passphrase never leaves the browser. Cryptography independently reviewed.</p>
     </div>
   </section>`,
 
@@ -524,11 +756,22 @@ const slides = [
       <div class="cols two" style="margin-top:4px">
         <div class="card accent">
           <h3>What is there</h3>
-          <p>Encrypted blobs nobody at Relay can open. A public list of groups that already consented to being listed. Group-level funding amounts and dates. Coarse region and aid category on each request.</p>
+          <ul class="inv">
+            ${has(I_LOCK, 'Encrypted blobs nobody at Relay can open')}
+            ${has(I_LIST, 'A public list of groups that consented to be listed')}
+            ${has(I_BARS, 'Group-level funding amounts and dates')}
+            ${has(I_PIN, 'Coarse region and aid category per request')}
+          </ul>
         </div>
         <div class="card">
           <h3>What is not there</h3>
-          <p>No names, addresses, phone numbers or emails of anyone seeking aid - contact details live inside the encrypted payload. No individual accounts. No IP addresses or cookies on anonymous routes. No record of who browsed the directory. No record of who received what.</p>
+          <ul class="inv gone">
+            ${gone('Names, addresses, phones or emails Relay can read - contact details sit inside the payload it cannot open')}
+            ${gone('Individual accounts')}
+            ${gone('IP addresses or cookies on anonymous routes')}
+            ${gone('Any record of who browsed the directory')}
+            ${gone('Any record of who received what')}
+          </ul>
         </div>
       </div>
       <div class="row" style="margin-top:6px">
