@@ -14,6 +14,19 @@ export function PublicFooter() {
             <span>{t('home:footer.tagline')}</span>
           </div>
           <p className="text-gray-500">
+            {/*
+              A plain anchor, not a react-router Link. /what-is-relay/ is a
+              static page built by marketing/build.mjs into frontend/public/ and
+              has no route in App.tsx, so a Link would client-side route to it
+              and render the not-found page instead of ever reaching the server.
+            */}
+            <a href="/what-is-relay/" className="hover:text-gray-900">
+              {t('common:footer.about')}
+            </a>
+            <span className="text-gray-300" aria-hidden="true">
+              {' '}
+              &middot;{' '}
+            </span>
             <Link to="/privacy" className="hover:text-gray-900">
               {t('common:footer.privacy')}
             </Link>
