@@ -61,7 +61,7 @@ export function GroupDirectoryPage() {
     <div className="min-h-screen bg-white flex flex-col">
       <PublicHeader />
 
-      <main className="flex-1 py-12 sm:py-16">
+      <main id="main-content" className="flex-1 py-12 sm:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="mb-8 text-center">
             <h1 className="text-2xl sm:text-3xl font-bold font-heading text-gray-900 mb-2">
@@ -128,8 +128,32 @@ export function GroupDirectoryPage() {
           )}
 
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" />
+            /* Skeletons in the real grid rather than a centred spinner.
+               The spinner occupied about 128px and was then replaced by a count
+               line plus a card grid, which displaced everything below it: the
+               footer moved from 647px to the top of the document and the page
+               measured 0.178 CLS against a 0.1 budget, on the one route with
+               organic search value. Same columns, same gap, same card height, so
+               the results land where the placeholders were.
+
+               role=status with sr-only text because the spinner announced
+               nothing; a screen reader had no way to know the list was loading. */
+            <div role="status" aria-busy="true">
+              <span className="sr-only">{t('loading')}</span>
+              <div className="h-5 w-40 bg-gray-100 rounded mb-4" aria-hidden="true" />
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 min-h-[168px] animate-pulse"
+                  >
+                    <div className="h-5 w-3/4 bg-gray-200 rounded" />
+                    <div className="h-4 w-1/2 bg-gray-100 rounded mt-3" />
+                    <div className="h-4 w-2/3 bg-gray-100 rounded mt-3" />
+                    <div className="h-4 w-1/3 bg-gray-100 rounded mt-3" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : entries.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-xl px-6">

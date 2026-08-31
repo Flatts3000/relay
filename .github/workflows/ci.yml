@@ -38,6 +38,12 @@ jobs:
       - name: Marketing page figures match the repository
         run: node marketing/check-counts.mjs
 
+      # There are two nginx configs and production bind-mounts one over the
+      # other, so the unused copy rots unnoticed. It has drifted twice: f01ac7e
+      # (access-log privacy) and the review of #78 (absolute_redirect).
+      - name: nginx configs agree on security behaviour
+        run: node deploy/check-nginx-parity.mjs
+
       - name: Lint frontend
         run: npm run lint:frontend
 

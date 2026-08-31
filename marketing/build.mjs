@@ -34,9 +34,10 @@ const ORIGIN = 'https://relayfunds.org';
 // Unlike the deck, sharp is required rather than optional here. The deck
 // degrades to a larger file without it; these pages degrade to having no share
 // card, which is the entire point of building them.
+const require_ = createRequire(import.meta.url);
 let sharp;
 try {
-  sharp = createRequire(import.meta.url)('sharp');
+  sharp = require_('sharp');
 } catch {
   console.error(
     'sharp is required to render the share cards.\n' +
@@ -50,6 +51,7 @@ try {
 // ---- Fonts: fetch each face once and serve it from this origin --------------
 const FACES = [
   ['Inter:wght@400', 'Inter', 400, 'inter-400.woff2'],
+  ['Inter:wght@500', 'Inter', 500, 'inter-500.woff2'],
   ['Inter:wght@600', 'Inter', 600, 'inter-600.woff2'],
   ['Inter:wght@700', 'Inter', 700, 'inter-700.woff2'],
   ['JetBrains+Mono:wght@500', 'JetBrains Mono', 500, 'jetbrains-mono-500.woff2'],
@@ -59,6 +61,9 @@ const FONT_DIR = path.join(PUBLIC, 'fonts');
 fs.mkdirSync(FONT_DIR, { recursive: true });
 
 let FONT_CSS = '';
+// Inter only, for the app's head. It never renders JetBrains Mono, and
+// declaring a face nothing uses is noise in a file people read.
+let INTER_CSS = '';
 for (const [spec, family, weight, file] of FACES) {
   const dest = path.join(FONT_DIR, file);
   // Cached across rebuilds. Refetching four files on every build is wasted
@@ -84,9 +89,11 @@ for (const [spec, family, weight, file] of FACES) {
     fs.writeFileSync(dest, Buffer.from(await fontRes.arrayBuffer()));
     console.log(`fetched font: ${file} (${Math.round(fs.statSync(dest).size / 1024)} KB)`);
   }
-  FONT_CSS +=
+  const face =
     `@font-face{font-family:'${family}';font-style:normal;font-weight:${weight};` +
     `font-display:swap;src:url(/fonts/${file}) format('woff2')}`;
+  FONT_CSS += face;
+  if (family === 'Inter') INTER_CSS += face;
 }
 
 // ---- Counted, not typed -----------------------------------------------------
@@ -108,7 +115,7 @@ ${FONT_CSS}
 :root{
   --p50:#f0f7ff;--p100:#dbeafe;--p200:#b4d3f5;--p400:#4a90d9;--p500:#2e6eb5;
   --p600:#1d5a9e;--p700:#164a84;--p800:#113b6a;--p900:#0c2d52;
-  --teal:#0d9488;--teal-50:#f0fdfa;--teal-200:#99f6e4;
+  --teal:#0d9488;--teal-50:#f0fdfa;--teal-200:#99f6e4;--teal-700:#0f766e;
   --amber:#d97706;--amber-50:#fffbeb;--amber-200:#fde68a;
   --ink:#111827;--body:#374151;--muted:#6b7280;--line:#e5e7eb;--ground:#f9fafb;
   --r-sm:6px;--r:8px;--r-lg:12px;
@@ -131,10 +138,11 @@ p{margin:0}
 /* Header */
 .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
   backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:62px}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:66px}
+.top .brand{display:inline-flex;align-items:center;min-height:44px}
 .top img{height:26px;display:block}
 .top nav{display:flex;gap:6px;flex-wrap:wrap}
-.top nav a{display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border-radius:var(--r);
+.top nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:var(--r);
   font-size:14px;font-weight:500;color:var(--body);text-decoration:none}
 .top nav a:hover{background:var(--p50);color:var(--p700)}
 .top nav a[aria-current]{background:var(--p50);color:var(--p700)}
@@ -183,7 +191,7 @@ section+section{padding-top:0}
   background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh-sm)}
 .ledger span:nth-child(odd){font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:500;
   letter-spacing:.09em;padding:3px 8px;border-radius:var(--r-sm);white-space:nowrap;margin-top:2px}
-.ledger .yes{background:var(--teal-50);color:var(--teal);border:1px solid var(--teal-200)}
+.ledger .yes{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200)}
 .ledger .no{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 .ledger span:nth-child(even){font-size:15.5px;line-height:1.55}
 
@@ -239,9 +247,11 @@ footer{border-top:1px solid var(--line);background:#fff;padding:34px 0 44px;marg
 footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}
 footer p{font-size:14px;color:var(--muted);max-width:52ch}
 footer a{color:var(--p600)}
-footer .links{display:flex;flex-direction:column;gap:7px;font-size:14px}
+footer .links{display:flex;flex-direction:column;font-size:14px}
+footer .links a{display:inline-flex;align-items:center;min-height:44px}
 .skip{position:absolute;left:-9999px}
-.skip:focus{left:14px;top:12px;z-index:60;background:var(--p600);color:#fff;padding:9px 15px;border-radius:var(--r)}
+.skip:focus{left:14px;top:12px;z-index:60;background:var(--p600);color:#fff;padding:12px 16px;
+  border-radius:var(--r);display:inline-flex;align-items:center;min-height:44px}
 :focus-visible{outline:2px solid var(--p600);outline-offset:2px}
 `
   .replace(/\n\s*/g, '')
@@ -459,10 +469,10 @@ function document_(page, card) {
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="top"><div class="wrap">
-  <a href="/" aria-label="Relay home"><img src="${logo.href}" alt="Relay"></a>
-  <nav>${nav}</nav>
-</div></div>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/" aria-label="Relay home"><img src="${logo.href}" alt="Relay"></a>
+  <nav aria-label="Relay pages">${nav}</nav>
+</div></header>
 <main id="main">
 ${page.blocks.map(renderBlock).join('\n')}
 </main>
@@ -505,6 +515,24 @@ const siteCard = await shareCard({
   ogHeadline: 'Mutual aid,\nconnected.',
 });
 
+// ---- The app's fonts and icon -----------------------------------------------
+// frontend/index.html linked fonts.googleapis.com, which handed a third party
+// the address of every anonymous visitor to / and /directory on every page
+// load. CLAUDE.md rules that out and the published Security page copy says it
+// does not happen, so the markup was contradicting the product. Issue #80.
+//
+// The faces are already fetched above for the marketing pages. Inlining the
+// @font-face rules rather than linking a stylesheet keeps it to zero extra
+// requests and nothing render-blocking from another origin.
+//
+// It also asked for /favicon.svg, which has never existed in this repository,
+// so the live site 404'd its own tab icon. Issue #79. It points at the square
+// icon this build generates from the logo.
+const APP_HEAD =
+  `<style>${INTER_CSS}</style>` +
+  `
+    <link rel="icon" href="${icon.href}">`;
+
 const INDEX = path.join(ROOT, 'frontend', 'index.html');
 const indexHtml = fs.readFileSync(INDEX, 'utf8');
 const START = '<!-- share-card:start';
@@ -532,7 +560,25 @@ if (hits === 0) {
       'that no longer exists.'
   );
 }
-const rewritten = indexHtml.slice(0, a) + block.replace(CARD_URL, siteCard.url) + indexHtml.slice(b);
+let rewritten = indexHtml.slice(0, a) + block.replace(CARD_URL, siteCard.url) + indexHtml.slice(b);
+
+// The fonts-and-icon block, delimited the same way.
+const FS = '<!-- app-head:start';
+const FE = '<!-- app-head:end -->';
+const c = rewritten.indexOf(FS);
+const d = rewritten.indexOf(FE);
+if (c === -1 || d === -1) {
+  throw new Error(
+    `Could not find the app-head markers in ${path.relative(ROOT, INDEX)}. They delimit the ` +
+      '@font-face rules and the icon link this build generates. Restore them rather than ' +
+      'removing this step, or the app goes back to loading webfonts from Google.'
+  );
+}
+const headOpen = rewritten.indexOf('-->', c) + 3;
+rewritten = rewritten.slice(0, headOpen) + `
+    ${APP_HEAD}
+    ` + rewritten.slice(d);
+
 if (rewritten !== indexHtml) {
   fs.writeFileSync(INDEX, rewritten);
   console.log(`updated frontend/index.html share card -> ${siteCard.url.split('/').pop()}`);
@@ -541,7 +587,26 @@ if (rewritten !== indexHtml) {
 // A sitemap so the pages are actually discoverable, listing only the public
 // surfaces. /deck is deliberately absent: it is served noindex, and listing it
 // here would both contradict that and advertise the path.
-const today = new Date().toISOString().slice(0, 10);
+// lastmod comes from the last commit that touched each page, not from the
+// clock. A build-time date claims every page changed today on every rebuild,
+// which is a false signal to crawlers and a guaranteed diff in every commit
+// that touches anything here. Falling back to today for a path git does not
+// know yet is correct: an uncommitted page really did just change.
+function lastModified(relPath) {
+  try {
+    const out = require_('node:child_process')
+      .execSync(`git log -1 --format=%cI -- "${relPath}"`, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        cwd: ROOT,
+      })
+      .trim();
+    if (out) return out.slice(0, 10);
+  } catch {
+    // git missing, or a shallow clone with no history for this path.
+  }
+  return new Date().toISOString().slice(0, 10);
+}
 // Only surfaces that describe themselves. /directory is deliberately absent:
 // it is an SPA route served from frontend/index.html, so its Open Graph
 // tags are the home page's and it declares og:url of /, which submits it to
@@ -555,12 +620,50 @@ fs.writeFileSync(
     urls
       .map(
         (u) =>
-          `  <url><loc>${ORIGIN}/${u}</loc><lastmod>${today}</lastmod>` +
+          `  <url><loc>${ORIGIN}/${u}</loc>` +
+          `<lastmod>${lastModified(u === '' ? 'frontend/index.html' : `frontend/public/${u}index.html`)}</lastmod>` +
           `<changefreq>monthly</changefreq><priority>${u === '' ? '1.0' : '0.8'}</priority></url>`
       )
       .join('\n') +
     `\n</urlset>\n`
 );
+
+// ---- llms.txt ---------------------------------------------------------------
+// Generated from the same PAGES list as everything else, so it cannot describe
+// a page set that no longer exists. Aimed at the assistants people actually use
+// to check whether something is safe to trust, which is the question this
+// project keeps asking readers to verify for themselves.
+fs.writeFileSync(
+  path.join(PUBLIC, 'llms.txt'),
+  `# Relay
+
+> Relay connects local mutual aid groups with the funds that back them, without
+> building a record of who needed help. Mutual aid here means neighbors covering
+> each other's costs directly - a block, a church, a school parents' group,
+> putting money together for someone's rent, a power bill or groceries.
+
+Relay never decides who deserves help and the money never passes through it.
+Help requests are encrypted in the sender's browser; Relay stores ciphertext it
+cannot read. There are no accounts for people asking for help, and nothing is
+recorded about who browses the public directory.
+
+**Status: no pilot has run.** The software is built and deployed, no group has
+joined, and the live database holds zero records. A group cannot be listed until
+a fund hub approves it. Nothing here is a working service yet, and any summary
+of Relay should say so.
+
+## Explainers
+
+${PAGES.map((pg) => `- [${pg.navLabel}](${ORIGIN}/${pg.slug}/): ${pg.description}`).join('\n')}
+
+## Source and documentation
+
+- [Source code](https://github.com/Flatts3000/relay): AGPL-3.0. Every claim above can be checked against it.
+- [Public group directory](${ORIGIN}/directory): searchable, no account, nothing recorded.
+- [Privacy](${ORIGIN}/privacy) and [Security](${ORIGIN}/security): what is stored, what is not, and the known limits.
+`
+);
+
 
 console.log('\nwrote:');
 for (const [slug, html, png] of written) {

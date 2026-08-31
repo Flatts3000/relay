@@ -1,5 +1,5 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { createHash } from 'crypto';
+import { createHmac, randomBytes } from 'crypto';
 import type { Request } from 'express';
 import { config } from '../config.js';
 
@@ -58,27 +58,67 @@ export const authVerifyRateLimiter = credentialRateLimiter(
 );
 
 /**
- * Hash function for anonymous rate limiting.
- * Uses SHA-256 with a rotating salt to hash IP addresses.
- * The salt rotates every 5 minutes to ensure short-lived association.
+ * A secret generated once per process and never written anywhere.
  *
- * CRITICAL: We NEVER store the raw IP address. Only the hash is stored,
- * and it becomes invalid after the window expires.
+ * The key is what makes the digest below irreversible. The previous version
+ * salted with `relay-anon-${timeSlot}`, derived from the clock - which meant
+ * the salt was known to anyone, because this code is public. IPv4 is 2^32
+ * addresses, so anyone holding those digests could recover the addresses by
+ * enumeration in seconds, or confirm whether one specific address was present.
+ *
+ * The realistic risk was low: the map lives in process memory, is never written
+ * to disk or to the database, and expires within minutes. It is keyed properly
+ * anyway because of what the comment underneath used to claim. This project's
+ * credibility rests on its security statements being exactly true, and "we
+ * never store the raw IP address" read as a much stronger guarantee than a
+ * publicly-salted hash of a 32-bit value actually provides.
+ *
+ * Regenerating on restart is harmless: every window it keys is minutes long, so
+ * the worst case is that limiter buckets reset when the process does.
  */
-function hashIpWithRotatingSalt(ip: string): string {
-  // Rotate salt every 5 minutes (use timestamp truncated to 5-minute buckets)
-  const timeSlot = Math.floor(Date.now() / (5 * 60 * 1000));
-  const salt = `relay-anon-${timeSlot}`;
+const ANON_KEY = randomBytes(32);
 
-  return createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 16);
+/**
+ * Hash function for anonymous rate limiting.
+ *
+ * Keyed HMAC-SHA256 over a time-bucketed address. The bucket still rotates
+ * every five minutes so an entry cannot outlive its window, and the key means
+ * the digest cannot be reversed even by someone who has both the code and the
+ * digests.
+ *
+ * The raw address is never stored, and now it cannot be recovered either.
+ */
+function hashIpWithRotatingSalt(ip: string, bucketMs: number = DEFAULT_BUCKET_MS): string {
+  const timeSlot = Math.floor(Date.now() / bucketMs);
+
+  return createHmac('sha256', ANON_KEY)
+    .update(`relay-anon-${timeSlot}:${ip}`)
+    .digest('hex')
+    .slice(0, 16);
 }
+
+/** Five minutes, which matches the window of every limiter except broadcasts. */
+const DEFAULT_BUCKET_MS = 5 * 60 * 1000;
 
 /**
  * Key generator for anonymous routes.
  * Uses hashed IP with rotating salt - no raw IP storage.
  * Exported for reuse by broadcast and other anonymous rate limiters.
  */
-export function anonymousKeyGenerator(req: Request): string {
+export function anonymousKeyGeneratorFor(bucketMs: number) {
+  return (req: Request): string => anonymousKey(req, bucketMs);
+}
+
+/**
+ * The default-bucket generator, which is what every limiter but broadcasts uses.
+ *
+ * A const arrow rather than a function taking an optional second argument:
+ * express-rate-limit types `keyGenerator` as `(req, res) => string`, so a
+ * numeric second parameter does not satisfy it.
+ */
+export const anonymousKeyGenerator = anonymousKeyGeneratorFor(DEFAULT_BUCKET_MS);
+
+function anonymousKey(req: Request, bucketMs: number): string {
   // req.ip, not a hand-parsed X-Forwarded-For. Taking the leftmost XFF entry
   // takes whatever the client sent, so anyone could pick their own bucket and
   // walk straight through these limits. With trust proxy configured in app.ts,
@@ -90,7 +130,7 @@ export function anonymousKeyGenerator(req: Request): string {
   // address in it, which would mint a fresh bucket each time and defeat the
   // 5-per-hour broadcast limit completely. ipKeyGenerator is the
   // library's own defence against this; IPv4 addresses pass through unchanged.
-  return hashIpWithRotatingSalt(ipKeyGenerator(ip));
+  return hashIpWithRotatingSalt(ipKeyGenerator(ip), bucketMs);
 }
 
 /**
@@ -138,11 +178,22 @@ export const directoryBrowseRateLimiter = rateLimit({
  * Strict rate limiter for broadcast creation.
  * Prevents abuse of anonymous broadcast submission.
  */
+const BROADCAST_WINDOW_MS = 60 * 60 * 1000;
+
 export const broadcastCreationRateLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
+  windowMs: BROADCAST_WINDOW_MS, // 1 hour
   max: 5, // 5 broadcasts per hour
   standardHeaders: false,
   legacyHeaders: false,
   message: { error: 'Too many broadcast attempts, please try again later.' },
-  keyGenerator: anonymousKeyGenerator,
+  // The bucket has to match the window, or the limit does not mean what it
+  // says. With the default five-minute bucket the key changed twelve times an
+  // hour, so one client got twelve fresh budgets and "5 broadcasts per hour"
+  // was really 60. The comment on anonymousKeyGenerator already names this
+  // hazard for IPv6 prefixes; the salt rotation was doing the same thing.
+  //
+  // The cost is that a digest for this limiter lives up to an hour rather than
+  // five minutes. It is an HMAC under a secret that never leaves memory and is
+  // never written down, so what persists is unlinkable to an address.
+  keyGenerator: anonymousKeyGeneratorFor(BROADCAST_WINDOW_MS),
 });
