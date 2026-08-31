@@ -139,7 +139,13 @@ p{margin:0}
 .top nav a:hover{background:var(--p50);color:var(--p700)}
 .top nav a[aria-current]{background:var(--p50);color:var(--p700)}
 @media(max-width:720px){.top nav a{padding:0 9px;font-size:13px}.top img{height:22px}}
-@media(max-width:520px){.top nav .opt{display:none}}
+@media(max-width:620px){
+  .top{position:static}
+  .top .wrap{flex-direction:column;align-items:flex-start;height:auto;gap:6px;padding-top:10px;padding-bottom:8px}
+  .top nav{width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .top nav::-webkit-scrollbar{display:none}
+  .top nav a{white-space:nowrap;flex:none}
+}
 
 /* Rhythm */
 section{padding:clamp(38px,6.4vw,68px) 0}
@@ -242,7 +248,14 @@ footer .links{display:flex;flex-direction:column;gap:7px;font-size:14px}
   .trim();
 
 // ---- Block rendering --------------------------------------------------------
-const esc = (s) => String(s).replace(/&(?![a-z]+;|#\d+;)/g, '&amp;').replace(/</g, '&lt;');
+const esc = (s) =>
+  String(s)
+    .replace(/&(?![a-z]+;|#\d+;)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    // Every call site is a content="..." attribute or a <title>. Without
+    // this, one quote mark in the copy ends the attribute early and the
+    // rest becomes garbage attributes that no crawler reports as an error.
+    .replace(/"/g, '&quot;');
 
 const chip = ([b, rest]) => `<span class="chip"><b>${b}</b> ${rest}</span>`;
 const card = ([h, p], cls = '') => `<div class="card ${cls}"><h3>${h}</h3><p>${p}</p></div>`;
@@ -359,30 +372,63 @@ async function shareCard(page) {
       font-weight="400" fill="#9dbfe4">Open source &#183; No pilot yet</text>
   </svg>`;
 
-  const png = await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
-  // Content-hashed, because nginx serves .png from this tree with a one-year
-  // immutable cache. A card edited under a stable name would keep showing the
-  // old image in every crawler and CDN that had already seen it.
-  const hash = crypto.createHash('sha256').update(png).digest('hex').slice(0, 8);
-  const name = `${page.slug}-${hash}.png`;
+  return writeHashed(page.slug, await sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer());
+}
+
+// Everything under share/ is content-hashed, because nginx serves .png from
+// this tree with a one-year immutable cache. A file edited under a stable name
+// would keep showing the old image in every crawler and CDN that had already
+// fetched it. Older versions of the same prefix are pruned so the directory
+// does not accumulate one orphan per edit.
+function writeHashed(prefix, buf) {
+  const hash = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 8);
+  const name = `${prefix}-${hash}.png`;
   const dir = path.join(PUBLIC, 'share');
   fs.mkdirSync(dir, { recursive: true });
-  // Drop older cards for this page so the directory does not accumulate one
-  // orphan per edit.
   for (const f of fs.readdirSync(dir)) {
-    if (f.startsWith(`${page.slug}-`) && f !== name) fs.unlinkSync(path.join(dir, f));
+    if (f.startsWith(`${prefix}-`) && f !== name) fs.unlinkSync(path.join(dir, f));
   }
-  fs.writeFileSync(path.join(dir, name), png);
-  return { url: `${ORIGIN}/share/${name}`, kb: Math.round(png.length / 1024) };
+  fs.writeFileSync(path.join(dir, name), buf);
+  return {
+    // Absolute for og:image and twitter:image, which crawlers require to be
+    // fully qualified. Root-relative for anything the page itself loads.
+    url: `${ORIGIN}/share/${name}`,
+    href: `/share/${name}`,
+    kb: Math.round(buf.length / 1024),
+  };
 }
+
+// ---- Logo and icon ----------------------------------------------------------
+// public/logo.png is 682x381 and 139 KB, and the header renders it 26px tall.
+// Shipping it whole costs more than all four subsetted webfaces combined, on
+// pages whose audience the PRD describes as low-bandwidth, so it is resampled
+// to what is actually displayed. The app's copy is left alone; this is only
+// what these four pages load.
+const LOGO_SRC = path.join(PUBLIC, 'logo.png');
+const logo = writeHashed(
+  'logo',
+  await sharp(LOGO_SRC).resize({ width: 112, withoutEnlargement: true }).png({ compressionLevel: 9 }).toBuffer()
+);
+
+// A square icon, because the logo is 16:9 and a favicon slot is not - the
+// browser was letterboxing or squashing it. Padded rather than cropped so the
+// wordmark stays whole.
+const icon = writeHashed(
+  'icon',
+  await sharp(LOGO_SRC)
+    .resize({ width: 64, height: 64, fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
+    .png({ compressionLevel: 9 })
+    .toBuffer()
+);
+console.log(`logo ${logo.kb} KB, icon ${icon.kb} KB (was 139 KB for both)`);
 
 // ---- Document ---------------------------------------------------------------
 function document_(page, card) {
   const url = `${ORIGIN}/${page.slug}/`;
   const nav = PAGES.map(
     (p) =>
-      `<a href="/${p.slug}/"${p.slug === page.slug ? ' aria-current="page"' : ''}` +
-      `${p.slug === 'what-is-relay' ? '' : ' class="opt"'}>${p.navLabel}</a>`
+      `<a href="/${p.slug}/"${p.slug === page.slug ? ' aria-current="page"' : ''}>` +
+      `${p.navLabel}</a>`
   ).join('');
 
   return `<!DOCTYPE html>
@@ -393,7 +439,7 @@ function document_(page, card) {
 <title>${esc(page.title)}</title>
 <meta name="description" content="${esc(page.description)}">
 <link rel="canonical" href="${url}">
-<link rel="icon" href="/logo.png">
+<link rel="icon" href="${icon.href}">
 <meta name="theme-color" content="#0c2d52">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Relay">
@@ -414,7 +460,7 @@ function document_(page, card) {
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <div class="top"><div class="wrap">
-  <a href="/" aria-label="Relay home"><img src="/logo.png" alt="Relay"></a>
+  <a href="/" aria-label="Relay home"><img src="${logo.href}" alt="Relay"></a>
   <nav>${nav}</nav>
 </div></div>
 <main id="main">
@@ -422,8 +468,8 @@ ${page.blocks.map(renderBlock).join('\n')}
 </main>
 <footer><div class="wrap">
   <p>Relay is built by Mythic Works LLC and is intended to be handed to a nonprofit, which has not
-  been formed. It is not fundraising and has no donation page. Nothing on this site sets a cookie,
-  records who visited, or loads anything from a third party.</p>
+  been formed. It is not fundraising and has no donation page. These pages set no cookie, record
+  nothing about who visited, and load nothing from a third party.</p>
   <div class="links">
     <a href="/">relayfunds.org</a>
     <a href="https://github.com/Flatts3000/relay">Read the code on GitHub</a>
@@ -475,10 +521,18 @@ if (a === -1 || b === -1) {
 // Only the two image URLs are rewritten. The titles and descriptions inside the
 // block stay hand-editable, because they are copy and this build has no opinion
 // about them.
-const rewritten =
-  indexHtml.slice(0, a) +
-  indexHtml.slice(a, b).replace(/https:\/\/relayfunds\.org\/share\/relay[^"]*\.png/g, siteCard.url) +
-  indexHtml.slice(b);
+const block = indexHtml.slice(a, b);
+const CARD_URL = /https:\/\/relayfunds\.org\/share\/relay[^"]*\.png/g;
+const hits = block.match(CARD_URL)?.length ?? 0;
+if (hits === 0) {
+  throw new Error(
+    'The share-card block in frontend/index.html contains no og:image URL this build recognises. ' +
+      'It expects https://relayfunds.org/share/relay<...>.png. The previous card has already been ' +
+      'deleted by now, so failing loudly beats exiting 0 and leaving the tags pointing at a file ' +
+      'that no longer exists.'
+  );
+}
+const rewritten = indexHtml.slice(0, a) + block.replace(CARD_URL, siteCard.url) + indexHtml.slice(b);
 if (rewritten !== indexHtml) {
   fs.writeFileSync(INDEX, rewritten);
   console.log(`updated frontend/index.html share card -> ${siteCard.url.split('/').pop()}`);
@@ -488,7 +542,12 @@ if (rewritten !== indexHtml) {
 // surfaces. /deck is deliberately absent: it is served noindex, and listing it
 // here would both contradict that and advertise the path.
 const today = new Date().toISOString().slice(0, 10);
-const urls = ['', ...PAGES.map((p) => `${p.slug}/`), 'directory'];
+// Only surfaces that describe themselves. /directory is deliberately absent:
+// it is an SPA route served from frontend/index.html, so its Open Graph
+// tags are the home page's and it declares og:url of /, which submits it to
+// crawlers as a duplicate of the root. Add it back when the SPA can emit
+// per-route metadata.
+const urls = ['', ...PAGES.map((p) => `${p.slug}/`)];
 fs.writeFileSync(
   path.join(PUBLIC, 'sitemap.xml'),
   `<?xml version="1.0" encoding="UTF-8"?>\n` +

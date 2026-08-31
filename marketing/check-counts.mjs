@@ -66,6 +66,37 @@ if (checked === 0) {
   problems.push('no marketing page carries a stat row, so nothing was actually verified');
 }
 
+// The figures are not the only thing that can go stale. The whole point of
+// these pages is that a pasted link renders with a preview image, and the build
+// deletes a page's previous card whenever it writes a new one - so a rebuild
+// committed with the HTML staged and frontend/public/share/ left unstaged
+// leaves every og:image pointing at a file that no longer exists. Every preview
+// 404s, and a check that only reads the stat row passes green while it happens.
+//
+// frontend/index.html is included because the build rewrites its card too, and
+// it is the URL people actually paste.
+const withCards = [
+  ...PAGES.map((p) => [`/${p.slug}/`, path.join(PUBLIC, p.slug, 'index.html')]),
+  ['frontend/index.html', path.join(ROOT, 'frontend', 'index.html')],
+];
+
+for (const [label, file] of withCards) {
+  if (!fs.existsSync(file)) continue;
+  const html = fs.readFileSync(file, 'utf8');
+  const urls = [...html.matchAll(/<meta (?:property|name)="(?:og:image|twitter:image)" content="([^"]+)"/g)];
+  if (urls.length === 0) {
+    problems.push(`${label} declares no share card at all`);
+    continue;
+  }
+  // og:image and twitter:image normally name the same file; report it once.
+  for (const url of new Set(urls.map((m) => m[1]))) {
+    const rel = url.replace('https://relayfunds.org/', '');
+    if (!fs.existsSync(path.join(PUBLIC, rel))) {
+      problems.push(`${label} points at ${rel}, which is not on disk`);
+    }
+  }
+}
+
 if (problems.length > 0) {
   console.error('The committed marketing pages disagree with the repository:\n');
   for (const problem of problems) console.error(`  - ${problem}`);

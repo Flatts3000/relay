@@ -76,11 +76,20 @@ committing them** rather than assuming.
 They are ordinary directories with an `index.html`, served by the SPA fallback
 in `deploy/nginx.prod.conf`. Two things there are load-bearing:
 
-- `absolute_redirect off` at the server level. A request for `/for-groups`
-  redirects to `/for-groups/` before it is served, and nginx sits behind Caddy,
-  which terminates TLS. Without this, nginx emits `http://relayfunds.org/...`,
-  downgrading the scheme and costing a second hop back through Caddy's HTTPS
-  redirect. Verified in a real nginx container, not reasoned about.
+- `absolute_redirect off` at the server level, **in both configs**. A request for
+  `/for-groups` redirects to `/for-groups/` before it is served, and nginx sits
+  behind Caddy, which terminates TLS. Without this, nginx emits
+  `http://relayfunds.org/...`, downgrading the scheme and costing a second hop
+  back through Caddy's HTTPS redirect. Verified in a real nginx container, not
+  reasoned about.
+
+  It is set in `deploy/nginx.prod.conf` **and** in `frontend/nginx.conf`, which
+  is the copy baked into the image and the one the root `docker-compose.yml`
+  runs with no bind mount. Production mounts the former over the latter, so the
+  second copy never serves a real visitor - but the two must not disagree, or
+  the behavior vanishes silently if the mount is ever dropped. That file's own
+  header says so, and commit f01ac7e exists because this pair drifted before.
+
 - **No `X-Robots-Tag`.** This is the opposite of `/deck`, which is deliberately
   kept out of search results. These pages are meant to be indexed, and they are
   listed in `sitemap.xml`, which `robots.txt` now points at.
