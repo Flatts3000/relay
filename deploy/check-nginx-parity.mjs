@@ -112,8 +112,26 @@ if (listA.length !== listB.length) {
 // down means it costs none in future.
 const deckPath = path.join(ROOT, 'frontend', 'public', 'deck', 'index.html');
 if (fs.existsSync(deckPath)) {
-  const inline = fs.readFileSync(deckPath, 'utf8').match(/<script>([\s\S]*?)<\/script>/);
-  if (inline) {
+  // Case-insensitive, and tolerant of attributes on the tag. A lower-case-only
+  // literal is what CodeQL's js/bad-tag-filter flags, and the consequence here is
+  // worse than the usual one: a pattern that stops matching leaves the block
+  // below silently doing nothing, which is exactly the "guard quietly stops
+  // guarding" failure this check exists to prevent. Verified by tampering the
+  // deck's tag to <SCRIPT >: the old pattern missed it and the check passed.
+  const inline = fs
+    .readFileSync(deckPath, 'utf8')
+    .match(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script\s*>/i);
+
+  // Not finding one is a failure, not a skip. The deck's slide engine is inline
+  // by design; if it ever is not, the /deck policy needs revisiting rather than
+  // passing unexamined.
+  if (!inline) {
+    problems.push(
+      'The committed deck has no inline <script>, so its script hash could not be\n' +
+        '      checked. The /deck Content-Security-Policy allows an inline script by\n' +
+        '      hash; if the deck no longer has one, that policy needs revisiting.'
+    );
+  } else {
     const digest =
       'sha256-' +
       crypto
