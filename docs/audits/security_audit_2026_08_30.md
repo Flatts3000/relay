@@ -18,6 +18,24 @@ observed behavior.
 
 ---
 
+## Remediation status
+
+All six findings were fixed in the same branch as this audit. The findings below
+are left as written, because the record of what was wrong is the point of an
+audit; this section says what happened to each.
+
+|                                             | Status                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **SEC-1** CSP never reaches the document    | **Fixed.** `Content-Security-Policy` now set on the HTML in both nginx configs, at server level and repeated inside `location ^~ /deck` (an `add_header` in a location drops every inherited one). Verified in a container: present on `/` and `/deck/`, zero CSP violations across four pages, and the home page's `fetch` to formspree.io still permitted by `connect-src`.                                                                |
+| **SEC-2** stale lockfile, 28 phantom alerts | **Fixed.** `frontend/package-lock.json` deleted.                                                                                                                                                                                                                                                                                                                                                                                             |
+| **SEC-3** third-party fonts (#80)           | **Fixed.** The four faces plus Inter 500 are served from this origin; the `<link>`s to `fonts.googleapis.com` and the `preconnect`s are gone. Verified: zero third-party hosts across `/`, `/directory` and a static page, all four Inter weights loading from origin.                                                                                                                                                                       |
+| **SEC-4** enumerable rate-limit hash        | **Fixed.** `createHmac` keyed on a random secret generated at boot, replacing the clock-derived salt. The comment now matches what the code does.                                                                                                                                                                                                                                                                                            |
+| **SEC-5** no `Permissions-Policy`           | **Fixed.** Set alongside the CSP in both configs.                                                                                                                                                                                                                                                                                                                                                                                            |
+| **SEC-6** every path returns 200            | **Fixed for anything with a file extension**, which is the class that gets probed. No route in `App.tsx` contains a dot, so a path with an extension is never an app route; if the file is absent it now 404s. Extensionless typos still reach the app, and the not-found view now carries `noindex`. Verified: `/nope.txt` 404, `/llms.txt` 200 (it exists now), `/robots.txt` and `/sitemap.xml` still 200, assets still immutably cached. |
+| **Informational:** the two configs drift    | **Guarded.** `deploy/check-nginx-parity.mjs` compares six security directives plus the CSP value across both files, and CI runs it. Verified by tampering: removing the CSP from one file and changing it in one file both fail the check.                                                                                                                                                                                                   |
+
+---
+
 ## Summary
 
 The application code is in better shape than the delivery layer. Token handling,

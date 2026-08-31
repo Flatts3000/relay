@@ -1,5 +1,5 @@
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { createHash } from 'crypto';
+import { createHmac, randomBytes } from 'crypto';
 import type { Request } from 'express';
 import { config } from '../config.js';
 
@@ -58,19 +58,44 @@ export const authVerifyRateLimiter = credentialRateLimiter(
 );
 
 /**
- * Hash function for anonymous rate limiting.
- * Uses SHA-256 with a rotating salt to hash IP addresses.
- * The salt rotates every 5 minutes to ensure short-lived association.
+ * A secret generated once per process and never written anywhere.
  *
- * CRITICAL: We NEVER store the raw IP address. Only the hash is stored,
- * and it becomes invalid after the window expires.
+ * The key is what makes the digest below irreversible. The previous version
+ * salted with `relay-anon-${timeSlot}`, derived from the clock - which meant
+ * the salt was known to anyone, because this code is public. IPv4 is 2^32
+ * addresses, so anyone holding those digests could recover the addresses by
+ * enumeration in seconds, or confirm whether one specific address was present.
+ *
+ * The realistic risk was low: the map lives in process memory, is never written
+ * to disk or to the database, and expires within minutes. It is keyed properly
+ * anyway because of what the comment underneath used to claim. This project's
+ * credibility rests on its security statements being exactly true, and "we
+ * never store the raw IP address" read as a much stronger guarantee than a
+ * publicly-salted hash of a 32-bit value actually provides.
+ *
+ * Regenerating on restart is harmless: every window it keys is minutes long, so
+ * the worst case is that limiter buckets reset when the process does.
+ */
+const ANON_KEY = randomBytes(32);
+
+/**
+ * Hash function for anonymous rate limiting.
+ *
+ * Keyed HMAC-SHA256 over a time-bucketed address. The bucket still rotates
+ * every five minutes so an entry cannot outlive its window, and the key means
+ * the digest cannot be reversed even by someone who has both the code and the
+ * digests.
+ *
+ * The raw address is never stored, and now it cannot be recovered either.
  */
 function hashIpWithRotatingSalt(ip: string): string {
-  // Rotate salt every 5 minutes (use timestamp truncated to 5-minute buckets)
+  // Rotate every 5 minutes (timestamp truncated to 5-minute buckets)
   const timeSlot = Math.floor(Date.now() / (5 * 60 * 1000));
-  const salt = `relay-anon-${timeSlot}`;
 
-  return createHash('sha256').update(`${salt}:${ip}`).digest('hex').slice(0, 16);
+  return createHmac('sha256', ANON_KEY)
+    .update(`relay-anon-${timeSlot}:${ip}`)
+    .digest('hex')
+    .slice(0, 16);
 }
 
 /**

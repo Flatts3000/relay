@@ -14,7 +14,7 @@ export function TermsPage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-primary-50/40 to-white">
       <PublicHeader />
 
-      <main className="flex-1 py-12 px-4">
+      <main id="main-content" className="flex-1 py-12 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Page header */}
           <div className="text-center mb-12">

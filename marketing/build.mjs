@@ -51,6 +51,7 @@ try {
 // ---- Fonts: fetch each face once and serve it from this origin --------------
 const FACES = [
   ['Inter:wght@400', 'Inter', 400, 'inter-400.woff2'],
+  ['Inter:wght@500', 'Inter', 500, 'inter-500.woff2'],
   ['Inter:wght@600', 'Inter', 600, 'inter-600.woff2'],
   ['Inter:wght@700', 'Inter', 700, 'inter-700.woff2'],
   ['JetBrains+Mono:wght@500', 'JetBrains Mono', 500, 'jetbrains-mono-500.woff2'],
@@ -60,6 +61,9 @@ const FONT_DIR = path.join(PUBLIC, 'fonts');
 fs.mkdirSync(FONT_DIR, { recursive: true });
 
 let FONT_CSS = '';
+// Inter only, for the app's head. It never renders JetBrains Mono, and
+// declaring a face nothing uses is noise in a file people read.
+let INTER_CSS = '';
 for (const [spec, family, weight, file] of FACES) {
   const dest = path.join(FONT_DIR, file);
   // Cached across rebuilds. Refetching four files on every build is wasted
@@ -85,9 +89,11 @@ for (const [spec, family, weight, file] of FACES) {
     fs.writeFileSync(dest, Buffer.from(await fontRes.arrayBuffer()));
     console.log(`fetched font: ${file} (${Math.round(fs.statSync(dest).size / 1024)} KB)`);
   }
-  FONT_CSS +=
+  const face =
     `@font-face{font-family:'${family}';font-style:normal;font-weight:${weight};` +
     `font-display:swap;src:url(/fonts/${file}) format('woff2')}`;
+  FONT_CSS += face;
+  if (family === 'Inter') INTER_CSS += face;
 }
 
 // ---- Counted, not typed -----------------------------------------------------
@@ -509,6 +515,24 @@ const siteCard = await shareCard({
   ogHeadline: 'Mutual aid,\nconnected.',
 });
 
+// ---- The app's fonts and icon -----------------------------------------------
+// frontend/index.html linked fonts.googleapis.com, which handed a third party
+// the address of every anonymous visitor to / and /directory on every page
+// load. CLAUDE.md rules that out and the published Security page copy says it
+// does not happen, so the markup was contradicting the product. Issue #80.
+//
+// The faces are already fetched above for the marketing pages. Inlining the
+// @font-face rules rather than linking a stylesheet keeps it to zero extra
+// requests and nothing render-blocking from another origin.
+//
+// It also asked for /favicon.svg, which has never existed in this repository,
+// so the live site 404'd its own tab icon. Issue #79. It points at the square
+// icon this build generates from the logo.
+const APP_HEAD =
+  `<style>${INTER_CSS}</style>` +
+  `
+    <link rel="icon" href="${icon.href}">`;
+
 const INDEX = path.join(ROOT, 'frontend', 'index.html');
 const indexHtml = fs.readFileSync(INDEX, 'utf8');
 const START = '<!-- share-card:start';
@@ -536,7 +560,25 @@ if (hits === 0) {
       'that no longer exists.'
   );
 }
-const rewritten = indexHtml.slice(0, a) + block.replace(CARD_URL, siteCard.url) + indexHtml.slice(b);
+let rewritten = indexHtml.slice(0, a) + block.replace(CARD_URL, siteCard.url) + indexHtml.slice(b);
+
+// The fonts-and-icon block, delimited the same way.
+const FS = '<!-- app-head:start';
+const FE = '<!-- app-head:end -->';
+const c = rewritten.indexOf(FS);
+const d = rewritten.indexOf(FE);
+if (c === -1 || d === -1) {
+  throw new Error(
+    `Could not find the app-head markers in ${path.relative(ROOT, INDEX)}. They delimit the ` +
+      '@font-face rules and the icon link this build generates. Restore them rather than ' +
+      'removing this step, or the app goes back to loading webfonts from Google.'
+  );
+}
+const headOpen = rewritten.indexOf('-->', c) + 3;
+rewritten = rewritten.slice(0, headOpen) + `
+    ${APP_HEAD}
+    ` + rewritten.slice(d);
+
 if (rewritten !== indexHtml) {
   fs.writeFileSync(INDEX, rewritten);
   console.log(`updated frontend/index.html share card -> ${siteCard.url.split('/').pop()}`);
@@ -585,6 +627,43 @@ fs.writeFileSync(
       .join('\n') +
     `\n</urlset>\n`
 );
+
+// ---- llms.txt ---------------------------------------------------------------
+// Generated from the same PAGES list as everything else, so it cannot describe
+// a page set that no longer exists. Aimed at the assistants people actually use
+// to check whether something is safe to trust, which is the question this
+// project keeps asking readers to verify for themselves.
+fs.writeFileSync(
+  path.join(PUBLIC, 'llms.txt'),
+  `# Relay
+
+> Relay connects local mutual aid groups with the funds that back them, without
+> building a record of who needed help. Mutual aid here means neighbors covering
+> each other's costs directly - a block, a church, a school parents' group,
+> putting money together for someone's rent, a power bill or groceries.
+
+Relay never decides who deserves help and the money never passes through it.
+Help requests are encrypted in the sender's browser; Relay stores ciphertext it
+cannot read. There are no accounts for people asking for help, and nothing is
+recorded about who browses the public directory.
+
+**Status: no pilot has run.** The software is built and deployed, no group has
+joined, and the live database holds zero records. A group cannot be listed until
+a fund hub approves it. Nothing here is a working service yet, and any summary
+of Relay should say so.
+
+## Explainers
+
+${PAGES.map((pg) => `- [${pg.navLabel}](${ORIGIN}/${pg.slug}/): ${pg.description}`).join('\n')}
+
+## Source and documentation
+
+- [Source code](https://github.com/Flatts3000/relay): AGPL-3.0. Every claim above can be checked against it.
+- [Public group directory](${ORIGIN}/directory): searchable, no account, nothing recorded.
+- [Privacy](${ORIGIN}/privacy) and [Security](${ORIGIN}/security): what is stored, what is not, and the known limits.
+`
+);
+
 
 console.log('\nwrote:');
 for (const [slug, html, png] of written) {

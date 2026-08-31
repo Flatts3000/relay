@@ -1,5 +1,6 @@
 {
   "appName": "Relay",
+  "skipToContent": "Skip to main content",
   "loading": "Loading...",
   "error": "Error",
   "success": "Success",
@@ -243,5 +244,15 @@
     "totalMoved": "Total requested",
     "approved": "Requests approved",
     "totalRequests": "Requests received"
+  },
+  "meta": {
+    "homeTitle": "Relay: mutual aid, connected",
+    "home": "Relay connects local mutual aid groups with the funds that back them, without building a record of who needed help.",
+    "directory": "Search local mutual aid groups by area and the kind of help they offer. No account needed, and nothing is recorded about your search.",
+    "privacy": "What Relay stores, what it never stores, and why. No individual accounts, no tracking, and no record of who received help.",
+    "security": "How Relay protects the people who use it: help requests encrypted on your own device, no IP logging on anonymous pages, and what a subpoena would actually produce.",
+    "terms": "The terms that apply to using Relay.",
+    "login": "Sign in to Relay.",
+    "notFound": "That page does not exist."
   }
 }

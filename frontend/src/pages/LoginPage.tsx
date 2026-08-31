@@ -39,14 +39,14 @@ export function LoginPage() {
 
   if (isLoading || isVerifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <main id="main-content" className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto" />
           <p className="mt-2 text-gray-600">
             {isVerifying ? t('auth:verifyingLogin') : t('common:loading')}
           </p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -68,7 +68,10 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <main
+      id="main-content"
+      className="min-h-screen flex items-center justify-center bg-gray-50 p-4"
+    >
       <div className="max-w-md w-full">
         <div className="absolute top-4 right-4">
           <LanguageSwitcher />
@@ -107,6 +110,6 @@ export function LoginPage() {
           <p className="mt-4 text-sm text-gray-500 text-center">{t('auth:magicLinkDescription')}</p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

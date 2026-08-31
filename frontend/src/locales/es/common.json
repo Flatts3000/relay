@@ -1,5 +1,6 @@
 {
   "appName": "Relay",
+  "skipToContent": "Ir al contenido principal",
   "loading": "Cargando...",
   "error": "Error",
   "success": "Éxito",
@@ -243,5 +244,15 @@
     "totalMoved": "Total solicitado",
     "approved": "Solicitudes aprobadas",
     "totalRequests": "Solicitudes recibidas"
+  },
+  "meta": {
+    "homeTitle": "Relay: ayuda mutua, conectada",
+    "home": "Relay conecta grupos locales de ayuda mutua con los fondos que los respaldan, sin crear un registro de quién necesitó ayuda.",
+    "directory": "Busque grupos locales de ayuda mutua por zona y por el tipo de ayuda que ofrecen. No se necesita cuenta y no se registra nada sobre su búsqueda.",
+    "privacy": "Qué guarda Relay, qué nunca guarda y por qué. Sin cuentas individuales, sin rastreo y sin registro de quién recibió ayuda.",
+    "security": "Cómo protege Relay a quienes lo usan: solicitudes cifradas en su propio dispositivo, sin registro de direcciones IP en las páginas anónimas, y qué produciría realmente una orden judicial.",
+    "terms": "Los términos que se aplican al uso de Relay.",
+    "login": "Inicie sesión en Relay.",
+    "notFound": "Esa página no existe."
   }
 }

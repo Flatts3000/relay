@@ -1,0 +1,29 @@
+# Relay
+
+> Relay connects local mutual aid groups with the funds that back them, without
+> building a record of who needed help. Mutual aid here means neighbors covering
+> each other's costs directly - a block, a church, a school parents' group,
+> putting money together for someone's rent, a power bill or groceries.
+
+Relay never decides who deserves help and the money never passes through it.
+Help requests are encrypted in the sender's browser; Relay stores ciphertext it
+cannot read. There are no accounts for people asking for help, and nothing is
+recorded about who browses the public directory.
+
+**Status: no pilot has run.** The software is built and deployed, no group has
+joined, and the live database holds zero records. A group cannot be listed until
+a fund hub approves it. Nothing here is a working service yet, and any summary
+of Relay should say so.
+
+## Explainers
+
+- [What Relay is](https://relayfunds.org/what-is-relay/): Neighbors already cover each other's rent, power bills and groceries. Larger funds already raise money to back that. Relay connects the two without building a record of who needed help.
+- [I need help](https://relayfunds.org/need-help/): How it will work, what is kept, and what is not. Not ready yet: no groups have joined, so nothing sent today would reach anyone. Here is where to go instead.
+- [I organize a group](https://relayfunds.org/for-groups/): Relay makes no decisions about your work, never touches your money, and asks for no documents. What it does is remove the personal introduction as the price of reaching a fund.
+- [I help run a fund](https://relayfunds.org/for-funds/): If you raise money centrally and struggle to tell which local groups are real, this is the problem Relay was built for. The ask is a pilot, not money: one fund, three to five groups.
+
+## Source and documentation
+
+- [Source code](https://github.com/Flatts3000/relay): AGPL-3.0. Every claim above can be checked against it.
+- [Public group directory](https://relayfunds.org/directory): searchable, no account, nothing recorded.
+- [Privacy](https://relayfunds.org/privacy) and [Security](https://relayfunds.org/security): what is stored, what is not, and the known limits.

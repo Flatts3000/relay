@@ -24,6 +24,23 @@ real `deploy/nginx.prod.conf` against the production build.
 
 ---
 
+## Remediation status
+
+Every finding was fixed in the same branch as this audit. Re-verified after the
+fixes: **zero axe violations across all ten pages at both viewports**, where the
+first run had ten failing nodes.
+
+|                                                             | Status                                                                                                                                                                                                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **A-1** `<html lang>` ignores the switcher                  | **Fixed.** `DocumentTitle` sets it from `i18n.language`. Verified: switching to Spanish moves `lang` from `en-US` to `es` while the heading becomes "Ayuda mutua, conectada."                                                              |
+| **A-2** `/login` has no `main` landmark                     | **Fixed.** Both return paths, including the loading state, are wrapped in `<main id="main-content">`.                                                                                                                                      |
+| **A-3** skip link on one route of six                       | **Fixed.** Moved into `PublicHeader`, so every page rendering the shared chrome has one, and each `<main>` gained the matching id. `/login` deliberately has none: it renders no repeated navigation block, so there is nothing to bypass. |
+| **A-4** header nav below 44px                               | **Fixed.** `inline-flex` + `min-h-[44px]` on the nav links and the sign-in link.                                                                                                                                                           |
+| **A-5** masthead logo link 50x28                            | **Fixed.** `min-h-[44px]`. The finding's original wording was wrong about the cause and has been corrected in place.                                                                                                                       |
+| **A-6**, **A-7** contrast and landmarks on the static pages | **Fixed** in this pass, as described below.                                                                                                                                                                                                |
+
+---
+
 ## Result
 
 | Surface                                                         | axe violations   | Notes                                 |
@@ -139,17 +156,19 @@ currently disagree about the same rule.
 **Remediation:** `min-height: 44px` on the header nav links, as
 `marketing/build.mjs` now does. Padding rather than font size, so nothing reflows.
 
-### A-5: An unlabeled 50x28 link on the home page
+### A-5: The home page masthead logo link is 50x28
 
 **File:** `frontend/src/pages/HomePage.tsx`
 
-One link on `/` has no accessible name and measures 50x28. axe did not flag it
-as `link-name`, so it has some accessible name from a nested element, but it has
-no text content and is under the tap target floor on both axes.
+The link measures 50x28, under the tap target floor on both axes.
 
-**Remediation:** identify it, give it an explicit `aria-label` if it is an icon
-control, and bring it to 44x44. Listed separately from A-4 because the fix is a
-label as well as a size.
+Identified while fixing it, and the first reading of this finding was wrong:
+it has no text content, but it is not unlabeled. It is the masthead logo, and
+its accessible name comes from the `alt` on the image inside it, which is why
+axe did not raise `link-name`. The only defect is the size, from `h-7` on the
+image with no minimum on the link.
+
+**Remediation:** `min-h-[44px]` on the link. No label change is needed.
 
 ---
 
