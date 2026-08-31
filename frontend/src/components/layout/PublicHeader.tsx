@@ -96,7 +96,7 @@ export function PublicHeader() {
                 key={link.key}
                 to={link.path}
                 onClick={() => setMenuOpen(false)}
-                className={`block ${linkClass(link.path)}`}
+                className={`${linkClass(link.path)} w-full`}
                 aria-current={location.pathname === link.path ? 'page' : undefined}
               >
                 {t(`navigation.${link.key}`)}
@@ -105,7 +105,7 @@ export function PublicHeader() {
             <Link
               to="/login"
               onClick={() => setMenuOpen(false)}
-              className={`block ${linkClass('/login')}`}
+              className={`${linkClass('/login')} w-full`}
             >
               {t('navigation.login')}
             </Link>

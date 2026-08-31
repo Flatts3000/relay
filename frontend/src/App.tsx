@@ -60,7 +60,7 @@ function NotFound() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicHeader />
-      <main className="flex-1 flex items-center justify-center p-4">
+      <main id="main-content" className="flex-1 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('pageNotFound')}</h1>
           <p className="text-gray-600 mb-6">{t('pageNotFoundDescription')}</p>

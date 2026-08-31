@@ -41,19 +41,32 @@ const routeTitles: Array<[string, string]> = [
 ];
 
 /**
- * The routes a crawler should index, each with its own description.
+ * Every route that is a real page, with its own description.
  *
- * Everything absent from this map is either disallowed in `robots.txt` because
- * it redirects to `/login`, or is the not-found view. Both get `noindex` below
- * rather than a description.
+ * Being a real page and being indexable are different questions, and conflating
+ * them put `noindex` and "That page does not exist" on `/help` - the anonymous
+ * help broadcast, the one public surface built for someone in a crisis, and not
+ * disallowed in `robots.txt`. It is a working page that simply should not be
+ * indexed. Anything absent from this map is the not-found view.
  */
-const publicDescriptions: Record<string, string> = {
+const routeDescriptions: Record<string, string> = {
   '/': 'meta.home',
   '/directory': 'meta.directory',
+  '/help': 'meta.help',
   '/privacy': 'meta.privacy',
   '/security': 'meta.security',
   '/terms': 'meta.terms',
+  '/login': 'meta.login',
 };
+
+/**
+ * Real pages that should still not appear in search results.
+ *
+ * `/login` is already disallowed in `robots.txt`. `/help` is deliberately not:
+ * someone searching for a way to ask for help should be able to find it, and
+ * the page itself stores nothing about the visit.
+ */
+const noIndex = new Set(['/login']);
 
 /** Create the tag if it is missing, then set its content. */
 function setMeta(selector: string, create: () => HTMLElement, content: string) {
@@ -104,10 +117,14 @@ export function DocumentTitle() {
   const { t, i18n } = useTranslation('common');
 
   useEffect(() => {
-    // WCAG 3.1.1. i18n.language can carry a region suffix ("es-MX"); the
-    // attribute is happy with either, and the base tag is what matters.
-    document.documentElement.setAttribute('lang', i18n.language);
-  }, [i18n.language]);
+    // WCAG 3.1.1, and resolvedLanguage rather than language on purpose. There is
+    // no supportedLngs in the i18n config, so the detector sets `language` to
+    // the raw navigator value: a visitor with a fr-FR browser would get English
+    // copy from fallbackLng under lang="fr-FR", which is a worse failure than
+    // the hardcoded "en" this replaced. resolvedLanguage walks the fallback
+    // chain and reports the language actually rendered.
+    document.documentElement.setAttribute('lang', i18n.resolvedLanguage ?? i18n.language);
+  }, [i18n.resolvedLanguage, i18n.language]);
 
   useEffect(() => {
     const appName = t('appName');
@@ -134,9 +151,10 @@ export function DocumentTitle() {
     const canonicalPath =
       pathname !== '/' && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
 
-    const descriptionKey = publicDescriptions[canonicalPath];
-    const isPublic = descriptionKey !== undefined;
-    const description = t(isPublic ? descriptionKey : 'meta.notFound');
+    const descriptionKey = routeDescriptions[canonicalPath];
+    const isKnownPage = descriptionKey !== undefined;
+    const indexable = isKnownPage && !noIndex.has(canonicalPath);
+    const description = t(isKnownPage ? descriptionKey : 'meta.notFound');
 
     setMeta(
       'meta[name="description"]',
@@ -170,13 +188,13 @@ export function DocumentTitle() {
       );
     }
 
-    // Anything not in publicDescriptions is either an authenticated route that
-    // redirects to /login, or the not-found view reached through App's `*`
-    // route. Neither should be indexed, and the not-found case matters most:
-    // the SPA fallback returns 200 for every unmatched extensionless path, so
-    // without this a typo becomes an indexable page containing the app shell.
+    // Anything unknown here is the not-found view reached through App's `*`
+    // route, and that case matters most: the SPA fallback returns 200 for every
+    // unmatched extensionless path, so without this a typo becomes an indexable
+    // page containing the app shell. Authenticated routes are also unknown here
+    // and are already disallowed in robots.txt.
     const robots = document.head.querySelector('meta[name="robots"]');
-    if (isPublic) {
+    if (indexable) {
       robots?.remove();
     } else {
       setMeta(

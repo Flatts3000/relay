@@ -22,6 +22,7 @@
  */
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const IMAGE = path.join(ROOT, 'frontend', 'nginx.conf');
@@ -71,20 +72,65 @@ for (const [directive, why] of REQUIRED) {
   }
 }
 
-// The CSP itself has to match, not merely be present in both. Two different
-// policies is its own kind of drift, and the weaker one wins wherever it is
-// served from.
-const policies = files.map(([name, body]) => {
-  const m = body.match(/add_header Content-Security-Policy\s+"([^"]+)"/);
-  return [name, m?.[1] ?? null];
-});
-const [[, a], [, b]] = policies;
-if (a && b && a !== b) {
+// Every CSP has to match, not just the first one found. Each file carries two:
+// the server-level policy and a separate one inside `^~ /deck`, which the deck
+// needs because it is a single self-contained file with an inline script and
+// base64 fonts. The /deck copy is precisely the one that rots, since a
+// location-level add_header silently discards every inherited header - so
+// matching only the first occurrence would miss the drift this check exists for.
+const policiesOf = (body) =>
+  [...body.matchAll(/add_header Content-Security-Policy\s+"([^"]+)"/g)].map((m) => m[1]);
+
+const [[nameA, bodyA], [nameB, bodyB]] = files;
+const [listA, listB] = [policiesOf(bodyA), policiesOf(bodyB)];
+
+if (listA.length !== listB.length) {
   problems.push(
-    'The two Content-Security-Policy values differ. They must be identical, or ' +
-      'the policy depends on which config happens to be mounted:\n' +
-      `      image: ${a}\n      prod : ${b}`
+    `${nameA} defines ${listA.length} Content-Security-Policy header(s) and ` +
+      `${nameB} defines ${listB.length}. Both files must define the same set.`
   );
+} else {
+  for (let i = 0; i < listA.length; i += 1) {
+    if (listA[i] !== listB[i]) {
+      problems.push(
+        `Content-Security-Policy #${i + 1} differs between the two configs:\n` +
+          `      ${nameA}: ${listA[i]}\n      ${nameB}: ${listB[i]}`
+      );
+    }
+  }
+}
+
+// The /deck policy allows its inline script by hash. A deck rebuild that changes
+// that script invalidates the hash, and the failure is silent and total: the
+// slide engine never runs, every slide stays display:none, and a funder opening
+// relayfunds.org/deck gets a blank page. Recomputing it here means a stale hash
+// fails the build instead.
+//
+// The hash is taken over LF-normalised text, because the HTML parser normalises
+// CRLF to LF before hashing. On a Windows checkout the raw bytes produce a hash
+// the browser will never agree with. That cost one debugging round; writing it
+// down means it costs none in future.
+const deckPath = path.join(ROOT, 'frontend', 'public', 'deck', 'index.html');
+if (fs.existsSync(deckPath)) {
+  const inline = fs.readFileSync(deckPath, 'utf8').match(/<script>([\s\S]*?)<\/script>/);
+  if (inline) {
+    const digest =
+      'sha256-' +
+      crypto
+        .createHash('sha256')
+        .update(inline[1].replace(/\r\n/g, '\n'), 'utf8')
+        .digest('base64');
+    for (const [name, body] of files) {
+      if (!body.includes(digest)) {
+        problems.push(
+          `${name} does not carry the current deck script hash.\n` +
+            `      expected ${digest}\n` +
+            "      The committed deck's inline script changed, so the /deck policy no\n" +
+            '      longer matches it, and the deck renders as a blank page. Update both.'
+        );
+      }
+    }
+  }
 }
 
 if (problems.length > 0) {
