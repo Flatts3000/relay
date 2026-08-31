@@ -34,9 +34,10 @@ const ORIGIN = 'https://relayfunds.org';
 // Unlike the deck, sharp is required rather than optional here. The deck
 // degrades to a larger file without it; these pages degrade to having no share
 // card, which is the entire point of building them.
+const require_ = createRequire(import.meta.url);
 let sharp;
 try {
-  sharp = createRequire(import.meta.url)('sharp');
+  sharp = require_('sharp');
 } catch {
   console.error(
     'sharp is required to render the share cards.\n' +
@@ -108,7 +109,7 @@ ${FONT_CSS}
 :root{
   --p50:#f0f7ff;--p100:#dbeafe;--p200:#b4d3f5;--p400:#4a90d9;--p500:#2e6eb5;
   --p600:#1d5a9e;--p700:#164a84;--p800:#113b6a;--p900:#0c2d52;
-  --teal:#0d9488;--teal-50:#f0fdfa;--teal-200:#99f6e4;
+  --teal:#0d9488;--teal-50:#f0fdfa;--teal-200:#99f6e4;--teal-700:#0f766e;
   --amber:#d97706;--amber-50:#fffbeb;--amber-200:#fde68a;
   --ink:#111827;--body:#374151;--muted:#6b7280;--line:#e5e7eb;--ground:#f9fafb;
   --r-sm:6px;--r:8px;--r-lg:12px;
@@ -131,10 +132,11 @@ p{margin:0}
 /* Header */
 .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.86);
   backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:62px}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:66px}
+.top .brand{display:inline-flex;align-items:center;min-height:44px}
 .top img{height:26px;display:block}
 .top nav{display:flex;gap:6px;flex-wrap:wrap}
-.top nav a{display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border-radius:var(--r);
+.top nav a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:var(--r);
   font-size:14px;font-weight:500;color:var(--body);text-decoration:none}
 .top nav a:hover{background:var(--p50);color:var(--p700)}
 .top nav a[aria-current]{background:var(--p50);color:var(--p700)}
@@ -183,7 +185,7 @@ section+section{padding-top:0}
   background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--sh-sm)}
 .ledger span:nth-child(odd){font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;font-weight:500;
   letter-spacing:.09em;padding:3px 8px;border-radius:var(--r-sm);white-space:nowrap;margin-top:2px}
-.ledger .yes{background:var(--teal-50);color:var(--teal);border:1px solid var(--teal-200)}
+.ledger .yes{background:var(--teal-50);color:var(--teal-700);border:1px solid var(--teal-200)}
 .ledger .no{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 .ledger span:nth-child(even){font-size:15.5px;line-height:1.55}
 
@@ -239,9 +241,11 @@ footer{border-top:1px solid var(--line);background:#fff;padding:34px 0 44px;marg
 footer .wrap{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between}
 footer p{font-size:14px;color:var(--muted);max-width:52ch}
 footer a{color:var(--p600)}
-footer .links{display:flex;flex-direction:column;gap:7px;font-size:14px}
+footer .links{display:flex;flex-direction:column;font-size:14px}
+footer .links a{display:inline-flex;align-items:center;min-height:44px}
 .skip{position:absolute;left:-9999px}
-.skip:focus{left:14px;top:12px;z-index:60;background:var(--p600);color:#fff;padding:9px 15px;border-radius:var(--r)}
+.skip:focus{left:14px;top:12px;z-index:60;background:var(--p600);color:#fff;padding:12px 16px;
+  border-radius:var(--r);display:inline-flex;align-items:center;min-height:44px}
 :focus-visible{outline:2px solid var(--p600);outline-offset:2px}
 `
   .replace(/\n\s*/g, '')
@@ -459,10 +463,10 @@ function document_(page, card) {
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="top"><div class="wrap">
-  <a href="/" aria-label="Relay home"><img src="${logo.href}" alt="Relay"></a>
-  <nav>${nav}</nav>
-</div></div>
+<header class="top"><div class="wrap">
+  <a class="brand" href="/" aria-label="Relay home"><img src="${logo.href}" alt="Relay"></a>
+  <nav aria-label="Relay pages">${nav}</nav>
+</div></header>
 <main id="main">
 ${page.blocks.map(renderBlock).join('\n')}
 </main>
@@ -541,7 +545,26 @@ if (rewritten !== indexHtml) {
 // A sitemap so the pages are actually discoverable, listing only the public
 // surfaces. /deck is deliberately absent: it is served noindex, and listing it
 // here would both contradict that and advertise the path.
-const today = new Date().toISOString().slice(0, 10);
+// lastmod comes from the last commit that touched each page, not from the
+// clock. A build-time date claims every page changed today on every rebuild,
+// which is a false signal to crawlers and a guaranteed diff in every commit
+// that touches anything here. Falling back to today for a path git does not
+// know yet is correct: an uncommitted page really did just change.
+function lastModified(relPath) {
+  try {
+    const out = require_('node:child_process')
+      .execSync(`git log -1 --format=%cI -- "${relPath}"`, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        cwd: ROOT,
+      })
+      .trim();
+    if (out) return out.slice(0, 10);
+  } catch {
+    // git missing, or a shallow clone with no history for this path.
+  }
+  return new Date().toISOString().slice(0, 10);
+}
 // Only surfaces that describe themselves. /directory is deliberately absent:
 // it is an SPA route served from frontend/index.html, so its Open Graph
 // tags are the home page's and it declares og:url of /, which submits it to
@@ -555,7 +578,8 @@ fs.writeFileSync(
     urls
       .map(
         (u) =>
-          `  <url><loc>${ORIGIN}/${u}</loc><lastmod>${today}</lastmod>` +
+          `  <url><loc>${ORIGIN}/${u}</loc>` +
+          `<lastmod>${lastModified(u === '' ? 'frontend/index.html' : `frontend/public/${u}index.html`)}</lastmod>` +
           `<changefreq>monthly</changefreq><priority>${u === '' ? '1.0' : '0.8'}</priority></url>`
       )
       .join('\n') +
