@@ -33,6 +33,11 @@ jobs:
       - name: Deck figures match the repository
         run: node deck/check-counts.mjs
 
+      # Same reasoning for the public marketing pages, which carry the same
+      # figures to a wider audience than the deck does.
+      - name: Marketing page figures match the repository
+        run: node marketing/check-counts.mjs
+
       - name: Lint frontend
         run: npm run lint:frontend
 

@@ -22,3 +22,7 @@ Disallow: /admin
 Disallow: /onboarding
 Disallow: /login
 Disallow: /api/
+
+# The public pages, so a crawler does not have to discover them by following
+# links from a single-page app it cannot execute.
+Sitemap: https://relayfunds.org/sitemap.xml
